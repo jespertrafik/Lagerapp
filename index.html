@@ -664,6 +664,20 @@ async function sendTelegram(item) {
 }
 
 // ====== TOAST ======
+async function resetDeptToDefault() {
+  const deptNames = { tvattstugor: "Tvättstugor", vitvaror: "Vitvaror", storkok: "Storkök" };
+  const name = deptNames[activeDept] || activeDept;
+  if (!confirm(`Återställ ${name} till defaultartiklar? All nuvarande data för avdelningen raderas!`)) return;
+  const defaults = activeDept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : activeDept === "vitvaror" ? DEFAULT_VITVAROR : DEFAULT_STORKOK;
+  const ref = getItemsRef();
+  await ref.remove();
+  for (const item of defaults) {
+    const key = (item.artnr || item.name).replace(/[.#$\/\[\]]/g, "_");
+    await ref.child(key).set({ name: item.name, unit: item.unit, qty: item.qty, min: item.min, brand: item.brand, price: item.price || 0, artnr: item.artnr || "" });
+  }
+  showToast(`${name} återställd!`);
+}
+
 function showToast(msg) {
   toastMsg = msg;
   render();
@@ -862,6 +876,7 @@ function render() {
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
+        ${isAdmin ? '<button class="small-btn" style="background:var(--red)" onclick="resetDeptToDefault()">🔄 Återställ avdelning</button>' : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
