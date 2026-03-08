@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Lager</title>
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    /* ===== THEME VARIABLES ===== */
+    :root {
+      --bg: #0a0a0a; --card: #131313; --card-border: #1e1e1e;
+      --text: #e8e8e8; --text-dim: #777; --accent: #e8a023;
+      --green: #22b455; --red: #d43333;
+      --warn-bg: #1a1400; --warn-border: #4a3800;
+      --header-bg: rgba(10,10,10,0.92);
+      --input-bg: #0a0a0a;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== SIZE VARIABLES ===== */
+    :root {
+      --font-name: 15px; --font-qty: 28px; --font-meta: 11px; --font-btn: 14px;
+      --font-tab: 13px; --font-title: 22px; --font-stat: 17px;
+      --pad-card: 14px; --pad-input: 9px 12px; --pad-btn: 9px 16px;
+      --radius-card: 12px; --gap-items: 8px;
+      --grid-cols: 1fr;
+    }
+
+    body.size-large {
+      --font-name: 19px; --font-qty: 40px; --font-meta: 14px; --font-btn: 16px;
+      --font-tab: 16px; --font-title: 28px; --font-stat: 24px;
+      --pad-card: 18px; --pad-input: 14px 16px; --pad-btn: 12px 16px;
+      --radius-card: 16px; --gap-items: 12px;
+    }
+
+    body.size-dashboard {
+      --font-name: 15px; --font-qty: 28px; --font-meta: 12px; --font-btn: 13px;
+      --font-tab: 13px; --font-title: 22px; --font-stat: 20px;
+      --pad-card: 16px; --pad-input: 10px 12px; --pad-btn: 10px 16px;
+      --radius-card: 14px; --gap-items: 10px;
+      --grid-cols: 1fr 1fr;
+    }
+
+    /* ===== LOGIN ===== */
+    .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
+    .login-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .login-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 32px; }
+    .login-btn { display: flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
+    .login-btn:active { opacity: 0.7; }
+    .login-btn svg { width: 20px; height: 20px; }
+    .login-error { margin-top: 16px; color: var(--red); font-size: 13px; }
+
+    /* ===== USER BAR ===== */
+    .user-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--card); border-bottom: 1px solid var(--card-border); flex-wrap: wrap; gap: 4px; }
+    .user-info { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+    .user-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .small-btn { background: none; border: 1px solid var(--card-border); color: var(--text-dim); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-family: inherit; cursor: pointer; white-space: nowrap; }
+
+    /* ===== SETTINGS MODAL ===== */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+    .modal { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; width: 90%; max-width: 360px; }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .modal-option { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg); border: 2px solid var(--card-border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+    .modal-option.active { border-color: var(--accent); }
+    .modal-option-icon { font-size: 24px; }
+    .modal-option-text { flex: 1; }
+    .modal-option-name { font-size: 15px; font-weight: 700; }
+    .modal-option-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .modal-close { width: 100%; margin-top: 12px; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+    .admin-list { max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
+    .admin-user { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 6px; }
+    .admin-email { font-size: 13px; font-weight: 600; }
+    .admin-role { font-size: 11px; color: var(--text-dim); }
+    .admin-remove { background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .admin-add-row { display: flex; gap: 8px; }
+    .admin-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
+
+    /* ===== HEADER ===== */
+    .header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 16px 0; border-bottom: 1px solid var(--card-border); }
+    .header h1 { font-size: var(--font-title); font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+    .dept-tabs { display: flex; gap: 0; margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .dept-tab { padding: 10px 16px; font-size: var(--font-tab); font-weight: 600; font-family: inherit; color: var(--text-dim); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+    .dept-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .brand-tabs { display: flex; gap: 6px; padding: 12px 16px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .brand-tab { padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-dim); background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .brand-tab.active { color: #000; background: var(--accent); border-color: var(--accent); }
+
+    .search-wrap { padding: 12px 16px 0; position: relative; }
+    .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 11px 14px 11px 38px; font-size: var(--font-name); font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .search-input:focus { border-color: var(--accent); }
+    .search-icon { position: absolute; left: 28px; top: 24px; font-size: 15px; pointer-events: none; opacity: 0.4; }
+
+    .stats-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
+    .stat-box { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .stat-value { font-size: var(--font-stat); font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+    .backup-bar { display: flex; gap: 8px; padding: 0 16px; margin-top: 8px; }
+    .backup-btn { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: var(--text-dim); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .backup-btn:active { opacity: 0.7; }
+
+    .log-toggle { width: calc(100% - 32px); margin: 8px 16px 0; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px 14px; color: var(--text-dim); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: left; }
+    .log-list { margin: 0 16px; background: var(--card); border: 1px solid var(--card-border); border-top: none; border-radius: 0 0 10px 10px; max-height: 300px; overflow-y: auto; }
+    .log-entry { padding: 10px 14px; border-bottom: 1px solid var(--card-border); font-size: 12px; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-time { color: var(--text-dim); }
+    .log-action-take { color: var(--red); font-weight: 600; }
+    .log-action-fill { color: var(--green); font-weight: 600; }
+    .log-action-add { color: var(--accent); font-weight: 600; }
+    .log-who { color: var(--text-dim); font-style: italic; }
+
+    /* ===== ERROR CODES ===== */
+    .ec-section { padding: 12px 16px; }
+    .ec-filters { display: flex; gap: 6px; padding: 12px 16px 0; flex-wrap: wrap; }
+    .ec-filter { padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-dim); background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .ec-filter.active { color: #000; background: var(--accent); border-color: var(--accent); }
+    .ec-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); margin-bottom: 8px; }
+    .ec-code { font-size: 18px; font-weight: 800; color: var(--accent); }
+    .ec-name { font-size: var(--font-name); font-weight: 600; margin-top: 4px; }
+    .ec-desc { font-size: var(--font-meta); color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+    .ec-machine { font-size: 10px; color: var(--text-dim); margin-top: 6px; opacity: 0.7; }
+    .ec-count { font-size: 12px; color: var(--text-dim); padding: 8px 16px; }
+
+    .alert-banner { margin: 12px 16px 0; background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 12px 14px; animation: fadeIn 0.3s ease; }
+    .alert-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+    .alert-item { font-size: 13px; color: #c9a033; padding: 2px 0; }
+
+    .items-list { padding: 12px 16px; display: grid; grid-template-columns: var(--grid-cols); gap: var(--gap-items); }
+    .item-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); transition: border-color 0.2s; animation: slideUp 0.3s ease; }
+    .item-card.low { background: var(--warn-bg); border-color: var(--warn-border); }
+
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .item-name { font-size: var(--font-name); font-weight: 600; }
+    .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
+    .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
+    .item-qty { font-size: var(--font-qty); font-weight: 700; line-height: 1; }
+    .item-qty.ok { color: var(--green); }
+    .item-qty.low { color: var(--accent); }
+    .item-meta { font-size: var(--font-meta); color: var(--text-dim); text-align: right; }
+
+    .item-controls { display: flex; gap: 6px; align-items: center; width: 100%; }
+    .item-input { flex: 1 1 60px; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: var(--pad-input); font-size: var(--font-name); font-family: inherit; outline: none; min-width: 0; }
+    .item-input:focus { border-color: var(--accent); }
+
+    .btn { border: none; border-radius: 8px; padding: var(--pad-btn); font-size: var(--font-btn); font-weight: 600; font-family: inherit; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; -webkit-user-select: none; user-select: none; flex-shrink: 0; }
+    .btn:active { opacity: 0.7; }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-dim { background: #222; color: #999; border: 1px solid #333; }
+    .btn-accent { background: var(--accent); color: #000; }
+
+    .add-btn { width: 100%; background: var(--card); border: 1px dashed var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); color: var(--text-dim); font-size: var(--font-name); font-family: inherit; cursor: pointer; text-align: center; grid-column: 1 / -1; }
+    .add-form { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.2s ease; grid-column: 1 / -1; }
+    .add-row { display: flex; gap: 8px; }
+    .add-input { flex: 1; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: var(--pad-input); font-size: 14px; font-family: inherit; outline: none; min-width: 0; }
+    .add-select { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 9px 10px; font-size: 14px; font-family: inherit; outline: none; }
+
+    .loading { display: flex; justify-content: center; align-items: center; height: 60vh; color: var(--text-dim); font-size: 15px; }
+    .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 3px; animation: bounce 1s ease infinite; }
+    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 200; animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards; pointer-events: none; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading">
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCjIxIJRmFOtV5Z_MQlUtWVBYAa3sxdsF0",
+  authDomain: "lager-f0045.firebaseapp.com",
+  databaseURL: "https://lager-f0045-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lager-f0045",
+  storageBucket: "lager-f0045.firebasestorage.app",
+  messagingSenderId: "477506805829",
+  appId: "1:477506805829:web:a4e56c05c7972be952432c"
+};
+
+const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
+const TELEGRAM_CHAT_ID = "8731725746";
+
+const DEPARTMENTS = [
+  { id: "tvattstugor", name: "Tvättstugor" },
+  { id: "vitvaror", name: "Vitvaror" },
+  { id: "storkok", name: "Storkök" },
+];
+
+const VIEW_MODES = [
+  { id: "compact", name: "Kompakt", icon: "📱", desc: "Liten och tät — bra för telefon", sizeClass: "", themeClass: "" },
+  { id: "large", name: "Stor & Tydlig", icon: "🖐️", desc: "Stora knappar och text — lättare att använda", sizeClass: "size-large", themeClass: "" },
+  { id: "dashboard", name: "Dashboard", icon: "🖥️", desc: "Rutnät med 2 kolumner — bäst på dator", sizeClass: "size-dashboard", themeClass: "" },
+];
+
+// Default items per department from inventory PDF
+// qty set to random 0-15 for demo, prices from PDF
+const DEFAULT_TVATTSTUGOR = [
+  { name: "Kretskort", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 4310, artnr: "1122" },
+  { name: "Slang", unit: "st", qty: 5, min: 2, brand: "Övrigt", price: 219, artnr: "52062" },
+  { name: "Lampa", unit: "st", qty: 8, min: 3, brand: "Övrigt", price: 37, artnr: "396319" },
+  { name: "Yttre glas ugn", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 416, artnr: "412401" },
+  { name: "Microbrytare", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 631, artnr: "460007" },
+  { name: "Fjäder", unit: "st", qty: 12, min: 3, brand: "Övrigt", price: 65, artnr: "535402" },
+  { name: "Lucklås", unit: "st", qty: 3, min: 2, brand: "Övrigt", price: 2240, artnr: "537760" },
+  { name: "Luckhandtag", unit: "st", qty: 6, min: 2, brand: "Övrigt", price: 849, artnr: "552909" },
+  { name: "Luckpackning", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 756, artnr: "568990" },
+  { name: "Gångjärnsset", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 919, artnr: "570553" },
+  { name: "Backventil", unit: "st", qty: 3, min: 2, brand: "Övrigt", price: 569, artnr: "3149413" },
+  { name: "Tempsensor", unit: "st", qty: 5, min: 2, brand: "Övrigt", price: 387, artnr: "3887589" },
+  { name: "Avloppsmotor", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 3651, artnr: "4081723" },
+  { name: "Fläktmotor", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 1513, artnr: "4309910" },
+  { name: "Kolborste", unit: "st", qty: 7, min: 3, brand: "Övrigt", price: 399, artnr: "4490382" },
+  { name: "Avloppsventil Miele", unit: "st", qty: 3, min: 2, brand: "Miele", price: 1466, artnr: "6451401" },
+  { name: "Dörrlås", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 705, artnr: "6401452" },
+  { name: "Filter", unit: "st", qty: 6, min: 3, brand: "Övrigt", price: 888, artnr: "6450594" },
+  { name: "Växelströmsmotor", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 2825, artnr: "6234771" },
+  { name: "Programväljare", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 4369, artnr: "432681001" },
+  { name: "CPU", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 6698, artnr: "432690206" },
+  { name: "Display", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 1403, artnr: "432870204" },
+  { name: "Lucklås m kabel", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 2822, artnr: "472991372" },
+  { name: "Motorstyrning", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 5959, artnr: "472992902" },
+  { name: "Element 2500W", unit: "st", qty: 5, min: 2, brand: "Övrigt", price: 605, artnr: "471983701" },
+  { name: "Element 1000W", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 740, artnr: "471983704" },
+  { name: "Kondensator 5µF", unit: "st", qty: 10, min: 4, brand: "Övrigt", price: 42, artnr: "Kondensator 5uf" },
+  { name: "Kondensator 3µF", unit: "st", qty: 8, min: 4, brand: "Övrigt", price: 31, artnr: "Kondensator 3uf" },
+  { name: "Dörrmagnet", unit: "st", qty: 6, min: 2, brand: "Övrigt", price: 183, artnr: "487089304" },
+  { name: "Magnetlås", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 354, artnr: "487089002" },
+  { name: "Rem", unit: "st", qty: 9, min: 3, brand: "Övrigt", price: 338, artnr: "5234362" },
+  { name: "Drivmotor", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 3817, artnr: "487030901" },
+  { name: "Fläktkondensator", unit: "st", qty: 5, min: 2, brand: "Övrigt", price: 117, artnr: "471952511" },
+  { name: "Termostat", unit: "st", qty: 6, min: 3, brand: "Övrigt", price: 454, artnr: "471669704" },
+  { name: "Stötdämpare", unit: "st", qty: 3, min: 2, brand: "Övrigt", price: 756, artnr: "472991308" },
+  { name: "Nivåvakt", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 308, artnr: "471886101" },
+  { name: "Magnetventil", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 1360, artnr: "471824307" },
+  { name: "Filter med borste", unit: "st", qty: 3, min: 2, brand: "Övrigt", price: 1352, artnr: "487197388" },
+  { name: "Fläktmotor torkskåp", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 1513, artnr: "E150020" },
+  { name: "Mangelduk 18A", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 255, artnr: "18A" },
+];
+
+const DEFAULT_VITVAROR = [
+  { name: "Backspjäll", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 163, artnr: "1330041015" },
+  { name: "Bälg", unit: "st", qty: 2, min: 1, brand: "Bosch", price: 550, artnr: "00667220" },
+  { name: "Barnskydd", unit: "st", qty: 5, min: 2, brand: "Övrigt", price: 640, artnr: "f118577" },
+  { name: "Spolarmsväxlare Cylinda", unit: "st", qty: 2, min: 1, brand: "Cylinda", price: 552, artnr: "4356116" },
+  { name: "Dörrfack", unit: "st", qty: 4, min: 2, brand: "Bosch", price: 171, artnr: "00744758" },
+  { name: "Dörrbälg", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 282, artnr: "x459769" },
+  { name: "Dörrlås", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 430, artnr: "4306985" },
+  { name: "Energiregulator", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 394, artnr: "3051789224" },
+  { name: "Filter", unit: "st", qty: 6, min: 3, brand: "Övrigt", price: 208, artnr: "4305395" },
+  { name: "Fläkt", unit: "st", qty: 2, min: 1, brand: "Bosch", price: 703, artnr: "00657645" },
+  { name: "Fläktmotor", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 1209, artnr: "F329912" },
+  { name: "Frontglas", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 930, artnr: "5610438300" },
+  { name: "Häll glas", unit: "st", qty: 1, min: 1, brand: "Electrolux", price: 2627, artnr: "140037620014" },
+  { name: "Handtag kylskåp", unit: "st", qty: 5, min: 2, brand: "Electrolux", price: 210, artnr: "2636035087" },
+  { name: "Handtag ugn", unit: "st", qty: 3, min: 2, brand: "Övrigt", price: 124, artnr: "679163" },
+  { name: "Kolfilter", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 571, artnr: "130622" },
+  { name: "Kokplatta 180mm 2000W", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 217, artnr: "H723408" },
+  { name: "Kretskort", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 1601, artnr: "973916096977012" },
+  { name: "Kretskort kylskåp", unit: "st", qty: 1, min: 1, brand: "Electrolux", price: 1159, artnr: "2425645294" },
+  { name: "Miele lucklås", unit: "st", qty: 2, min: 1, brand: "Miele", price: 1849, artnr: "9344459" },
+  { name: "Nedre element", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 383, artnr: "3879671208" },
+  { name: "Övre element", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 358, artnr: "8583570797040" },
+  { name: "Strålelement 180mm", unit: "st", qty: 4, min: 2, brand: "Övrigt", price: 252, artnr: "767383" },
+  { name: "Strålelement 210mm", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 337, artnr: "9772419" },
+  { name: "Strömställare", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 364, artnr: "4364169" },
+  { name: "Tvättmedelslåda komplett", unit: "st", qty: 1, min: 1, brand: "Electrolux", price: 774, artnr: "4055949756" },
+  { name: "Yttre ugnsglas", unit: "st", qty: 2, min: 1, brand: "Bosch", price: 639, artnr: "00476665" },
+  { name: "PCU 230V", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 3437, artnr: "9000383" },
+  { name: "Släckpatron", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 2200, artnr: "1120490918" },
+  { name: "Spishäll", unit: "st", qty: 1, min: 1, brand: "Electrolux", price: 2018, artnr: "140057685178" },
+];
+
+const DEFAULT_STORKOK = [
+  { name: "Hake", unit: "st", qty: 6, min: 3, brand: "Wexiödisk", price: 60, artnr: "wd4071731" },
+  { name: "I/O kort", unit: "st", qty: 1, min: 1, brand: "Wexiödisk", price: 3634, artnr: "WD61101100" },
+  { name: "Kit nivåtank", unit: "st", qty: 2, min: 1, brand: "Wexiödisk", price: 933, artnr: "wd740.2001" },
+  { name: "Magnetventil", unit: "st", qty: 3, min: 2, brand: "Wexiödisk", price: 320, artnr: "wd7293230" },
+  { name: "Tempgivare", unit: "st", qty: 4, min: 2, brand: "Wexiödisk", price: 288, artnr: "WD61111300" },
+  { name: "Kontaktorer", unit: "st", qty: 2, min: 1, brand: "Wexiödisk", price: 383, artnr: "wd63723113" },
+  { name: "Kärntempsnål", unit: "st", qty: 1, min: 1, brand: "Rational", price: 1407, artnr: "40.00.606P" },
+  { name: "Potentiometer", unit: "st", qty: 2, min: 1, brand: "Rational", price: 652, artnr: "40.00.464P" },
+  { name: "Solidstaterelä", unit: "st", qty: 2, min: 1, brand: "Rational", price: 874, artnr: "40.00.453P" },
+  { name: "Servicekit WD4S", unit: "st", qty: 1, min: 1, brand: "Wexiödisk", price: 2370, artnr: "wd740.2000" },
+  { name: "Torkmedelsinjektor", unit: "st", qty: 1, min: 1, brand: "Wexiödisk", price: 1722, artnr: "wd716.0401" },
+  { name: "UI-kort entanksmaskin", unit: "st", qty: 1, min: 1, brand: "Wexiödisk", price: 2269, artnr: "wd61102100" },
+  { name: "Element 12kW", unit: "st", qty: 1, min: 1, brand: "Rational", price: 4662, artnr: "0kl150" },
+  { name: "Element 6kW", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 4560, artnr: "mg3604880" },
+  { name: "Kretskort", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 5922, artnr: "23400" },
+  { name: "Kretskort nätagg", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 378, artnr: "312223" },
+  { name: "MMI PCB", unit: "st", qty: 1, min: 1, brand: "Rational", price: 5538, artnr: "42.00.081p" },
+  { name: "Motherboard", unit: "st", qty: 1, min: 1, brand: "Rational", price: 7686, artnr: "0l1811" },
+  { name: "Nätagg", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 9865, artnr: "684.07-2" },
+  { name: "Tömningspump", unit: "st", qty: 2, min: 1, brand: "Rational", price: 4557, artnr: "0l2506" },
+  { name: "Sköljpump", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 4411, artnr: "19481" },
+  { name: "Sprutrörsmotor", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 4489, artnr: "13100" },
+  { name: "Panelkort", unit: "st", qty: 1, min: 1, brand: "Övrigt", price: 9367, artnr: "mg3604064" },
+  { name: "Effektregulator EGO", unit: "st", qty: 3, min: 1, brand: "Övrigt", price: 369, artnr: "50.87031.000" },
+  { name: "Spiralsladd", unit: "st", qty: 2, min: 1, brand: "Övrigt", price: 497, artnr: "3000014" },
+];
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+let currentUser = null;
+let items = {};
+let search = "";
+let activeDept = "tvattstugor";
+let activeBrand = "Alla";
+let showAddForm = false;
+let toastMsg = "";
+let toastTimeout = null;
+let loginError = "";
+let currentListener = null;
+let showLog = false;
+let logEntries = [];
+let viewMode = "compact";
+let showSettings = false;
+let showAdmin = false;
+let allowedUsers = {};
+let isAdmin = false;
+let activeView = "lager"; // "lager" or "felkoder"
+let ecSearch = "";
+let ecBrand = "Alla";
+let ecMachine = "Alla";
+
+// ====== ERROR CODE DATABASE ======
+const ERROR_CODES = [
+  // === MIELE PW 6055/6065/6080/PW 5105 ===
+  { code: "F0", name: "Inget fel", desc: "Det finns inget fel i felminnet för effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F1", name: "Kortslutning NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning kortsluten.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F2", name: "Avbrott NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning avbruten.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F10", name: "Vattentillopp kallt", desc: "Tvättmaskinen har en läcka och funktionen vattennivåkontroll (Water-Control-System=WCS) har avbrutit vattentilloppet. Vattenkranen är stängd. Silarna i vattentilloppet är smutsiga. Lågt vattentryck på uppställningsplatsen. Vattentilloppets magnetventil är defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F11", name: "Vattenavlopp", desc: "Utförande avloppspump: vattenavloppet otillräckligt. Utförande avloppsventil: vattenavloppet otillräckligt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F15", name: "Vattentilloppsfel varmvatten", desc: "Varmvattenkranen är stängd. Silarna i varmvattentilloppet är smutsiga. Lågt varmvattentryck på uppställningsplatsen. Varmvattentilloppets magnetventil är defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F16", name: "Skum, överdosering", desc: "Skumbildning genom överdosering av tvättmedel. Avluftningsslangen blockerad och därmed ökad tryckstegring under vattentilloppet. Störning i avloppet.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F19", name: "Flödesmätaren går trögt", desc: "Tilloppsfel. Inga eller för få impulser från flödesmätarens Reedkontakt (B3/4). Flödesmätare (B3/4) strömkrets kortslutning/avbrott. Programmeringsfunktionen 'Flödesmätare' är avaktiverad.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F20", name: "Uppvärmning", desc: "Börtemperaturen ej uppnådd innan tiden för termostopp har gått ut. Ingen uppvärmning.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F34", name: "Lucklåset låses inte", desc: "Låsinställningen är felaktig. Brutna fjädrar i handtagets låshake. Spänningen på lucklåset (luckan stängd) för låg. Lucklåset (A2) defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F35", name: "Luckan låses inte upp", desc: "Ingen upplåsningsimpuls till lucklåset. Tachosignal ligger på (motorn snurrar). Vattennivå registreras. Fel på analog trycksensor (Elektronik ELP) - eller NTC-fel.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F39", name: "Elektronikfel (EW)", desc: "Programvalselektroniken display (EW) defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F41", name: "Felaktigt EEPROM", desc: "Felaktigt EEPROM/felaktiga data. Fel på program/effektelektronik ELP.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F43", name: "Ingen programmerad maskinmodell", desc: "Displayelektronik (EW) och effekt- och programelektroniken (ELP) passar inte ihop.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F45", name: "Felaktigt Flash RAM-minne", desc: "Internt fel i effekt- och program/effektelektronik (ELP).", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F46", name: "Display", desc: "Internt displayfel programvalselektronik (EW). Indikatordrivenheten till LCD-modulen är defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F47", name: "Gränssnitt EW/ELP felaktigt", desc: "Gränssnitt EW/ELP felaktigt. Kontrollera kablage.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F49", name: "Gränssnitt EZL/ELP felaktigt", desc: "Gränssnitt EZL/ELP felaktigt. Kontrollera kablage.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F50", name: "Motor", desc: "Defekt motor som orsak för följdfel 'defekt frekvensomriktare'. Frekvensomriktaren (FU) defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F51", name: "Trycksensor", desc: "Analog trycksensor (ADS), arbetsområdet har förskjutits. Program/effektelektronik ELP defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F53", name: "Varvtalssensor (Tachogenerator)", desc: "Tachogeneratorn är defekt. Motorn är defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F56", name: "Ingen centrifugering", desc: "Slutcentrifugeringsvarvtal < 400 min-1, även om börvarvtalet är minst 450 min-1.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F63", name: "Vattenfördelare fel", desc: "Vattenfördelaren är defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F65", name: "Kåpa till belysning saknas", desc: "Kåpan saknas. Programmera bort belysning om det saknas lampa i bälgen.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F92", name: "Risk för bakteriebildning", desc: "Om låga temperaturer används under en längre tid kan bakterier bildas i tvättmaskinen. En mätare räknar de program som ska köras med en börtemperatur på ≤ 50°C. Mätaren återställs när ett program har körts med en börtemperatur på ≥ 60°C.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F93", name: "Fel på extra reläkort", desc: "Extra reläkort defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F96", name: "Vattentilloppsfel bruksvatten", desc: "Bruksvattenkranen är stängd. Tilloppssilarna för bruksvatten är smutsiga. Lågt vattentryck på uppställningsplatsen.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F100", name: "Kommunikation med IK6", desc: "Fel på IK 6 förbindelse. IK 6 = Miele Logic. Programmera maskinen för utförande D med knappar.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F101", name: "IK6 felaktig/Inte kompatibel", desc: "IK 6 Inkompatibel.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F102", name: "Kommunikation till bussmodulen felaktig", desc: "Kommunikationen till bussmodulen felaktig. Problem att kommunicera med extern modul (t.ex. Aptus).", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F103", name: "Bussmodulen defekt", desc: "Bussmodulen defekt. Problem att kommunicera med extern modul (t.ex. Aptus). Elektronik ELP defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F104", name: "Underspänning mellankrets", desc: "Nätspänningen är för låg, underspänning. Motorlindningens överhettningsskydd (Klixon) är defekt. Fel i den elektriska förbindelsen mellan effekt- och programelektroniken (ELP) och motorn för trumdrift (M5). Effekt- och programelektroniken (ELP) defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F130", name: "Kommunikation extra reläkort EZL 256", desc: "Felaktig effekt- och programelektronik (ELP) eller extra reläkort (EZL). Fel i den elektriska förbindelsen mellan effekt- och programelektroniken (ELP) och det extra reläkortet (EZL). Det extra reläkortet (EZL) är defekt. Effekt- och programelektroniken (ELP) defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F131", name: "Extra reläkort EZL 256 felaktigt", desc: "Extra reläkort EZL defekt.", brand: "Miele", machine: "PW 6055/6065" },
+  { code: "F138", name: "Vatten på bottenplåten", desc: "Läckage. Flottörbrytare i botten påverkad.", brand: "Miele", machine: "PW 6055/6065" },
+
+  // === ELECTROLUX COMPASS PRO (W555H, W575H, W5XXX) ===
+  { code: "10:1", name: "Tachoingång utanför värde", desc: "Tachoingången på CPU utanför tillåtet värde.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "10:11", name: "Realtidklocka ur funktion", desc: "Realtidklockan ur funktion.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "10:13", name: "Initialisering misslyckades", desc: "Initialiseringen misslyckades.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "10:15", name: "Maskinstopp aktiverad", desc: "Ingång maskinstopp aktiverad.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "10:16", name: "Nödstopp aktiverad", desc: "Ingång nödstopp aktiverad.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:1", name: "Vattennivåkvittens saknas", desc: "Vattennivåkvittens saknas inom fastställd tid.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:2", name: "Lucka stängd signal saknas", desc: "Signal från brytare S3 'luckan stängd' saknas under pågående program.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:3", name: "Lucka låst signal saknas", desc: "Signal från brytare S4a och S4b 'luckan låst' saknas vid programstart.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:4", name: "Temperaturgivare under -9°C", desc: "Temperaturgivaren visar temp. under -9°C, alt avbrott i givare eller kablage.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:5", name: "Temperaturgivare över 98°C", desc: "Temperaturgivare visar temp. över 98°C, alt kortslutning i givare eller kablage.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:6", name: "Vatten i trumma vid programslut", desc: "Vattennivåsystemet visar vatten i trumman vid programslut.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:8", name: "Långsam uppvärmning", desc: "Temperaturstegringen på vattnet är för långsam under uppvärmningen (3°C på 10 minuter).", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:9", name: "Överfull trumma", desc: "Vattennivåsystemet visar överfull trumma.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:10", name: "Vatten vid centrifugering", desc: "Vattennivåsystemet visar vatten i trumman vid centrifugering och avlopp.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:12", name: "Nivågivare ej ansluten", desc: "Vattennivågivaren ej ansluten.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:16", name: "Uppvärmningstid överskriden", desc: "Uppvärmningstiden under ett pågående program överskriden (norm. 2,5 tim).", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:17", name: "Lucka låst signal vid start", desc: "Luckan låst signal (S4a och S4b) aktiverad vid programstart.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "11:27", name: "Vattennivå hög vid start", desc: "Vattennivån över fastställt värde vid programstart.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "20:1", name: "Motoröverhettning", desc: "Överhettningsskyddet på trummotorn aktiverat under pågående program.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "20:2", name: "Ingen motorkommunikation vid start", desc: "Ingen kommunikation mellan motorstyrning och CPU-kortet vid start.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "20:3", name: "Motorkommunikation tappad", desc: "Ingen kommunikation mellan motorstyrning och CPU-kortet under pågående program.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "21:1", name: "Kylfläns överhettad", desc: "Temperaturgivaren på motorstyrningens kylfläns är överhettad.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "21:5", name: "Kortslutning motor", desc: "Kortslutning i motorn alt. kortslutning i motorstyrningens utgångstransistorer.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "21:7", name: "Låg DC-spänning", desc: "Låg DC-spänning (matning) till motorstyrning.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "21:8", name: "Hög DC-spänning", desc: "Hög DC-spänning (matning) till motorstyrning.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+  { code: "21:15", name: "Motor följer ej", desc: "Motorstyrningen får ingen retursignal från tachometern när motorn förväntas rotera.", brand: "Electrolux", machine: "Compass Pro Tvätt" },
+
+  // === ELECTROLUX COMPASS CONTROL TVÄTT (W455H, W465H, W475H) ===
+  { code: "01", name: "Vattennivåkvittens saknas", desc: "Vattennivåkvittens saknas inom fastställd tid.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "02", name: "Lucka stängd signal saknas", desc: "Signal från brytare S3 'lucka stängd' saknas under pågående tvättprogram.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "03", name: "Lucka låst signal saknas", desc: "Signal från brytare S4a och S4b 'lucka låst' saknas vid programstart eller under pågående tvättprogram.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "04", name: "Temperatur under -5°C", desc: "Temperaturavkänningen indikerar temperatur under -5°C alt. avbrott i givare eller kabel.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "05", name: "Temperatur över 98°C", desc: "Temperaturavkänningen indikerar temperatur över 98°C alt. kortsluten givare.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "06", name: "Vatten i trumma", desc: "Vattennivåsystemet indikerar vatten i trumman, då den förväntas vara tom.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "07", name: "Vattennivå för hög", desc: "Vattennivåsystemet indikerar för hög vattennivå under pågående tvättprogram.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "08", name: "Långsam uppvärmning", desc: "Temperaturstegringen på vattnet är för långsam under uppvärmningen (mindre än 3°C under 10 min).", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "09", name: "Motoröverhettning", desc: "Motorns överhettningsskydd har löst ut. Motorns arbetstemperatur är för hög.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "10", name: "Vatten efter avlopp", desc: "Vatten i trumman efter avlopp alt för långsam tömning.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "13", name: "Ingen motorkommunikation", desc: "CPU kortet kan inte kommunicera med motorstyrningen.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "14", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat eller fungerar ej.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "16", name: "Temperatur ej uppnådd", desc: "Maskinen når ej inställd temperatur inom tidsgränsen för uppvärmning.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "17", name: "Lucka låst vid start", desc: "Lucka låst signal (brytare S4) är aktiverad vid programstart.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "20", name: "Interlock saknas", desc: "Interlock saknas i motorstyrning eller I/O kort.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "21", name: "I/O kommunikation saknas", desc: "Saknar I/O kommunikation från något/några I/O kort. Alt. ej adresserade I/O kort.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "27", name: "Vattennivå hög vid start", desc: "Vattennivån över fastställt värde vid start. Kontrollera avloppsventil och nivåsystem evt överdosering av tvättmedel.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "31", name: "Kylfläns överhettad", desc: "Kylfläns på motorstyrningen är överhettad.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "32", name: "Motor överhettad", desc: "Motor överhettad.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "35", name: "Kortslutning motor", desc: "Kortslutning i motorn alternativt kortslutning i motorstyrningens utgångstransistorer.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "37", name: "Låg DC-spänning", desc: "Låg DC spänning (matning) till motorstyrning.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "38", name: "Hög DC-spänning", desc: "Hög DC spänning (matning) till motorstyrning.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "45", name: "Motor följer ej", desc: "Motorstyrningen indikerar ingen retursignal från tachogenerator när motor förväntas rotera.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "53", name: "DLCU nivåvakt fel", desc: "DLCU (lucklåsprocessorn) mekaniska nivåvakt har indikerat en felaktig vattennivå.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+  { code: "60", name: "Avbrott lucklåsspole", desc: "Avbrott lucklåsspole alt. kabelbrott i lucklåskablage.", brand: "Electrolux", machine: "Compass Control Tvätt" },
+
+  // === ELECTROLUX COMPASS PRO TORK (TD6-6, T5130, T5190) ===
+  { code: "10:11", name: "Realtidklocka ur funktion", desc: "Realtidklockan ur funktion.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "10:15", name: "Maskinstopp aktiverad", desc: "Ingång maskinstopp aktiverad.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "10:16", name: "Nödstopp aktiverad", desc: "Ingång nödstopp aktiverad.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:1", name: "Överhettning inluft", desc: "Överhettningsskyddet för inluft har löst ut.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:2", name: "Överhettning frånluft", desc: "Överhettningsskyddet för frånluft har löst ut.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:3", name: "Inluftsgivare över 220°C", desc: "Temperaturgivaren för inluft visar temperatur över 220°C, alt. avbrott i kablaget.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:8", name: "Kondensvattenbehållare full", desc: "Kondensvattenbehållaren full. Flottören lämnar ingen signal trots att pumpen gått i 15 sekunder.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:11", name: "RMC-tid överskriden", desc: "Maxtiden för RMC-programmet överskridit (normalt 90 min).", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:15", name: "Vacuumbrytare inget undertryck", desc: "Vaccumbrytaren indikerar inget undertryck inom inställd tid (10-15 sek).", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "12:17", name: "Luftflöde blockerat", desc: "Luftflöde blockerat, underhåll behövs.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "20:1", name: "Trummotor överhettad", desc: "Överhettningsskyddet på trummotorn aktiverat under pågående program.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "23:5", name: "Motor kortsluten", desc: "Motor kortsluten.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "23:7", name: "Låg DC-spänning", desc: "Låg DC spänning.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "23:15", name: "Motor följer ej", desc: "Motor följer ej.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "30:1", name: "Fläktmotor överhettad", desc: "Överhettningsskyddet på fläktmotorn aktiverat under pågående program.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "33:5", name: "Fläktmotor kortsluten", desc: "Fläktmotor kortsluten.", brand: "Electrolux", machine: "Compass Pro Tork" },
+  { code: "33:15", name: "Fläktmotor följer ej", desc: "Fläktmotor följer ej.", brand: "Electrolux", machine: "Compass Pro Tork" },
+
+  // === ELECTROLUX COMPASS CONTROL TORK (T4130, T4190) ===
+  { code: "E03", name: "Inluftsgivare kortsluten", desc: "Inluftsgivare är kortsluten alt. kortslutning i kablage.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E04", name: "Utluftsgivare kortsluten", desc: "Utluftsgivare är kortsluten alt kortslutning i kablage.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E05", name: "Fläktmotor överhettad", desc: "Fläktmotors överhettningsskydd har löst ut.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E06", name: "Drivmotor överhettad", desc: "Drivmotorns överhettningsskydd har löst ut.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E08", name: "Överhettningsskydd element", desc: "Något av överhettningsskydden för elementen har löst ut.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E09", name: "Filterlucka öppen", desc: "Filterluckan öppen vid programstart.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E11", name: "RMC-tid överskriden", desc: "Max tillåten RMC-tid överskriden (torktid med restfuktighetsmätning).", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E12", name: "Autostopp-tid överskriden", desc: "Max tillåten Autostopp-tid överskriden (temperaturstyrd torkning).", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E15", name: "Vacuumbrytare inget undertryck", desc: "Vaccumbrytare/tryckgivare indikerar inget undertryck inom 12 sek från maskinstart.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E17", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E18", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "Compass Control Tork" },
+  { code: "E24", name: "Kondensatbehållare full", desc: "Kondensatbehållaren är full. Kondensatpumpen tömmer ej.", brand: "Electrolux", machine: "Compass Control Tork" },
+];
+
+// ====== VIEW MODE ======
+function applyViewMode(mode) {
+  viewMode = mode;
+  const vm = VIEW_MODES.find(v => v.id === mode) || VIEW_MODES[0];
+  document.body.className = "";
+  if (vm.sizeClass) document.body.classList.add(vm.sizeClass);
+  if (vm.themeClass) document.body.classList.add(vm.themeClass);
+  // Update theme-color meta
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = "#0a0a0a";
+}
+
+function setViewMode(mode) {
+  applyViewMode(mode);
+  showSettings = false;
+  if (currentUser) {
+    db.ref("users/" + currentUser.uid + "/viewMode").set(mode);
+  }
+  render();
+}
+
+function loadViewMode() {
+  if (!currentUser) return;
+  db.ref("users/" + currentUser.uid + "/viewMode").once("value").then(snap => {
+    const mode = snap.val();
+    if (mode) {
+      applyViewMode(mode);
+      render();
+    }
+  });
+}
+
+const ADMIN_EMAIL = "jesper.franzen@bravida.se";
+
+// ====== AUTH ======
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    // Check allowlist
+    db.ref("allowedUsers").once("value").then(allSnap => {
+      const allUsers = allSnap.val();
+      if (!allUsers) {
+        // First user ever — auto-approve as admin
+        const role = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+        db.ref("allowedUsers/" + user.uid).set({ email: user.email, name: user.displayName || "", role: role, added: Date.now() });
+        currentUser = user;
+        loginError = "";
+        loadViewMode();
+        initDB();
+        return;
+      }
+      // Check by UID
+      if (allUsers[user.uid]) {
+        currentUser = user;
+        loginError = "";
+        loadViewMode();
+        initDB();
+        return;
+      }
+      // Check by email (pending users)
+      const pendingKey = Object.keys(allUsers).find(k => allUsers[k].email.toLowerCase() === user.email.toLowerCase() && allUsers[k].pending);
+      if (pendingKey) {
+        // Activate: remove pending, add with real UID
+        db.ref("allowedUsers/" + pendingKey).remove();
+        db.ref("allowedUsers/" + user.uid).set({ email: user.email, name: user.displayName || "", role: "user", added: Date.now() });
+        currentUser = user;
+        loginError = "";
+        loadViewMode();
+        initDB();
+        return;
+      }
+      // Not allowed
+      loginError = "⛔ Du har inte behörighet. Be admin lägga till din mejl.";
+      auth.signOut();
+    });
+  } else {
+    currentUser = null;
+    items = {};
+    applyViewMode("compact");
+    renderLogin();
+  }
+});
+
+function doLogin() {
+  loginError = "";
+  auth.signInWithPopup(googleProvider).catch((err) => {
+    if (err.code === "auth/popup-blocked") {
+      auth.signInWithRedirect(googleProvider);
+    } else if (err.code !== "auth/popup-closed-by-user") {
+      loginError = "Inloggning misslyckades: " + err.message;
+      renderLogin();
+    }
+  });
+}
+
+function doLogout() { auth.signOut(); }
+
+function renderLogin() {
+  document.getElementById("app").innerHTML = `
+    <div class="login-screen">
+      <div class="login-title">📦 Lager</div>
+      <div class="login-sub">Logga in för att komma åt lagret</div>
+      <button class="login-btn" onclick="doLogin()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Logga in med Google
+      </button>
+      ${loginError ? `<div class="login-error">${loginError}</div>` : ""}
+    </div>`;
+}
+
+// ====== TELEGRAM ======
+async function sendTelegram(item) {
+  const deptName = DEPARTMENTS.find(d => d.id === activeDept)?.name || activeDept;
+  const text = `⚠ Lågt saldo!\n${item.name}: ${item.qty} ${item.unit} kvar (min: ${item.min})\nAvdelning: ${deptName}`;
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
+    });
+  } catch (e) { console.error("Telegram-notis misslyckades:", e); }
+}
+
+// ====== TOAST ======
+function showToast(msg) {
+  toastMsg = msg;
+  render();
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { toastMsg = ""; render(); }, 2500);
+}
+
+// ====== DB ======
+function initDB() {
+  listenToDept(activeDept);
+  autoBackup();
+  db.ref("log").orderByChild("timestamp").limitToLast(50).on("value", (snap) => {
+    const data = snap.val();
+    logEntries = data ? Object.values(data).sort((a, b) => b.timestamp - a.timestamp) : [];
+    if (showLog) render();
+  });
+  // Listen to allowed users (admin)
+  db.ref("allowedUsers").on("value", (snap) => {
+    allowedUsers = snap.val() || {};
+    // Check if current user is admin
+    if (currentUser && allowedUsers[currentUser.uid]) {
+      isAdmin = allowedUsers[currentUser.uid].role === "admin";
+    }
+    if (showAdmin) render();
+  });
+}
+
+// ====== ADMIN ======
+async function addAllowedUser() {
+  const emailInput = document.getElementById("admin_email");
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email || !email.includes("@")) { showToast("Ange en giltig mejladress"); return; }
+  // Check if already exists
+  const existing = Object.values(allowedUsers).find(u => u.email.toLowerCase() === email);
+  if (existing) { showToast("Användaren finns redan"); return; }
+  // We need to create a placeholder entry with email as key (will be replaced when user logs in)
+  const placeholderKey = "pending_" + email.replace(/[.#$/\[\]@]/g, "_");
+  await db.ref("allowedUsers/" + placeholderKey).set({ email: email, name: "", role: "user", added: Date.now(), pending: true });
+  emailInput.value = "";
+  showToast(`${email} tillagd!`);
+}
+
+async function removeAllowedUser(uid) {
+  const user = allowedUsers[uid];
+  if (!user) return;
+  if (user.role === "admin") { showToast("Kan inte ta bort admin"); return; }
+  if (confirm(`Ta bort ${user.email}?`)) {
+    await db.ref("allowedUsers/" + uid).remove();
+    showToast(`${user.email} borttagen`);
+  }
+}
+
+function listenToDept(dept) {
+  if (currentListener) currentListener.off();
+  const ref = db.ref("departments/" + dept + "/items");
+  currentListener = ref;
+  ref.on("value", (snap) => {
+    const data = snap.val();
+    if (data) {
+      items = data;
+    } else {
+      // Load defaults per department
+      const defaults = dept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : dept === "vitvaror" ? DEFAULT_VITVAROR : dept === "storkok" ? DEFAULT_STORKOK : [];
+      if (defaults.length > 0) {
+        const init = {};
+        defaults.forEach((item) => {
+          const key = (item.artnr || item.name).replace(/[.#$/\[\]]/g, "_");
+          init[key] = { name: item.name, unit: item.unit, qty: item.qty, min: item.min, brand: item.brand, price: item.price };
+        });
+        ref.set(init);
+        items = init;
+      } else {
+        items = {};
+      }
+    }
+    render();
+  });
+}
+
+function switchDept(dept) {
+  activeDept = dept; activeBrand = "Alla"; search = ""; showAddForm = false;
+  listenToDept(dept);
+}
+
+function getItemsRef() { return db.ref("departments/" + activeDept + "/items"); }
+
+// ====== BACKUP ======
+const MAX_BACKUPS = 7;
+
+async function autoBackup() {
+  try {
+    const snap = await db.ref("departments").once("value");
+    const data = snap.val();
+    if (!data) return;
+    const today = new Date().toISOString().slice(0, 10);
+    await db.ref("backups/" + today).set({ data, timestamp: Date.now(), user: currentUser.email });
+    const backupsSnap = await db.ref("backups").once("value");
+    const backups = backupsSnap.val();
+    if (backups) {
+      const keys = Object.keys(backups).sort();
+      while (keys.length > MAX_BACKUPS) {
+        await db.ref("backups/" + keys.shift()).remove();
+      }
+    }
+  } catch (e) { console.error("Auto-backup misslyckades:", e); }
+}
+
+function exportData() {
+  db.ref("departments").once("value").then(snap => {
+    const data = snap.val();
+    if (!data) { showToast("Inget att exportera"); return; }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "lager-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    showToast("Backup nedladdad!");
+  });
+}
+
+async function importData() {
+  const input = document.createElement("input");
+  input.type = "file"; input.accept = ".json";
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (confirm("Vill du återställa lagret från backup? All nuvarande data ersätts.")) {
+        await db.ref("departments").set(data);
+        showToast("Lager återställt från backup!");
+      }
+    } catch (err) { showToast("Kunde inte läsa filen"); }
+  };
+  input.click();
+}
+
+// ====== LOG ======
+function writeLog(entry) {
+  db.ref("log").push().set({
+    ...entry,
+    who: currentUser ? (currentUser.displayName || currentUser.email) : "Okänd",
+    timestamp: Date.now(),
+    date: new Date().toISOString(),
+  });
+}
+
+// ====== ITEMS ======
+function updateItem(key, delta) {
+  const item = items[key];
+  if (!item) return;
+  const oldQty = item.qty;
+  const newQty = Math.max(0, oldQty + delta);
+  getItemsRef().child(key).update({ qty: newQty });
+  if (item.min > 0 && oldQty > item.min && newQty <= item.min) {
+    sendTelegram({ ...item, qty: newQty });
+  }
+  writeLog({ action: delta > 0 ? "fill" : "take", item: item.name, brand: item.brand || "", delta, oldQty, newQty, dept: activeDept });
+  showToast(`${item.name}: ${delta > 0 ? "+" + delta : delta} → ${newQty} ${item.unit}`);
+}
+
+function addItem(name, unit, qty, min, brand, price) {
+  const key = name.replace(/[.#$/\[\]]/g, "_");
+  const q = parseInt(qty) || 0;
+  getItemsRef().child(key).set({ name, unit, qty: q, min: parseInt(min) || 0, brand: brand || "Övrigt", price: parseFloat(price) || 0 });
+  writeLog({ action: "add", item: name, brand: brand || "Övrigt", delta: q, oldQty: 0, newQty: q, dept: activeDept });
+  showToast(`${name} tillagd`);
+}
+
+// ====== RENDER ======
+function render() {
+  if (!currentUser) { renderLogin(); return; }
+  const app = document.getElementById("app");
+
+  const allBrands = new Set();
+  Object.values(items).forEach(i => { if (i.brand) allBrands.add(i.brand); });
+  const brands = ["Alla", ...Array.from(allBrands).sort()];
+
+  const filteredKeys = Object.keys(items).filter(k => {
+    const item = items[k];
+    if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (activeBrand !== "Alla" && item.brand !== activeBrand) return false;
+    return true;
+  });
+
+  const lowItems = Object.keys(items).filter(k => items[k].min > 0 && items[k].qty <= items[k].min);
+  const totalItems = Object.keys(items).length;
+
+  let totalValue = 0, totalPcs = 0;
+  Object.values(items).forEach(i => {
+    totalPcs += (i.qty || 0);
+    totalValue += (i.qty || 0) * (i.price || 0);
+  });
+
+  let html = `
+    <div class="user-bar">
+      <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
+      <div class="user-actions">
+        ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
+        <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
+        <button class="small-btn" onclick="doLogout()">Logga ut</button>
+      </div>
+    </div>
+    <div class="header">
+      <h1>📦 Lager</h1>
+      <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 ? ` • ${lowItems.length} behöver beställas` : ""}</div>
+      <div class="dept-tabs">
+        <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
+        <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
+      </div>
+      ${activeView === "lager" ? `<div class="dept-tabs">
+        ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
+      </div>` : ""}
+    </div>`;
+
+  if (activeView === "lager") {
+
+  if (allBrands.size > 0) {
+    html += `<div class="brand-tabs">${brands.map(b => `<button class="brand-tab ${activeBrand === b ? "active" : ""}" onclick="activeBrand='${b}';render()">${b}</button>`).join("")}</div>`;
+  }
+
+  html += `
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="Sök artikel..." value="${search}" oninput="search=this.value;render()">
+    </div>
+    <div class="stats-bar">
+      <div class="stat-box"><div class="stat-value">${totalPcs}</div><div class="stat-label">Totalt antal</div></div>
+      <div class="stat-box"><div class="stat-value">${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}</div><div class="stat-label">Lagervärde</div></div>
+      <div class="stat-box"><div class="stat-value">${lowItems.length}</div><div class="stat-label">Lågt saldo</div></div>
+    </div>
+    <div class="backup-bar">
+      <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
+      <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
+    </div>`;
+
+  // Log
+  const deptLog = logEntries.filter(e => e.dept === activeDept);
+  html += `<button class="log-toggle" onclick="showLog=!showLog;render()">📋 Historik (${deptLog.length} händelser) ${showLog ? "▲" : "▼"}</button>`;
+  if (showLog && deptLog.length > 0) {
+    html += `<div class="log-list">`;
+    deptLog.forEach(e => {
+      const d = new Date(e.timestamp);
+      const time = d.toLocaleDateString("sv-SE") + " " + d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+      let actionClass = "log-action-take", actionText = "";
+      if (e.action === "take") { actionClass = "log-action-take"; actionText = `Tog ${Math.abs(e.delta)} st`; }
+      else if (e.action === "fill") { actionClass = "log-action-fill"; actionText = `Fyllde på ${e.delta} st`; }
+      else if (e.action === "add") { actionClass = "log-action-add"; actionText = `La till artikel`; }
+      html += `<div class="log-entry"><span class="${actionClass}">${actionText}</span> — <strong>${e.item}</strong> (${e.oldQty} → ${e.newQty})<br><span class="log-time">${time}</span> · <span class="log-who">${e.who}</span></div>`;
+    });
+    html += `</div>`;
+  } else if (showLog) {
+    html += `<div class="log-list"><div class="log-entry" style="color:var(--text-dim)">Ingen historik ännu</div></div>`;
+  }
+
+  // Alert
+  if (lowItems.length > 0 && activeBrand === "Alla" && !search) {
+    html += `<div class="alert-banner"><div class="alert-title">⚠ Behöver beställas</div>`;
+    lowItems.forEach(k => {
+      const i = items[k];
+      html += `<div class="alert-item">${i.name}${i.brand && i.brand !== "Övrigt" ? " (" + i.brand + ")" : ""} — ${i.qty} ${i.unit} kvar (min: ${i.min})</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Items
+  html += `<div class="items-list">`;
+  filteredKeys.forEach(key => {
+    const item = items[key];
+    const isLow = item.min > 0 && item.qty <= item.min;
+    const priceTotal = (item.qty || 0) * (item.price || 0);
+    html += `
+      <div class="item-card ${isLow ? "low" : ""}">
+        <div class="item-top">
+          <div>
+            <div class="item-name">${item.name}</div>
+            ${item.brand && item.brand !== "Övrigt" ? `<div class="item-brand">${item.brand}</div>` : ""}
+            ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
+          </div>
+          <div style="text-align:right">
+            <div class="item-qty ${isLow ? "low" : "ok"}">${item.qty}</div>
+            <div class="item-meta">${item.unit}${item.min > 0 ? ` (min: ${item.min})` : ""}</div>
+            ${item.price > 0 ? `<div class="item-meta">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
+          </div>
+        </div>
+        <div class="item-controls">
+          <input class="item-input" type="number" placeholder="Antal" id="inp_${key}" inputmode="numeric">
+          <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
+          <button class="btn btn-green" onclick="doFill('${key}')">+ Fyll</button>
+        </div>
+      </div>`;
+  });
+
+  if (showAddForm) {
+    html += `
+      <div class="add-form">
+        <input class="add-input" id="add_name" placeholder="Artikelnamn">
+        <div class="add-row">
+          <input class="add-input" id="add_brand" placeholder="Märke (t.ex. Miele)" style="flex:2">
+          <select class="add-select" id="add_unit" style="width:70px">
+            <option value="st">st</option><option value="rl">rl</option><option value="kg">kg</option>
+            <option value="l">l</option><option value="m">m</option><option value="förp">förp</option>
+          </select>
+        </div>
+        <div class="add-row">
+          <input class="add-input" id="add_qty" type="number" placeholder="Antal" inputmode="numeric">
+          <input class="add-input" id="add_min" type="number" placeholder="Min" inputmode="numeric" style="flex:1">
+          <input class="add-input" id="add_price" type="number" placeholder="Pris/st" inputmode="decimal" style="flex:1">
+        </div>
+        <div class="add-row">
+          <button class="btn btn-accent" style="flex:1" onclick="doAddItem()">Spara</button>
+          <button class="btn btn-dim" style="flex:1" onclick="showAddForm=false;render()">Avbryt</button>
+        </div>
+      </div>`;
+  } else {
+    html += `<button class="add-btn" onclick="showAddForm=true;render()">+ Lägg till artikel</button>`;
+  }
+
+  html += `</div>`;
+
+  } // end lager view
+
+  // ====== FELKODER VIEW ======
+  if (activeView === "felkoder") {
+    const ecBrands = ["Alla", ...new Set(ERROR_CODES.map(e => e.brand))];
+    const ecMachines = ["Alla", ...new Set(ERROR_CODES.filter(e => ecBrand === "Alla" || e.brand === ecBrand).map(e => e.machine))];
+    
+    const filtered = ERROR_CODES.filter(e => {
+      if (ecBrand !== "Alla" && e.brand !== ecBrand) return false;
+      if (ecMachine !== "Alla" && e.machine !== ecMachine) return false;
+      if (ecSearch) {
+        const q = ecSearch.toLowerCase();
+        return e.code.toLowerCase().includes(q) || e.name.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q);
+      }
+      return true;
+    });
+
+    html += `
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Sök felkod (t.ex. F10, motor, lucka)..." value="${ecSearch}" oninput="ecSearch=this.value;render()">
+      </div>
+      <div class="ec-filters">
+        ${ecBrands.map(b => `<button class="ec-filter ${ecBrand === b ? "active" : ""}" onclick="ecBrand='${b}';ecMachine='Alla';render()">${b}</button>`).join("")}
+      </div>
+      <div class="ec-filters">
+        ${ecMachines.map(m => `<button class="ec-filter ${ecMachine === m ? "active" : ""}" onclick="ecMachine='${m}';render()">${m}</button>`).join("")}
+      </div>
+      <div class="ec-count">${filtered.length} felkoder</div>
+      <div class="ec-section">`;
+
+    filtered.forEach(e => {
+      html += `
+        <div class="ec-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="ec-code">${e.code}</div>
+            <div class="ec-machine">${e.brand} — ${e.machine}</div>
+          </div>
+          <div class="ec-name">${e.name}</div>
+          <div class="ec-desc">${e.desc}</div>
+        </div>`;
+    });
+
+    html += `</div>`;
+  } // end felkoder view
+
+  if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
+
+  // Admin modal
+  if (showAdmin && isAdmin) {
+    const users = Object.entries(allowedUsers);
+    html += `<div class="modal-overlay" onclick="if(event.target===this){showAdmin=false;render()}">
+      <div class="modal">
+        <h2>👥 Godkända användare</h2>
+        <div class="admin-list">`;
+    users.forEach(([uid, u]) => {
+      html += `<div class="admin-user">
+        <div>
+          <div class="admin-email">${u.email}</div>
+          <div class="admin-role">${u.role === "admin" ? "Admin" : "Användare"}${u.pending ? " (väntar på inloggning)" : ""}</div>
+        </div>
+        ${u.role !== "admin" ? `<button class="admin-remove" onclick="removeAllowedUser('${uid}')">Ta bort</button>` : ""}
+      </div>`;
+    });
+    html += `</div>
+        <div class="admin-add-row">
+          <input class="admin-input" id="admin_email" placeholder="Mejladress att lägga till" type="email">
+          <button class="btn btn-accent" onclick="addAllowedUser()">Lägg till</button>
+        </div>
+        <button class="modal-close" onclick="showAdmin=false;render()">Stäng</button>
+      </div>
+    </div>`;
+  }
+
+  // Settings modal
+  if (showSettings) {
+    html += `<div class="modal-overlay" onclick="if(event.target===this){showSettings=false;render()}">
+      <div class="modal">
+        <h2>⚙️ Välj vy</h2>
+        ${VIEW_MODES.map(vm => `
+          <div class="modal-option ${viewMode === vm.id ? "active" : ""}" onclick="setViewMode('${vm.id}')">
+            <div class="modal-option-icon">${vm.icon}</div>
+            <div class="modal-option-text">
+              <div class="modal-option-name">${vm.name}</div>
+              <div class="modal-option-desc">${vm.desc}</div>
+            </div>
+          </div>
+        `).join("")}
+        <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
+      </div>
+    </div>`;
+  }
+
+  app.innerHTML = html;
+}
+
+// ====== ACTIONS ======
+function doTake(key) {
+  const inp = document.getElementById("inp_" + key);
+  const num = parseInt(inp.value);
+  if (!num || num <= 0) return;
+  updateItem(key, -num);
+  inp.value = "";
+}
+
+function doFill(key) {
+  const inp = document.getElementById("inp_" + key);
+  const num = parseInt(inp.value);
+  if (!num || num <= 0) return;
+  updateItem(key, num);
+  inp.value = "";
+}
+
+function doAddItem() {
+  const name = document.getElementById("add_name").value.trim();
+  if (!name) return;
+  addItem(name, document.getElementById("add_unit").value, document.getElementById("add_qty").value, document.getElementById("add_min").value, document.getElementById("add_brand").value.trim(), document.getElementById("add_price").value);
+  showAddForm = false;
+  render();
+}
+</script>
+</body>
+</html>
