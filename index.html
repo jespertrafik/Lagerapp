@@ -954,7 +954,6 @@ function render() {
           <div>
             <div class="item-name">${item.name}</div>
             <div class="item-artnr">Artnr: ${item.artnr || key}</div>
-            ${isAdmin && item.brand && item.brand !== "Övrigt" ? `<div class="item-brand">${item.brand}</div>` : ""}
             ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
           </div>
           <div style="text-align:right">
