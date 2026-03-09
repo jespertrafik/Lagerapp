@@ -980,7 +980,7 @@ function render() {
         <div class="item-controls">
           <input class="item-input" type="number" placeholder="Antal" id="inp_${key}" inputmode="numeric">
           <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
-          <button class="btn btn-green" onclick="doFill('${key}')">+ Fyll</button>
+          <button class="btn btn-green" onclick="doFill('${key}')">+ Lägg till</button>
           ${isAdmin ? `<button class="btn btn-dim" style="padding:var(--pad-btn);font-size:12px" onclick="editingItem=editingItem==='${key}'?null:'${key}';render()">✏️</button>` : ""}
         </div>
         ${isAdmin && editingItem === key ? `
