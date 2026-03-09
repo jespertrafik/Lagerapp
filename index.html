@@ -1269,19 +1269,27 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-let preloadDone = false;
-async function preloadVoiceClips() {
-  if (preloadDone) return;
-  preloadDone = true;
-  const ctx = getAudioCtx();
-  await Promise.all(ALL_CLIPS.map(async key => {
-    try {
-      const resp = await fetch(`${VOICE_BASE_URL}${key}.mp3`);
-      const buf = await resp.arrayBuffer();
-      audioBufferCache[key] = await ctx.decodeAudioData(buf);
-    } catch(e) { /* ignorera enskilda fel */ }
-  }));
+let preloadPromise = null;
+function preloadVoiceClips() {
+  if (preloadPromise) return preloadPromise;
+  preloadPromise = (async () => {
+    const ctx = getAudioCtx();
+    await Promise.all(ALL_CLIPS.map(async key => {
+      try {
+        const resp = await fetch(`${VOICE_BASE_URL}${key}.mp3`);
+        const buf = await resp.arrayBuffer();
+        audioBufferCache[key] = await ctx.decodeAudioData(buf);
+      } catch(e) { /* ignorera enskilda fel */ }
+    }));
+  })();
+  return preloadPromise;
 }
+
+// Preload voice clips on first user interaction (AudioContext requires gesture)
+document.addEventListener('click', function _preload() {
+  document.removeEventListener('click', _preload);
+  preloadVoiceClips();
+}, { once: true });
 
 async function playClip(key) {
   return new Promise((resolve) => {
@@ -1290,7 +1298,7 @@ async function playClip(key) {
     if (!buf) { resolve(); return; }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = 1.5;
+    src.playbackRate.value = 1.25;
     src.connect(ctx.destination);
     src.onended = resolve;
     src.start(0);
@@ -1322,6 +1330,7 @@ const NAME_TO_CLIP = {
 };
 
 async function speakClips(itemName, num, remaining) {
+  if (preloadPromise) await preloadPromise;
   const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
   const gender = nameClip ? CLIP_GENDER[nameClip] : null;
   // "tog" only for num=1 needs en/ett, plural just "tog"
