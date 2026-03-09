@@ -1058,7 +1058,7 @@ function render() {
   } // end felkoder view
 
   // Scan button
-  html += `<button class="scan-btn-fab" onclick="openScan()" title="Skanna text">📷</button>`;
+  html += `<button class="scan-btn-fab" onclick="openScan()" title="Lägg till artikel">➕</button>`;
 
   // Mic button
   html += `<button class="mic-btn ${isListening ? 'listening' : ''}" onclick="startVoice()" title="Röststyrning">${isListening ? '⏹️' : '🎤'}</button>`;
@@ -1579,17 +1579,13 @@ function startVoice() {
 }
 // Preload sker vid första mic/scan-knapptryck
 </script>
-<!-- ===== SCAN MODAL ===== -->
+<!-- ===== ADD ITEM MODAL ===== -->
 <div class="scan-overlay hidden" id="scanOverlay">
   <div class="scan-header">
     <button class="scan-close-btn" onclick="closeScan()">✕</button>
-    <h3>📷 Skanna & lägg till</h3>
+    <h3>Lägg till artikel</h3>
   </div>
-  <div id="scanBody" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
-    <input type="file" accept="image/*" capture="environment" id="scanFileInput" style="display:none" onchange="handleScanFile(this)">
-    <button onclick="document.getElementById('scanFileInput').click()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;width:100%">📷 Ta foto och skanna</button>
-    <div id="scanStatus" style="color:var(--text-dim);font-size:13px;text-align:center;min-height:20px"></div>
-    <canvas id="scanCanvas" style="display:none"></canvas>
+  <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
     <label style="color:var(--text-dim);font-size:13px;font-weight:600">Artikelnamn</label>
     <input id="scanF_name" type="text" placeholder="T.ex. Lucklås" style="padding:12px;border-radius:8px;border:1px solid var(--card-border);background:var(--card);color:var(--text);font-size:16px">
     <label style="color:var(--text-dim);font-size:13px;font-weight:600">Artikelnummer</label>
@@ -1609,52 +1605,7 @@ function startVoice() {
 </div>
 
 <script>
-// ===== SCAN & ADD ITEM =====
-async function handleScanFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const status = document.getElementById('scanStatus');
-  status.textContent = '⏳ Analyserar foto...';
-
-  try {
-    const imgUrl = URL.createObjectURL(file);
-    const img = await new Promise((res, rej) => {
-      const i = new Image();
-      i.onload = () => res(i);
-      i.onerror = () => rej(new Error('Kunde inte ladda bilden'));
-      i.src = imgUrl;
-    });
-    const canvas = document.getElementById('scanCanvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    canvas.getContext('2d').drawImage(img, 0, 0);
-    URL.revokeObjectURL(imgUrl);
-
-    let foundArtnr = '';
-
-    // Try BarcodeDetector (barcode only — text OCR is unreliable)
-    if ('BarcodeDetector' in window) {
-      try {
-        const bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a', 'upc_e'] });
-        const barcodes = await bd.detect(canvas);
-        if (barcodes.length > 0) {
-          foundArtnr = barcodes[0].rawValue;
-        }
-      } catch(e) {}
-    }
-
-    if (foundArtnr) {
-      document.getElementById('scanF_artnr').value = foundArtnr;
-      status.textContent = 'Streckkod: ' + foundArtnr;
-    } else {
-      status.textContent = 'Ingen streckkod hittades — fyll i manuellt';
-    }
-  } catch(e) {
-    status.textContent = '❌ Fel: ' + e.message;
-  }
-  input.value = '';
-}
-
+// ===== ADD ITEM =====
 function scanAddItem() {
   const name = document.getElementById('scanF_name').value.trim();
   const artnr = document.getElementById('scanF_artnr').value.trim();
@@ -1673,7 +1624,6 @@ function openScan() {
   document.getElementById('scanF_artnr').value = '';
   document.getElementById('scanF_qty').value = 1;
   document.getElementById('scanF_price').value = 0;
-  document.getElementById('scanStatus').textContent = '';
   document.getElementById('scanOverlay').classList.remove('hidden');
 }
 
