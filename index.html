@@ -1052,7 +1052,7 @@ function render() {
     } else {
       html += `<div class="ec-section">`;
       filtered.forEach((e, i) => {
-        html += `<div class="ec-card-wrap" data-code="${e.code.toLowerCase()}" data-ecname="${e.name.toLowerCase()}" data-desc="${e.desc.toLowerCase()}">
+        html += `<div class="ec-card-wrap" data-code="${e.code.toLowerCase()}" data-ecname="${e.name.toLowerCase()}" data-desc="${e.desc.toLowerCase()}" data-machine="${e.machine.toLowerCase()}">
           <div class="ec-card" onclick="openEC(${i})">
             <div style="display:flex;align-items:center;gap:16px">
               <div class="ec-code">${e.code}</div>
@@ -1158,7 +1158,8 @@ function filterEC() {
     const code = card.dataset.code || "";
     const name = card.dataset.ecname || "";
     const desc = card.dataset.desc || "";
-    if (!q || code.includes(q) || name.includes(q) || desc.includes(q)) {
+    const machine = card.dataset.machine || "";
+    if (!q || code.includes(q) || name.includes(q) || desc.includes(q) || machine.includes(q)) {
       card.style.display = "";
     } else {
       card.style.display = "none";
@@ -1323,11 +1324,11 @@ const ARTICLE_KEYWORDS = {
   "stotdampare":         ["stötdämpare", "stotdampare", "dämpare", "dampare", "stötdamp", "fjäder"],
   "flaktmotor_torkskap": ["fläktmotor", "flaktmotor", "torkskåp", "torkskap", "fläkt motor", "torkskåpsfläkt"],
   "mangelduk":           ["mangelduk", "mangle", "duk", "rullmangel", "mangel"],
-  "filter_t4190":        ["4190", "t4190", "filter 4190", "fyrtioett nittio", "41 90"],
-  "filter_t5190":        ["5190", "t5190", "filter 5190", "femtioett nittio", "51 90"],
-  "filter_t4121":        ["4121", "t4121", "filter 4121", "fyrtioett tjugoen", "41 21"],
-  "filter_t5121":        ["5121", "t5121", "filter 5121", "femtioett tjugoen", "51 21"],
-  "filter_le_t5190":     ["le filter", "l e", "le femtioett", "le 5190", "filter le"],
+  "filter_t4190":        ["filter 4190", "filter t4190", "4190", "t4190", "fyrtioett nittio", "41 90"],
+  "filter_t5190":        ["filter 5190", "filter t5190", "5190", "t5190", "femtioett nittio", "51 90"],
+  "filter_t4121":        ["filter 4121", "filter t4121", "4121", "t4121", "fyrtioett tjugoen", "41 21"],
+  "filter_t5121":        ["filter 5121", "filter t5121", "5121", "t5121", "femtioett tjugoen", "51 21"],
+  "filter_le_t5190":     ["le filter", "le 5190", "filter le 5190", "filter le", "l e 5190", "le femtioett"],
   "avloppsventil":       ["avloppsventil", "avlopp", "ventil", "avloppsslang", "dräneringsventil"],
   "stodrullar":          ["stödrullar", "stodrullar", "rullar", "stöd", "stödrulle", "trumrullar"],
 };
