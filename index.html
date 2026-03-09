@@ -1491,6 +1491,7 @@ function executeVoiceCommand(cmd) {
 function startVoice() {
   getAudioCtx(); // Skapa AudioContext synkront i user gesture
   preloadVoiceClips(); // starta preload vid första user gesture
+  if (!SpeechRecognition) {
     showToast("Röststyrning stöds inte i denna webbläsare");
     return;
   }
