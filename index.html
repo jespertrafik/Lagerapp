@@ -109,10 +109,7 @@
     .search-input:focus { border-color: var(--accent); }
     .search-icon { position: absolute; left: 28px; top: 30px; font-size: 15px; pointer-events: none; opacity: 0.4; }
 
-    .stats-bar { display: flex; gap: 8px; padding: 8px 16px 0; }
-    .stat-box { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px 8px; text-align: center; }
-    .stat-value { font-size: 28px; font-weight: 800; color: var(--accent); }
-    .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+    .stats-bar { padding: 8px 16px 0; font-size: 12px; color: var(--text-dim); }
 
     .backup-bar { display: flex; gap: 8px; padding: 0 16px; margin-top: 8px; }
     .backup-btn { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: var(--text-dim); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; transition: all 0.2s; }
@@ -926,11 +923,7 @@ function render() {
       <span class="search-icon">🔍</span>
       <input class="search-input" type="search" placeholder="Sök artikel..." id="lager-search" oninput="search=this.value;filterItems()" autocomplete="off">
     </div>
-    <div class="stats-bar">
-      <div class="stat-box"><div class="stat-value">${totalPcs}</div><div class="stat-label">Totalt antal</div></div>
-      <div class="stat-box"><div class="stat-value">${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}</div><div class="stat-label">Lagervärde</div></div>
-      <div class="stat-box"><div class="stat-value">${lowItems.length}</div><div class="stat-label">Lågt saldo</div></div>
-    </div>
+    <div class="stats-bar">${totalPcs} artiklar · ${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"} · ${lowItems.length} lågt saldo</div>
     ${isAdmin && viewMode === "dashboard" ? `<div class="backup-bar">
       <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
       <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
