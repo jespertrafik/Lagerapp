@@ -1337,8 +1337,8 @@ async function speakClips(itemName, num, remaining) {
     await playClip(`tog_${gender}`);
   } else {
     await playClip("tog");
+    await playClip(`num_${num}`);
   }
-  await playClip(`num_${num}`);
   if (nameClip) await playClip(nameClip);
   if (remaining <= 10) {
     await playClip(`num_${remaining}`);
