@@ -1489,6 +1489,7 @@ function executeVoiceCommand(cmd) {
 }
 
 function startVoice() {
+  getAudioCtx(); // Skapa AudioContext synkront i user gesture
   preloadVoiceClips(); // starta preload vid första user gesture
     showToast("Röststyrning stöds inte i denna webbläsare");
     return;
@@ -1551,6 +1552,7 @@ function startVoice() {
 let scanStream = null;
 
 async function openScan() {
+  getAudioCtx(); // Skapa AudioContext synkront i user gesture
   preloadVoiceClips(); // starta preload vid första user gesture
   const overlay = document.getElementById('scanOverlay');
   overlay.classList.remove('hidden');
