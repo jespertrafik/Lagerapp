@@ -1393,6 +1393,11 @@ function parseVoiceCommand(transcript) {
       if (ADD_WORDS.includes(w)) { action = "add"; break; }
     }
   }
+  // If no action word found but transcript contains an item, default to "take"
+  if (!action) {
+    const testKey = findItemByVoice(t);
+    if (testKey) action = "take";
+  }
   if (!action) return null;
 
   // Split on "och" to support multi-item commands
