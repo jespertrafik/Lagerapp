@@ -201,6 +201,19 @@
     .mic-btn { position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); border: none; font-size: 28px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
     .mic-btn:active { transform: scale(0.9); }
     .mic-btn.listening { background: var(--red); animation: pulse 1s ease infinite; }
+    .scan-btn-fab { position: fixed; bottom: 24px; right: 104px; width: 64px; height: 64px; border-radius: 50%; background: #2a4a8a; border: none; font-size: 26px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .scan-btn-fab:active { transform: scale(0.9); }
+    .scan-overlay { position: fixed; inset: 0; background: #000; z-index: 500; display: flex; flex-direction: column; }
+    .scan-overlay.hidden { display: none; }
+    .scan-header { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(0,0,0,0.85); flex-shrink: 0; }
+    .scan-header h3 { font-size: 17px; font-weight: 700; flex: 1; color: #fff; }
+    .scan-close-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+    #scanVideo { width: 100%; flex: 1; object-fit: cover; }
+    .scan-footer { background: rgba(0,0,0,0.85); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
+    .scan-snap-btn { background: #fff; color: #000; border: none; border-radius: 50px; padding: 14px 32px; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .scan-result-area { color: #fff; font-size: 14px; text-align: center; min-height: 40px; }
+    .scan-match-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; width: 100%; }
+    #scanCanvas { display: none; }
     @keyframes pulse { 0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow: 0 4px 24px rgba(212,51,51,0.6); } }
     @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
@@ -1071,6 +1084,9 @@ function render() {
     }
   } // end felkoder view
 
+  // Scan button
+  html += `<button class="scan-btn-fab" onclick="openScan()" title="Skanna text">📷</button>`;
+
   // Mic button
   html += `<button class="mic-btn ${isListening ? 'listening' : ''}" onclick="startVoice()" title="Röststyrning">${isListening ? '⏹️' : '🎤'}</button>`;
 
@@ -1239,7 +1255,6 @@ let isListening = false;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const synth = window.speechSynthesis;
 const VOICE_BASE_URL = "https://raw.githubusercontent.com/jespertrafik/Lagerapp/main/";
-const voiceCache = {};
 
 const ALL_CLIPS = [
   "tog","tog_en","tog_ett","kvar","mer_an_tio",
@@ -1253,28 +1268,37 @@ const ALL_CLIPS = [
   "avloppsventil","stodrullar"
 ];
 
-function preloadVoiceClips() {
-  ALL_CLIPS.forEach(key => {
-    const audio = new Audio(`${VOICE_BASE_URL}${key}.mp3`);
-    audio.preload = "auto";
-    voiceCache[key] = audio;
-  });
+// AudioContext-baserad uppspelning — noll gap mellan klipp
+let audioCtx = null;
+const audioBufferCache = {};
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+async function preloadVoiceClips() {
+  const ctx = getAudioCtx();
+  await Promise.all(ALL_CLIPS.map(async key => {
+    try {
+      const resp = await fetch(`${VOICE_BASE_URL}${key}.mp3`);
+      const buf = await resp.arrayBuffer();
+      audioBufferCache[key] = await ctx.decodeAudioData(buf);
+    } catch(e) { /* ignorera enskilda fel */ }
+  }));
 }
 
 async function playClip(key) {
   return new Promise((resolve) => {
-    const cached = voiceCache[key];
-    if (cached) {
-      const audio = cached.cloneNode();
-      audio.onended = resolve;
-      audio.onerror = resolve;
-      audio.play().catch(resolve);
-    } else {
-      const audio = new Audio(`${VOICE_BASE_URL}${key}.mp3`);
-      audio.onended = resolve;
-      audio.onerror = resolve;
-      audio.play().catch(resolve);
-    }
+    const ctx = getAudioCtx();
+    const buf = audioBufferCache[key];
+    if (!buf) { resolve(); return; }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.onended = resolve;
+    src.start(0);
   });
 }
 
@@ -1349,28 +1373,28 @@ const WORD_TO_NUM = {
 const TAKE_WORDS = ["tog", "tagit", "ta", "tar", "plockat", "plocka", "hämtat", "hämta", "använt", "använde", "använder", "tok", "tag"];
 
 const ARTICLE_KEYWORDS = {
-  "lucklas":             ["lucklås", "lucklas", "luck", "lås"],
-  "luckhandtag":         ["luckhandtag", "handtag", "lucka"],
-  "programvaljare":      ["programväljare", "programvaljare", "program", "väljare"],
-  "display":             ["display", "skärm"],
-  "motorstyrning_o1":    ["motorstyrning", "nolletta", "01", "o1"],
-  "motorstyrning_o2":    ["motorstyrning", "nolltvåa", "nolltvå", "02", "o2"],
-  "element_2500w":       ["element", "2500", "två tusen", "tvåtusen", "två och ett halvt"],
-  "element_1000w":       ["element", "1000", "tusen", "etttusen"],
-  "kondensator_5uf":     ["kondensator", "kondens", "fem farad", "femfarad", "5uf", "torktumlare"],
-  "flaktkondensator_3uf":["fläktkondensator", "fläktkondens", "tre farad", "trefarad", "3uf"],
-  "dorrmagnet":          ["dörrmagnet", "dorrmagnet", "magnet", "magnét"],
-  "drivrem":             ["drivrem", "rem"],
-  "stotdampare":         ["stötdämpare", "stotdampare", "dämpare", "dampare"],
-  "flaktmotor_torkskap": ["fläktmotor", "flaktmotor", "torkskåp", "torkskap"],
-  "mangelduk":           ["mangelduk", "mangle", "duk"],
-  "filter_t4190":        ["fyrtioett nittio", "4190", "41 90", "fyrtio"],
-  "filter_t5190":        ["femtioett nittio", "5190", "51 90"],
-  "filter_t4121":        ["fyrtioett tjugoen", "4121", "41 21"],
-  "filter_t5121":        ["femtioett tjugoen", "5121", "51 21"],
-  "filter_le_t5190":     ["le filter", "l e", "le femtioett", "le 5190"],
-  "avloppsventil":       ["avloppsventil", "avlopp", "ventil"],
-  "stodrullar":          ["stödrullar", "stodrullar", "rullar", "stöd"],
+  "lucklas":             ["lucklås", "lucklas", "luck", "lås", "dörrlås", "luckanlås"],
+  "luckhandtag":         ["luckhandtag", "handtag", "lucka", "handtaget"],
+  "programvaljare":      ["programväljare", "programvaljare", "program", "väljare", "programknapp"],
+  "display":             ["display", "skärm", "panel", "kontrollpanel"],
+  "motorstyrning_o1":    ["motorstyrning", "nolletta", "01", "o1", "styrning"],
+  "motorstyrning_o2":    ["motorstyrning", "nolltvåa", "nolltvå", "02", "o2", "styrning"],
+  "element_2500w":       ["element", "2500", "två tusen", "tvåtusen", "2500w", "värmeelement"],
+  "element_1000w":       ["element", "1000", "tusen", "etttusen", "1000w", "värmeelement"],
+  "kondensator_5uf":     ["kondensator", "kondens", "fem farad", "femfarad", "5uf", "5µf", "torktumlare"],
+  "flaktkondensator_3uf":["fläktkondensator", "fläktkondens", "tre farad", "trefarad", "3uf", "3µf", "fläkt kondens"],
+  "dorrmagnet":          ["dörrmagnet", "dorrmagnet", "magnet", "dörr magnet", "luckmag"],
+  "drivrem":             ["drivrem", "rem", "drive belt", "belt", "trumlrem", "trumrem"],
+  "stotdampare":         ["stötdämpare", "stotdampare", "dämpare", "dampare", "stötdamp", "fjäder"],
+  "flaktmotor_torkskap": ["fläktmotor", "flaktmotor", "torkskåp", "torkskap", "fläkt motor", "torkskåpsfläkt"],
+  "mangelduk":           ["mangelduk", "mangle", "duk", "rullmangel", "mangel"],
+  "filter_t4190":        ["4190", "t4190", "filter 4190", "fyrtioett nittio", "41 90"],
+  "filter_t5190":        ["5190", "t5190", "filter 5190", "femtioett nittio", "51 90"],
+  "filter_t4121":        ["4121", "t4121", "filter 4121", "fyrtioett tjugoen", "41 21"],
+  "filter_t5121":        ["5121", "t5121", "filter 5121", "femtioett tjugoen", "51 21"],
+  "filter_le_t5190":     ["le filter", "l e", "le femtioett", "le 5190", "filter le"],
+  "avloppsventil":       ["avloppsventil", "avlopp", "ventil", "avloppsslang", "dräneringsventil"],
+  "stodrullar":          ["stödrullar", "stodrullar", "rullar", "stöd", "stödrulle", "trumrullar"],
 };
 
 const CLIP_TO_NAME = {
@@ -1504,6 +1528,135 @@ function startVoice() {
   recognition.start();
 }
 preloadVoiceClips();
+</script>
+<!-- ===== SCAN MODAL ===== -->
+<div class="scan-overlay hidden" id="scanOverlay">
+  <div class="scan-header">
+    <button class="scan-close-btn" onclick="closeScan()">✕</button>
+    <h3>📷 Skanna artikel</h3>
+  </div>
+  <video id="scanVideo" autoplay playsinline muted></video>
+  <canvas id="scanCanvas"></canvas>
+  <div class="scan-footer">
+    <div class="scan-result-area" id="scanResultArea">Peka kameran mot artikelnamnet och tryck Skanna</div>
+    <button class="scan-snap-btn" onclick="doScan()">📸 Skanna</button>
+  </div>
+</div>
+
+<script>
+// ===== TEXT SCANNER =====
+let scanStream = null;
+
+async function openScan() {
+  getAudioCtx(); // säkerställ AudioContext efter user gesture
+  const overlay = document.getElementById('scanOverlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('scanResultArea').textContent = 'Startar kamera...';
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    const video = document.getElementById('scanVideo');
+    video.srcObject = scanStream;
+    document.getElementById('scanResultArea').textContent = 'Peka mot artikelnamnet och tryck Skanna';
+  } catch(e) {
+    document.getElementById('scanResultArea').textContent = '❌ Kan inte öppna kameran: ' + e.message;
+  }
+}
+
+function closeScan() {
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  document.getElementById('scanOverlay').classList.add('hidden');
+  document.getElementById('scanVideo').srcObject = null;
+}
+
+async function doScan() {
+  const video = document.getElementById('scanVideo');
+  const canvas = document.getElementById('scanCanvas');
+  const resultArea = document.getElementById('scanResultArea');
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.drawImage(video, 0, 0);
+
+  resultArea.textContent = 'Analyserar...';
+
+  // Prova TextDetector (Chrome Android)
+  if ('TextDetector' in window) {
+    try {
+      const detector = new TextDetector();
+      const texts = await detector.detect(canvas);
+      const allText = texts.map(t => t.rawValue).join(' ');
+      handleScannedText(allText, resultArea);
+      return;
+    } catch(e) {}
+  }
+
+  // Fallback: Tesseract.js
+  if (typeof Tesseract === 'undefined') {
+    resultArea.textContent = '⏳ Laddar OCR-motor...';
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  try {
+    resultArea.textContent = '⏳ Läser text...';
+    const { data: { text } } = await Tesseract.recognize(canvas, 'swe+eng', { logger: ()=>{} });
+    handleScannedText(text, resultArea);
+  } catch(e) {
+    resultArea.textContent = '❌ OCR-fel: ' + e.message;
+  }
+}
+
+function handleScannedText(rawText, resultArea) {
+  const text = rawText.toLowerCase().trim();
+  if (!text) { resultArea.textContent = '❌ Ingen text hittades. Försök igen.'; return; }
+
+  // Matcha mot artiklar
+  let bestKey = null;
+  let bestScore = 0;
+  for (const [clipKey, keywords] of Object.entries(ARTICLE_KEYWORDS)) {
+    let score = 0;
+    for (const kw of keywords) {
+      if (text.includes(kw.toLowerCase())) score += kw.length * 2;
+    }
+    // Även matcha mot artikelnamn direkt
+    const name = (CLIP_TO_NAME[clipKey] || '').toLowerCase();
+    if (text.includes(name)) score += name.length * 3;
+    if (score > bestScore) { bestScore = score; bestKey = clipKey; }
+  }
+
+  if (bestScore < 4) {
+    resultArea.innerHTML = `⚠️ Hittade text men matchade ingen artikel:<br><em style="color:#aaa;font-size:12px">${rawText.slice(0,80)}</em>`;
+    return;
+  }
+
+  const articleName = CLIP_TO_NAME[bestKey];
+  // Find Firebase key
+  const fbKey = Object.keys(items).find(k => items[k].name.toLowerCase() === articleName.toLowerCase());
+  const qty = fbKey ? items[fbKey].qty : '?';
+
+  resultArea.innerHTML = `
+    <div style="color:#22b455;font-weight:700;font-size:16px">✅ ${articleName}</div>
+    <div style="color:#aaa;font-size:13px;margin:4px 0">Saldo: ${qty} st</div>
+    ${fbKey ? `<button class="scan-match-btn" onclick="scanTakeItem('${fbKey}');closeScan()">Ta 1 st →</button>` : ''}
+  `;
+}
+
+function scanTakeItem(key) {
+  const item = items[key];
+  if (!item || item.qty < 1) { showToast('❌ Tomt lager'); return; }
+  updateItem(key, -1);
+  const newQty = item.qty - 1;
+  speakClips(item.name, 1, newQty);
+  showToast(`✅ Tog 1 ${item.name} — ${newQty} kvar`);
+}
 </script>
 </body>
 </html>
