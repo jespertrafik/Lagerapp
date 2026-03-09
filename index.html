@@ -1137,7 +1137,10 @@ function render() {
 // Filter items without re-rendering (fixes keyboard closing on mobile)
 function filterItems() {
   const q = search.toLowerCase();
-  document.querySelectorAll(".item-card").forEach(card => {
+  const container = document.querySelector(".items-list");
+  if (!container) return;
+  const cards = Array.from(container.querySelectorAll(".item-card"));
+  cards.forEach(card => {
     const name = card.dataset.name || "";
     const key = card.dataset.key || "";
     if (!q || name.includes(q) || key.toLowerCase().includes(q)) {
@@ -1146,6 +1149,18 @@ function filterItems() {
       card.style.display = "none";
     }
   });
+  // Sort visible cards: starts-with first, then contains
+  if (q) {
+    const sorted = cards.filter(c => c.style.display !== "none").sort((a, b) => {
+      const aName = a.dataset.name || "";
+      const bName = b.dataset.name || "";
+      const aStarts = aName.startsWith(q) ? 0 : 1;
+      const bStarts = bName.startsWith(q) ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return aName.localeCompare(bName, "sv");
+    });
+    sorted.forEach(c => container.appendChild(c));
+  }
 }
 
 // Filter error codes without re-rendering
