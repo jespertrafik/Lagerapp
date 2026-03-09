@@ -962,7 +962,6 @@ function render() {
           </div>
         </div>
         <div class="item-controls">
-          <input class="item-input" type="number" placeholder="Antal" id="inp_${key}" inputmode="numeric">
           <select class="item-input" id="sel_${key}" style="width:auto;padding:6px;font-size:14px"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select>
           <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
           <button class="btn btn-green" onclick="doFill('${key}')">+ Lägg till</button>
@@ -1201,11 +1200,11 @@ function doTake(key) {
 }
 
 function doFill(key) {
-  const inp = document.getElementById("inp_" + key);
-  const num = parseInt(inp.value);
+  const sel = document.getElementById("sel_" + key);
+  const num = parseInt(sel.value);
   if (!num || num <= 0) return;
   updateItem(key, num);
-  inp.value = "";
+  sel.value = "1";
 }
 
 function doAddItem() {
