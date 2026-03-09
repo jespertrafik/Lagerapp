@@ -92,27 +92,27 @@
     .admin-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
 
     /* ===== HEADER ===== */
-    .header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 16px 0; border-bottom: 1px solid var(--card-border); }
-    .header h1 { font-size: var(--font-title); font-weight: 700; letter-spacing: -0.5px; }
-    .header .subtitle { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 16px 0; border-bottom: 1px solid var(--card-border); }
+    .header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 
-    .dept-tabs { display: flex; gap: 0; margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .dept-tabs { display: flex; gap: 0; margin-top: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .dept-tab { padding: 10px 16px; font-size: var(--font-tab); font-weight: 600; font-family: inherit; color: var(--text-dim); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
     .dept-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    .brand-tabs { display: flex; gap: 6px; padding: 12px 16px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .brand-tabs { display: flex; gap: 6px; padding: 8px 16px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .brand-tab { padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-dim); background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
     .brand-tab.active { color: #000; background: var(--accent); border-color: var(--accent); }
 
-    .search-wrap { padding: 12px 16px 0; position: relative; }
-    .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 11px 14px 11px 38px; font-size: var(--font-name); font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .search-wrap { padding: 8px 16px 0; position: relative; }
+    .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 9px 14px 9px 38px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     .search-input:focus { border-color: var(--accent); }
     .search-icon { position: absolute; left: 28px; top: 24px; font-size: 15px; pointer-events: none; opacity: 0.4; }
 
-    .stats-bar { display: flex; gap: 8px; padding: 12px 16px 0; }
-    .stat-box { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 8px; text-align: center; }
-    .stat-value { font-size: var(--font-stat); font-weight: 700; color: var(--accent); }
-    .stat-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+    .stats-bar { display: flex; gap: 8px; padding: 8px 16px 0; }
+    .stat-box { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
 
     .backup-bar { display: flex; gap: 8px; padding: 0 16px; margin-top: 8px; }
     .backup-btn { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: var(--text-dim); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; transition: all 0.2s; }
@@ -170,6 +170,7 @@
     .item-qty.ok { color: var(--green); }
     .item-qty.low { color: var(--accent); }
     .item-meta { font-size: var(--font-meta); color: var(--text-dim); text-align: right; word-break: break-word; }
+    .item-price { font-size: 14px; font-weight: 600; color: var(--text); text-align: right; margin-top: 2px; }
 
     .item-controls { display: flex; gap: 6px; align-items: center; width: 100%; flex-wrap: wrap; }
     .item-input { flex: 1 1 100%; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: var(--pad-input); font-size: var(--font-name); font-family: inherit; outline: none; min-width: 0; }
@@ -964,7 +965,7 @@ function render() {
           <div style="text-align:right">
             <div class="item-qty ${isLow ? "low" : "ok"}">${item.qty}</div>
             ${isAdmin && item.min > 0 ? `<div class="item-meta">${item.unit} (min: ${item.min})</div>` : `<div class="item-meta">${item.unit}</div>`}
-            ${item.price > 0 ? `<div class="item-meta">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
+            ${item.price > 0 ? `<div class="item-price">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
           </div>
         </div>
         <div class="item-controls">
