@@ -161,7 +161,7 @@
     .item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
     .item-top > div:first-child { min-width: 0; flex: 1; }
     .item-top > div:last-child { flex-shrink: 0; }
-    .item-name { font-size: 17px; font-weight: 700; }
+    .item-name { font-size: 19px; font-weight: 700; }
     .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; white-space: nowrap; }
     .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
     .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
@@ -954,12 +954,12 @@ function render() {
           <div>
             <div class="item-name">${item.name}</div>
             <div class="item-artnr">Artnr: ${item.artnr || key}</div>
+            ${item.price > 0 ? `<div class="item-price" style="text-align:left">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
             ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
           </div>
           <div style="text-align:right">
             <div class="item-qty ${isLow ? "low" : "ok"}">${item.qty}</div>
             ${isAdmin && item.min > 0 ? `<div class="item-meta">${item.unit} (min: ${item.min})</div>` : `<div class="item-meta">${item.unit}</div>`}
-            ${item.price > 0 ? `<div class="item-price">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
           </div>
         </div>
         <div class="item-controls">
