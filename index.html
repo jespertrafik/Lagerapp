@@ -1631,17 +1631,6 @@ function setScanMode(mode) {
   document.getElementById('tabBarcode').style.opacity = mode === 'barcode' ? '1' : '0.5';
 }
 
-async function loadZXing() {
-  if (window.ZXing) return;
-  await new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/@zxing/library@0.20.0';
-    s.onload = () => window.ZXing ? res() : rej(new Error('ZXing laddades men window.ZXing saknas'));
-    s.onerror = () => rej(new Error('Kunde inte ladda ZXing-biblioteket'));
-    document.head.appendChild(s);
-  });
-}
-
 async function handleScanFile(input) {
   const file = input.files[0];
   if (!file) return;
@@ -1649,10 +1638,11 @@ async function handleScanFile(input) {
   resultArea.textContent = 'Analyserar foto...';
 
   // Load image to canvas
+  const imgUrl = URL.createObjectURL(file);
   const img = await new Promise((res) => {
     const i = new Image();
     i.onload = () => res(i);
-    i.src = URL.createObjectURL(file);
+    i.src = imgUrl;
   });
   const canvas = document.getElementById('scanCanvas');
   canvas.width = img.width;
@@ -1660,19 +1650,22 @@ async function handleScanFile(input) {
   canvas.getContext('2d').drawImage(img, 0, 0);
 
   if (scanMode === 'barcode') {
-    // Try barcode decode
-    try {
-      resultArea.textContent = '⏳ Läser streckkod...';
-      await loadZXing();
-      const reader = new ZXing.BrowserMultiFormatReader();
-      const result = reader.decodeFromImage(img);
-      if (result && result.getText()) {
-        showScanForm('', result.getText());
-        input.value = '';
-        return;
-      }
-    } catch(e) {}
+    resultArea.textContent = '⏳ Läser streckkod...';
+    // Try native BarcodeDetector (Chrome Android)
+    if ('BarcodeDetector' in window) {
+      try {
+        const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a', 'upc_e'] });
+        const barcodes = await detector.detect(canvas);
+        if (barcodes.length > 0) {
+          showScanForm('', barcodes[0].rawValue);
+          input.value = '';
+          URL.revokeObjectURL(imgUrl);
+          return;
+        }
+      } catch(e) {}
+    }
     resultArea.textContent = '❌ Ingen streckkod hittades. Försök igen.';
+    URL.revokeObjectURL(imgUrl);
   } else {
     // Text OCR mode
     // Try TextDetector first (Chrome Android)
@@ -1682,7 +1675,7 @@ async function handleScanFile(input) {
         const detector = new TextDetector();
         const texts = await detector.detect(canvas);
         const allText = texts.map(t => t.rawValue).join(' ').trim();
-        if (allText) { showScanForm(allText, ''); input.value = ''; return; }
+        if (allText) { showScanForm(allText, ''); input.value = ''; URL.revokeObjectURL(imgUrl); return; }
       } catch(e) {}
     }
     // Fallback: Tesseract.js
@@ -1699,15 +1692,16 @@ async function handleScanFile(input) {
       resultArea.textContent = '⏳ Läser text...';
       const { data: { text } } = await Tesseract.recognize(canvas, 'swe+eng', { logger: ()=>{} });
       const cleaned = text.trim();
-      if (cleaned) { showScanForm(cleaned, ''); input.value = ''; return; }
+      if (cleaned) { showScanForm(cleaned, ''); input.value = ''; URL.revokeObjectURL(imgUrl); return; }
     } catch(e) {
       resultArea.textContent = '❌ OCR-fel: ' + e.message;
-      input.value = '';
+      input.value = ''; URL.revokeObjectURL(imgUrl);
       return;
     }
     resultArea.textContent = '❌ Ingen text hittades. Försök igen.';
   }
   input.value = '';
+  URL.revokeObjectURL(imgUrl);
 }
 
 function showScanForm(name, artnr) {
