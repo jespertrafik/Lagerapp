@@ -931,7 +931,7 @@ function render() {
       <div class="stat-box"><div class="stat-value">${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}</div><div class="stat-label">Lagervärde</div></div>
       <div class="stat-box"><div class="stat-value">${lowItems.length}</div><div class="stat-label">Lågt saldo</div></div>
     </div>
-    ${isAdmin ? `<div class="backup-bar">
+    ${isAdmin && viewMode === "dashboard" ? `<div class="backup-bar">
       <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
       <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
     </div>` : ""}`;
