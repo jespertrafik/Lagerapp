@@ -1544,13 +1544,23 @@ function startVoice() {
   const recognition = new SpeechRecognition();
   recognition.lang = "sv-SE";
   recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
+  recognition.continuous = true;
+  recognition.maxAlternatives = 3;
 
   isListening = true;
   render();
 
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
+    // Collect all final results into one transcript, try best alternative
+    let transcript = "";
+    for (let i = 0; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        transcript += event.results[i][0].transcript + " ";
+      }
+    }
+    transcript = transcript.trim();
+    if (!transcript) return;
+    recognition.stop();
     isListening = false;
     render();
     showToast(`🎤 "${transcript}"`);
