@@ -1275,6 +1275,20 @@ const SPOKEN_NAME = {
   "luckhandtag": "Luckhanntag",
 };
 
+const PLURAL_NAME = {
+  "drivrem": "drivremmar",
+  "luckhandtag": "luckhanntag",
+  "programväljare": "programväljare",
+  "display": "displayer",
+  "dörrmagnet": "dörrmagneter",
+  "avloppsventil": "avloppsventiler",
+  "mangelduk": "mangeldukar",
+  "kondensator 5µf torktumlare": "kondensatorer 5µf torktumlare",
+  "kondensator 3µf fläkt torkskåp": "kondensatorer 3µf fläkt torkskåp",
+  "element 2500w": "element 2500w",
+  "element 1000w": "element 1000w",
+};
+
 function speakClips(itemName, num, remaining) {
   const gender = ITEM_GENDER[itemName.toLowerCase()] || null;
   let numWord;
@@ -1286,7 +1300,9 @@ function speakClips(itemName, num, remaining) {
     numWord = String(num);
   }
   const remWord = (remaining <= 10) ? NUM_SV[remaining] : "mer än tio";
-  const spokenItem = SPOKEN_NAME[itemName.toLowerCase()] || itemName;
+  const key = itemName.toLowerCase();
+  let spokenItem = SPOKEN_NAME[key] || itemName;
+  if (num > 1 && PLURAL_NAME[key]) spokenItem = PLURAL_NAME[key];
   const phrase = `Tog ${numWord} ${spokenItem}, ${remWord} kvar`;
   speak(phrase);
 }
@@ -1471,7 +1487,9 @@ function executeVoiceCommand(cmd) {
       } else {
         numWord = String(r.num);
       }
-      const spokenItem = SPOKEN_NAME[r.name.toLowerCase()] || r.name;
+      const rKey = r.name.toLowerCase();
+      let spokenItem = SPOKEN_NAME[rKey] || r.name;
+      if (r.num > 1 && PLURAL_NAME[rKey]) spokenItem = PLURAL_NAME[rKey];
       return `${numWord} ${spokenItem}`;
     });
     const verb = results[0].action === "add" ? "La till" : "Tog";
@@ -1494,7 +1512,9 @@ function executeVoiceCommand(cmd) {
     } else {
       numWord = String(r.num);
     }
-    const spokenItem = SPOKEN_NAME[r.name.toLowerCase()] || r.name;
+    const addKey = r.name.toLowerCase();
+    let spokenItem = SPOKEN_NAME[addKey] || r.name;
+    if (r.num > 1 && PLURAL_NAME[addKey]) spokenItem = PLURAL_NAME[addKey];
     const remWord = (r.remaining <= 10) ? NUM_SV[r.remaining] : "mer än tio";
     speak(`La till ${numWord} ${spokenItem}, ${remWord} totalt`);
   } else {
