@@ -109,7 +109,7 @@
     .search-input:focus { border-color: var(--accent); }
     .search-icon { position: absolute; left: 28px; top: 30px; font-size: 15px; pointer-events: none; opacity: 0.4; }
 
-    .stats-bar { padding: 8px 16px 0; font-size: 12px; color: var(--text-dim); }
+    .stats-bar { padding: 8px 16px 0; font-size: 14px; color: var(--text-dim); }
 
     .backup-bar { display: flex; gap: 8px; padding: 0 16px; margin-top: 8px; }
     .backup-btn { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: var(--text-dim); font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; transition: all 0.2s; }
@@ -1326,11 +1326,39 @@ const NAME_TO_CLIP = {
   "stödrullar komplett": "stodrullar",
 };
 
-async function speakClips(itemName, num, remaining) {
+const NUM_WORDS_SV = ["noll","en","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
+const NUM_WORDS_ETT = ["noll","ett","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
+
+function buildPhrase(itemName, num, remaining) {
+  const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
+  const gender = nameClip ? CLIP_GENDER[nameClip] : null;
+  const numWord = (num <= 10) ? (gender === "ett" ? NUM_WORDS_ETT[num] : NUM_WORDS_SV[num]) : String(num);
+  const remWord = (remaining <= 10) ? NUM_WORDS_SV[remaining] : "mer än tio";
+  const phrase = `Tog ${numWord} ${itemName}, ${remWord} kvar`;
+  return phrase;
+}
+
+function speakTTS(text) {
+  return new Promise((resolve) => {
+    if (!synth) { resolve(false); return; }
+    const voices = synth.getVoices();
+    const svVoice = voices.find(v => v.lang.startsWith("sv"));
+    if (!svVoice) { resolve(false); return; }
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.voice = svVoice;
+    utter.lang = "sv-SE";
+    utter.rate = 1.1;
+    utter.onend = () => resolve(true);
+    utter.onerror = () => resolve(false);
+    synth.speak(utter);
+  });
+}
+
+async function speakClipsFallback(itemName, num, remaining) {
   if (preloadPromise) await preloadPromise;
   const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
   const gender = nameClip ? CLIP_GENDER[nameClip] : null;
-  // "tog" only for num=1 needs en/ett, plural just "tog"
   if (num === 1 && gender) {
     await playClip(`tog_${gender}`);
   } else {
@@ -1345,6 +1373,12 @@ async function speakClips(itemName, num, remaining) {
     return;
   }
   await playClip("kvar");
+}
+
+async function speakClips(itemName, num, remaining) {
+  const phrase = buildPhrase(itemName, num, remaining);
+  const ok = await speakTTS(phrase);
+  if (!ok) await speakClipsFallback(itemName, num, remaining);
 }
 
 function speak(text) {
