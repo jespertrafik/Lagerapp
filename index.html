@@ -576,8 +576,6 @@ function loadViewMode() {
 const ADMIN_EMAIL = "jesper.franzen@bravida.se";
 
 // ====== AUTH ======
-preloadVoiceClips();
-
 auth.onAuthStateChanged((user) => {
   if (user) {
     // Check allowlist
@@ -1505,6 +1503,7 @@ function startVoice() {
 
   recognition.start();
 }
+preloadVoiceClips();
 </script>
 </body>
 </html>
