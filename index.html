@@ -937,7 +937,7 @@ function render() {
     html += `<div class="alert-banner"><div class="alert-title">⚠ Behöver beställas</div>`;
     lowItems.forEach(k => {
       const i = items[k];
-      html += `<div class="alert-item">${i.name}${i.brand && i.brand !== "Övrigt" ? " (" + i.brand + ")" : ""} — ${i.qty} ${i.unit} kvar (min: ${i.min})</div>`;
+      html += `<div class="alert-item">${i.name} — ${i.qty} ${i.unit} kvar (min: ${i.min})</div>`;
     });
     html += `</div>`;
   }
