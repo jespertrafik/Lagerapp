@@ -576,6 +576,8 @@ function loadViewMode() {
 const ADMIN_EMAIL = "jesper.franzen@bravida.se";
 
 // ====== AUTH ======
+preloadVoiceClips();
+
 auth.onAuthStateChanged((user) => {
   if (user) {
     // Check allowlist
@@ -1241,15 +1243,53 @@ const synth = window.speechSynthesis;
 const VOICE_BASE_URL = "https://raw.githubusercontent.com/jespertrafik/Lagerapp/main/";
 const voiceCache = {};
 
-async function playClip(key) {
-  const url = `${VOICE_BASE_URL}${key}.mp3`;
-  return new Promise((resolve) => {
-    const audio = new Audio(url);
-    audio.onended = resolve;
-    audio.onerror = resolve;
-    audio.play().catch(resolve);
+const ALL_CLIPS = [
+  "tog","tog_en","tog_ett","kvar","mer_an_tio",
+  "num_1","num_2","num_3","num_4","num_5","num_6","num_7","num_8","num_9","num_10",
+  "lucklas","luckhandtag","programvaljare","display",
+  "motorstyrning_o1","motorstyrning_o2",
+  "element_2500w","element_1000w",
+  "kondensator_5uf","flaktkondensator_3uf",
+  "dorrmagnet","drivrem","stotdampare","flaktmotor_torkskap","mangelduk",
+  "filter_t4190","filter_t5190","filter_t4121","filter_t5121","filter_le_t5190",
+  "avloppsventil","stodrullar"
+];
+
+function preloadVoiceClips() {
+  ALL_CLIPS.forEach(key => {
+    const audio = new Audio(`${VOICE_BASE_URL}${key}.mp3`);
+    audio.preload = "auto";
+    voiceCache[key] = audio;
   });
 }
+
+async function playClip(key) {
+  return new Promise((resolve) => {
+    const cached = voiceCache[key];
+    if (cached) {
+      const audio = cached.cloneNode();
+      audio.onended = resolve;
+      audio.onerror = resolve;
+      audio.play().catch(resolve);
+    } else {
+      const audio = new Audio(`${VOICE_BASE_URL}${key}.mp3`);
+      audio.onended = resolve;
+      audio.onerror = resolve;
+      audio.play().catch(resolve);
+    }
+  });
+}
+
+const CLIP_GENDER = {
+  "lucklas": "ett", "luckhandtag": "ett", "programvaljare": "en", "display": "en",
+  "motorstyrning_o1": "en", "motorstyrning_o2": "en",
+  "element_2500w": "ett", "element_1000w": "ett",
+  "kondensator_5uf": "en", "flaktkondensator_3uf": "en",
+  "dorrmagnet": "en", "drivrem": "en", "stotdampare": "en",
+  "flaktmotor_torkskap": "en", "mangelduk": "en",
+  "filter_t4190": "ett", "filter_t5190": "ett", "filter_t4121": "ett", "filter_t5121": "ett", "filter_le_t5190": "ett",
+  "avloppsventil": "en", "stodrullar": null,
+};
 
 const NAME_TO_CLIP = {
   "lucklås": "lucklas", "luckhandtag": "luckhandtag", "programväljare": "programvaljare",
@@ -1266,10 +1306,21 @@ const NAME_TO_CLIP = {
 
 async function speakClips(itemName, num, remaining) {
   const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
-  await playClip("tog");
+  const gender = nameClip ? CLIP_GENDER[nameClip] : null;
+  // "tog" only for num=1 needs en/ett, plural just "tog"
+  if (num === 1 && gender) {
+    await playClip(`tog_${gender}`);
+  } else {
+    await playClip("tog");
+  }
   await playClip(`num_${num}`);
   if (nameClip) await playClip(nameClip);
-  await playClip(`num_${remaining <= 10 ? remaining : "10"}`);
+  if (remaining <= 10) {
+    await playClip(`num_${remaining}`);
+  } else {
+    await playClip("mer_an_tio");
+    return;
+  }
   await playClip("kvar");
 }
 
