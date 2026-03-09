@@ -49,10 +49,10 @@
     }
 
     body.size-dashboard {
-      --font-name: 15px; --font-qty: 28px; --font-meta: 12px; --font-btn: 13px;
+      --font-name: 14px; --font-qty: 24px; --font-meta: 11px; --font-btn: 13px;
       --font-tab: 13px; --font-title: 22px; --font-stat: 20px;
-      --pad-card: 16px; --pad-input: 10px 12px; --pad-btn: 10px 16px;
-      --radius-card: 14px; --gap-items: 10px;
+      --pad-card: 12px; --pad-input: 8px 10px; --pad-btn: 8px 14px;
+      --radius-card: 14px; --gap-items: 8px;
       --grid-cols: 1fr 1fr;
     }
 
@@ -158,8 +158,10 @@
     .item-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); transition: border-color 0.2s; animation: slideUp 0.3s ease; overflow: hidden; }
     .item-card.low { background: var(--warn-bg); border-color: var(--warn-border); }
 
-    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .item-name { font-size: 19px; font-weight: 700; }
+    .item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+    .item-top > div:first-child { min-width: 0; flex: 1; }
+    .item-top > div:last-child { flex-shrink: 0; }
+    .item-name { font-size: 19px; font-weight: 700; overflow-wrap: break-word; }
     .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; }
     .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
     .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
