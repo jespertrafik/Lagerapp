@@ -1307,6 +1307,8 @@ const WORD_TO_NUM = {
 };
 
 const TAKE_WORDS = ["tog", "tagit", "ta", "tar", "plockat", "plocka", "hämtat", "hämta", "använt", "använde", "använder", "tok", "tag"];
+const ADD_PHRASES = ["lägg till", "lagt till", "lägger till", "fyll", "fyll på", "fyllt", "fyller"];
+const ADD_WORDS = ["fyll", "fyllt", "fyller"];
 
 const ARTICLE_KEYWORDS = {
   "lucklas":             ["lucklås", "lucklas", "luck", "lås", "dörrlås", "luckanlås"],
@@ -1320,8 +1322,8 @@ const ARTICLE_KEYWORDS = {
   "kondensator_5uf":     ["kondensator", "kondens", "fem farad", "femfarad", "5uf", "5µf", "torktumlare"],
   "flaktkondensator_3uf":["fläktkondensator", "fläktkondens", "tre farad", "trefarad", "3uf", "3µf", "fläkt kondens"],
   "dorrmagnet":          ["dörrmagnet", "dorrmagnet", "magnet", "dörr magnet", "luckmag"],
-  "drivrem":             ["drivrem", "rem", "drive belt", "belt", "trumlrem", "trumrem"],
-  "stotdampare":         ["stötdämpare", "stotdampare", "dämpare", "dampare", "stötdamp", "fjäder"],
+  "drivrem":             ["drivrem", "drivremmar", "rem", "remmar", "drive belt", "belt", "trumlrem", "trumrem"],
+  "stotdampare":         ["stötdämpare", "stotdampare", "dämpare", "dampare", "dämparna", "stötdamp", "fjäder"],
   "flaktmotor_torkskap": ["fläktmotor", "flaktmotor", "torkskåp", "torkskap", "fläkt motor", "torkskåpsfläkt"],
   "mangelduk":           ["mangelduk", "mangle", "duk", "rullmangel", "mangel"],
   "filter_t4190":        ["filter 4190", "filter t4190", "4190", "t4190", "fyrtioett nittio", "41 90"],
@@ -1363,8 +1365,15 @@ function parseVoiceCommand(transcript) {
   const words = t.split(/\s+/);
 
   let action = null;
-  for (const w of words) {
-    if (TAKE_WORDS.includes(w)) { action = "take"; break; }
+  // Check phrase-based add commands first ("lägg till", "fyll på", etc.)
+  for (const phrase of ADD_PHRASES) {
+    if (t.includes(phrase)) { action = "add"; break; }
+  }
+  if (!action) {
+    for (const w of words) {
+      if (TAKE_WORDS.includes(w)) { action = "take"; break; }
+      if (ADD_WORDS.includes(w)) { action = "add"; break; }
+    }
   }
   if (!action) return null;
 
@@ -1430,7 +1439,12 @@ function executeSingleVoiceCommand(cmd) {
     }
     updateItem(key, -cmd.num);
     const newQty = item.qty - cmd.num;
-    return { name: item.name, num: cmd.num, remaining: newQty };
+    return { name: item.name, num: cmd.num, remaining: newQty, action: "take" };
+  }
+  if (cmd.action === "add") {
+    updateItem(key, cmd.num);
+    const newQty = item.qty + cmd.num;
+    return { name: item.name, num: cmd.num, remaining: newQty, action: "add" };
   }
   return null;
 }
@@ -1460,7 +1474,8 @@ function executeVoiceCommand(cmd) {
       const spokenItem = SPOKEN_NAME[r.name.toLowerCase()] || r.name;
       return `${numWord} ${spokenItem}`;
     });
-    speak(`Tog ${parts.join(" och ")}`);
+    const verb = results[0].action === "add" ? "La till" : "Tog";
+    speak(`${verb} ${parts.join(" och ")}`);
     return;
   }
 
@@ -1469,7 +1484,22 @@ function executeVoiceCommand(cmd) {
     speak("Förstod inte.");
     return;
   }
-  speakClips(r.name, r.num, r.remaining);
+  if (r.action === "add") {
+    const gender = ITEM_GENDER[r.name.toLowerCase()] || null;
+    let numWord;
+    if (r.num === 1 && gender) {
+      numWord = gender === "ett" ? "ett" : "en";
+    } else if (r.num <= 10) {
+      numWord = NUM_SV[r.num];
+    } else {
+      numWord = String(r.num);
+    }
+    const spokenItem = SPOKEN_NAME[r.name.toLowerCase()] || r.name;
+    const remWord = (r.remaining <= 10) ? NUM_SV[r.remaining] : "mer än tio";
+    speak(`La till ${numWord} ${spokenItem}, ${remWord} totalt`);
+  } else {
+    speakClips(r.name, r.num, r.remaining);
+  }
 }
 
 function startVoice() {
