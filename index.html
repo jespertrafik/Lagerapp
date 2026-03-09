@@ -1300,7 +1300,7 @@ async function playClip(key) {
     if (!buf) { resolve(); return; }
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = 1.3;
+    src.playbackRate.value = 1.5;
     src.connect(ctx.destination);
     src.onended = resolve;
     src.start(0);
