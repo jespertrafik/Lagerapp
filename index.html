@@ -1506,7 +1506,7 @@ function executeVoiceCommand(cmd) {
       if (r.num > 1 && PLURAL_NAME[rKey]) spokenItem = PLURAL_NAME[rKey];
       return `${numWord} ${spokenItem}`;
     });
-    const verb = results[0].action === "add" ? "La till" : "Tog";
+    const verb = results[0].action === "add" ? "Lagt till" : "Tog";
     speak(`${verb} ${parts.join(" och ")}`);
     return;
   }
@@ -1530,7 +1530,7 @@ function executeVoiceCommand(cmd) {
     let spokenItem = SPOKEN_NAME[addKey] || r.name;
     if (r.num > 1 && PLURAL_NAME[addKey]) spokenItem = PLURAL_NAME[addKey];
     const remWord = (r.remaining <= 10) ? NUM_SV[r.remaining] : "mer än tio";
-    speak(`La till ${numWord} ${spokenItem}, ${remWord} totalt`);
+    speak(`Lagt till ${numWord} ${spokenItem}, ${remWord} totalt`);
   } else {
     speakClips(r.name, r.num, r.remaining);
   }
