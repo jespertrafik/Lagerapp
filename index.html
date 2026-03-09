@@ -1469,6 +1469,13 @@ function executeSingleVoiceCommand(cmd) {
 
 function executeVoiceCommand(cmd) {
   if (cmd.multi) {
+    // Debug: show what was parsed before executing
+    const debugParts = cmd.commands.map(c => {
+      const matchKey = findItemByVoice(c.name);
+      const matchName = matchKey ? items[matchKey]?.name : "?";
+      return `${c.num}x ${matchName}`;
+    });
+    showToast(`🔍 ${debugParts.join(" + ")}`);
     const results = [];
     for (const sub of cmd.commands) {
       const r = executeSingleVoiceCommand(sub);
