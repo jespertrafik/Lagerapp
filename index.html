@@ -897,7 +897,7 @@ function render() {
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
-        ${isAdmin ? '<button class="small-btn" style="background:var(--red)" onclick="resetDeptToDefault()">🔄 Återställ avdelning</button>' : ''}
+        ${isAdmin && viewMode === "dashboard" ? '<button class="small-btn" style="background:var(--red)" onclick="resetDeptToDefault()">🔄 Återställ avdelning</button>' : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
