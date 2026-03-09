@@ -1278,7 +1278,10 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+let preloadDone = false;
 async function preloadVoiceClips() {
+  if (preloadDone) return;
+  preloadDone = true;
   const ctx = getAudioCtx();
   await Promise.all(ALL_CLIPS.map(async key => {
     try {
@@ -1486,7 +1489,7 @@ function executeVoiceCommand(cmd) {
 }
 
 function startVoice() {
-  if (!SpeechRecognition) {
+  preloadVoiceClips(); // starta preload vid första user gesture
     showToast("Röststyrning stöds inte i denna webbläsare");
     return;
   }
@@ -1527,7 +1530,7 @@ function startVoice() {
 
   recognition.start();
 }
-preloadVoiceClips();
+// Preload sker vid första mic/scan-knapptryck
 </script>
 <!-- ===== SCAN MODAL ===== -->
 <div class="scan-overlay hidden" id="scanOverlay">
@@ -1548,7 +1551,7 @@ preloadVoiceClips();
 let scanStream = null;
 
 async function openScan() {
-  getAudioCtx(); // säkerställ AudioContext efter user gesture
+  preloadVoiceClips(); // starta preload vid första user gesture
   const overlay = document.getElementById('scanOverlay');
   overlay.classList.remove('hidden');
   document.getElementById('scanResultArea').textContent = 'Startar kamera...';
