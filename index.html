@@ -1636,8 +1636,12 @@ async function loadZXing() {
   if (window.ZXing) return;
   await new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = 'https://unpkg.com/@zxing/library@latest';
-    s.onload = res; s.onerror = rej;
+    s.src = 'https://unpkg.com/@zxing/library@0.20.0';
+    s.onload = () => {
+      if (window.ZXing) res();
+      else rej(new Error('ZXing laddades men window.ZXing saknas'));
+    };
+    s.onerror = () => rej(new Error('Kunde inte ladda ZXing-biblioteket'));
     document.head.appendChild(s);
   });
 }
@@ -1645,34 +1649,59 @@ async function loadZXing() {
 async function startBarcodeScanning() {
   const resultArea = document.getElementById('scanResultArea');
   try {
+    resultArea.innerHTML = '<span class="scan-barcode-status">⏳ Laddar streckkodsläsare...</span>';
     await loadZXing();
     barcodeReader = new ZXing.BrowserMultiFormatReader();
     barcodeScanning = true;
     const video = document.getElementById('scanVideo');
     resultArea.innerHTML = '<span class="scan-barcode-status">📡 Söker streckkod i realtid...</span>';
-    const loop = async () => {
+    let frameErrors = 0;
+    const loop = () => {
       if (!barcodeScanning || !scanStream) return;
       try {
+        // Skip if video not ready yet
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          if (barcodeScanning) requestAnimationFrame(loop);
+          return;
+        }
         const canvas = document.getElementById('scanCanvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
-        const luminance = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
-        const binarizer = new ZXing.HybridBinarizer(luminance);
-        const bitmap = new ZXing.BinaryBitmap(binarizer);
-        const result = barcodeReader.decodeBitmap(bitmap);
-        if (result && result.getText()) {
-          handleBarcode(result.getText(), resultArea);
-          return; // stop scanning on match
+        // Use decodeFromImage via canvas data URL as fallback-safe method
+        const dataUrl = canvas.toDataURL('image/png');
+        const img = new Image();
+        img.onload = () => {
+          if (!barcodeScanning) return;
+          try {
+            const result = barcodeReader.decodeFromImage(img);
+            if (result && result.getText()) {
+              barcodeScanning = false;
+              handleBarcode(result.getText(), resultArea);
+              return;
+            }
+          } catch(e) { /* no barcode found this frame */ }
+          if (barcodeScanning) setTimeout(loop, 250);
+        };
+        img.onerror = () => {
+          if (barcodeScanning) setTimeout(loop, 500);
+        };
+        img.src = dataUrl;
+      } catch(e) {
+        frameErrors++;
+        if (frameErrors > 20) {
+          resultArea.innerHTML = `❌ Streckkodsläsaren fungerar inte: ${e.message}<br><span style="color:#aaa;font-size:12px;cursor:pointer;text-decoration:underline" onclick="startBarcodeScanning()">Försök igen</span>`;
+          barcodeScanning = false;
+          return;
         }
-      } catch(e) { /* no barcode found this frame, continue */ }
-      if (barcodeScanning) requestAnimationFrame(loop);
+        if (barcodeScanning) setTimeout(loop, 500);
+      }
     };
     // wait for video to be ready
     if (video.readyState >= 2) { loop(); }
     else { video.addEventListener('loadeddata', loop, { once: true }); }
   } catch(e) {
-    resultArea.textContent = '❌ Kunde inte starta streckkodsläsare: ' + e.message;
+    resultArea.innerHTML = `❌ Kunde inte starta streckkodsläsare: ${e.message}<br><span style="color:#aaa;font-size:12px;cursor:pointer;text-decoration:underline" onclick="startBarcodeScanning()">Försök igen</span>`;
   }
 }
 
