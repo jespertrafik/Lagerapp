@@ -279,7 +279,7 @@ const DEFAULT_TVATTSTUGOR = [
   { name: "Element 2500W", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 605, artnr: "471983701" },
   { name: "Element 1000W", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 740, artnr: "471983704" },
   { name: "Kondensator 5µF Torktumlare", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "471952511" },
-  { name: "Fläktkondensator 3µF", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Kondensator 3µF Fläkt torkskåp", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
   { name: "Dörrmagnet", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 241, artnr: "487089303" },
   { name: "Drivrem", unit: "st", qty: 10, min: 3, brand: "Electrolux", price: 170, artnr: "487223396" },
   { name: "Stötdämpare 4pack", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 756, artnr: "472991308" },
@@ -1142,7 +1142,7 @@ function filterItems() {
   cards.forEach(card => {
     const name = card.dataset.name || "";
     const key = card.dataset.key || "";
-    if (!q || (q.length === 1 ? name.startsWith(q) : name.includes(q))) {
+    if (!q || name.startsWith(q)) {
       card.style.display = "";
     } else {
       card.style.display = "none";
@@ -1441,7 +1441,7 @@ const CLIP_TO_NAME = {
   "element_2500w": "Element 2500W",
   "element_1000w": "Element 1000W",
   "kondensator_5uf": "Kondensator 5µF Torktumlare",
-  "flaktkondensator_3uf": "Fläktkondensator 3µF",
+  "flaktkondensator_3uf": "Kondensator 3µF Fläkt torkskåp",
   "dorrmagnet": "Dörrmagnet",
   "drivrem": "Drivrem",
   "stotdampare": "Stötdämpare 4pack",
