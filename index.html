@@ -216,7 +216,7 @@
     .scan-capture-btn::after { content: ''; width: 56px; height: 56px; border-radius: 50%; background: #fff; display: block; }
     .scan-capture-btn:active::after { background: #ccc; }
     .scan-mode-tabs { display: flex; gap: 8px; }
-    .scan-mode-tab { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .scan-mode-tab { background: rgba(255,255,255,0.15); color: #fff; border: 3px solid red; border-radius: 20px; padding: 8px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
     .scan-mode-tab.active { background: var(--accent); }
     .scan-barcode-status { color: #aaa; font-size: 13px; }
     .scan-result-area { color: #fff; font-size: 14px; text-align: center; min-height: 40px; }
@@ -1734,6 +1734,10 @@ function handleBarcode(code, resultArea) {
 
 async function openScan() {
   const overlay = document.getElementById('scanOverlay');
+  console.log('[SCAN] openScan() called');
+  console.log('[SCAN] overlay exists:', !!overlay);
+  console.log('[SCAN] tabs:', document.querySelector('.scan-mode-tabs')?.innerHTML);
+  console.log('[SCAN] footer:', document.querySelector('.scan-footer')?.offsetHeight, 'px height');
   overlay.classList.remove('hidden');
   document.getElementById('scanResultArea').textContent = 'Startar kamera...';
   try {
