@@ -209,9 +209,6 @@
     .scan-header { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--card); border-bottom: 1px solid var(--card-border); flex-shrink: 0; }
     .scan-header h3 { font-size: 17px; font-weight: 700; flex: 1; color: var(--text); }
     .scan-close-btn { background: none; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 4px 8px; }
-    .scan-mode-tabs { display: flex; gap: 8px; }
-    .scan-mode-tab { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
-    .scan-mode-tab.active { background: var(--accent); }
     #scanCanvas { display: none; }
     #scanFormWrap.hidden { display: none; }
     @keyframes pulse { 0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow: 0 4px 24px rgba(212,51,51,0.6); } }
@@ -1588,18 +1585,11 @@ function startVoice() {
     <button class="scan-close-btn" onclick="closeScan()">✕</button>
     <h3>📷 Skanna & lägg till</h3>
   </div>
-  <div id="scanChooseWrap" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
-    <div class="scan-result-area" id="scanResultArea" style="color:#aaa;font-size:15px;text-align:center">Ta ett foto med kameran</div>
+  <div id="scanBody" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
     <input type="file" accept="image/*" capture="environment" id="scanFileInput" style="display:none" onchange="handleScanFile(this)">
-    <button onclick="document.getElementById('scanFileInput').click()" style="background:var(--accent);color:#fff;border:none;border-radius:50px;padding:16px 32px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer">📷 Ta foto</button>
-    <div class="scan-mode-tabs" style="margin-top:8px">
-      <button class="scan-mode-tab" id="tabText" onclick="setScanMode('text')" style="opacity:0.5">📝 Text (OCR)</button>
-      <button class="scan-mode-tab active" id="tabBarcode" onclick="setScanMode('barcode')">⬛ Streckkod</button>
-    </div>
+    <button onclick="document.getElementById('scanFileInput').click()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;width:100%">📷 Ta foto och skanna</button>
+    <div id="scanStatus" style="color:var(--text-dim);font-size:13px;text-align:center;min-height:20px"></div>
     <canvas id="scanCanvas" style="display:none"></canvas>
-  </div>
-  <div id="scanFormWrap" class="hidden" style="flex:1;background:var(--bg);padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
-    <div style="color:var(--text);font-weight:700;font-size:18px">Ny artikel</div>
     <label style="color:var(--text-dim);font-size:13px;font-weight:600">Artikelnamn</label>
     <input id="scanF_name" type="text" placeholder="T.ex. Lucklås" style="padding:12px;border-radius:8px;border:1px solid var(--card-border);background:var(--card);color:var(--text);font-size:16px">
     <label style="color:var(--text-dim);font-size:13px;font-weight:600">Artikelnummer</label>
@@ -1614,30 +1604,18 @@ function startVoice() {
         <input id="scanF_price" type="number" value="0" min="0" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:var(--card);color:var(--text);font-size:16px;box-sizing:border-box">
       </div>
     </div>
-    <button onclick="scanAddItem()" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;margin-top:8px">Lägg till i lager</button>
-    <button onclick="scanFormBack()" style="background:none;color:var(--text-dim);border:1px solid var(--card-border);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;cursor:pointer;width:100%">Skanna igen</button>
+    <button onclick="scanAddItem()" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;margin-top:4px">Lägg till i lager</button>
   </div>
 </div>
 
 <script>
 // ===== SCAN & ADD ITEM =====
-let scanMode = 'barcode';
-
-function setScanMode(mode) {
-  scanMode = mode;
-  document.getElementById('tabText').classList.toggle('active', mode === 'text');
-  document.getElementById('tabBarcode').classList.toggle('active', mode === 'barcode');
-  document.getElementById('tabText').style.opacity = mode === 'text' ? '1' : '0.5';
-  document.getElementById('tabBarcode').style.opacity = mode === 'barcode' ? '1' : '0.5';
-}
-
 async function handleScanFile(input) {
   const file = input.files[0];
   if (!file) return;
-  const resultArea = document.getElementById('scanResultArea');
-  resultArea.textContent = 'Analyserar foto...';
+  const status = document.getElementById('scanStatus');
+  status.textContent = '⏳ Analyserar foto...';
 
-  // Load image to canvas
   const imgUrl = URL.createObjectURL(file);
   const img = await new Promise((res) => {
     const i = new Image();
@@ -1648,75 +1626,43 @@ async function handleScanFile(input) {
   canvas.width = img.width;
   canvas.height = img.height;
   canvas.getContext('2d').drawImage(img, 0, 0);
-
-  if (scanMode === 'barcode') {
-    resultArea.textContent = '⏳ Läser streckkod...';
-    // Try native BarcodeDetector (Chrome Android)
-    if ('BarcodeDetector' in window) {
-      try {
-        const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a', 'upc_e'] });
-        const barcodes = await detector.detect(canvas);
-        if (barcodes.length > 0) {
-          showScanForm('', barcodes[0].rawValue);
-          input.value = '';
-          URL.revokeObjectURL(imgUrl);
-          return;
-        }
-      } catch(e) {}
-    }
-    resultArea.textContent = '❌ Ingen streckkod hittades. Försök igen.';
-    URL.revokeObjectURL(imgUrl);
-  } else {
-    // Text OCR mode
-    // Try TextDetector first (Chrome Android)
-    if ('TextDetector' in window) {
-      try {
-        resultArea.textContent = '⏳ Läser text...';
-        const detector = new TextDetector();
-        const texts = await detector.detect(canvas);
-        const allText = texts.map(t => t.rawValue).join(' ').trim();
-        if (allText) { showScanForm(allText, ''); input.value = ''; URL.revokeObjectURL(imgUrl); return; }
-      } catch(e) {}
-    }
-    // Fallback: Tesseract.js
-    if (typeof Tesseract === 'undefined') {
-      resultArea.textContent = '⏳ Laddar OCR-motor...';
-      await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
-    try {
-      resultArea.textContent = '⏳ Läser text...';
-      const { data: { text } } = await Tesseract.recognize(canvas, 'swe+eng', { logger: ()=>{} });
-      const cleaned = text.trim();
-      if (cleaned) { showScanForm(cleaned, ''); input.value = ''; URL.revokeObjectURL(imgUrl); return; }
-    } catch(e) {
-      resultArea.textContent = '❌ OCR-fel: ' + e.message;
-      input.value = ''; URL.revokeObjectURL(imgUrl);
-      return;
-    }
-    resultArea.textContent = '❌ Ingen text hittades. Försök igen.';
-  }
-  input.value = '';
   URL.revokeObjectURL(imgUrl);
-}
 
-function showScanForm(name, artnr) {
-  document.getElementById('scanChooseWrap').style.display = 'none';
-  document.getElementById('scanFormWrap').classList.remove('hidden');
-  document.getElementById('scanF_name').value = name || '';
-  document.getElementById('scanF_artnr').value = artnr || '';
-  document.getElementById('scanF_qty').value = 1;
-  document.getElementById('scanF_price').value = 0;
-}
+  let foundName = '';
+  let foundArtnr = '';
+  const results = [];
 
-function scanFormBack() {
-  document.getElementById('scanFormWrap').classList.add('hidden');
-  document.getElementById('scanChooseWrap').style.display = '';
-  document.getElementById('scanResultArea').textContent = 'Ta ett foto med kameran';
+  // Try BarcodeDetector
+  if ('BarcodeDetector' in window) {
+    try {
+      const bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a', 'upc_e'] });
+      const barcodes = await bd.detect(canvas);
+      if (barcodes.length > 0) {
+        foundArtnr = barcodes[0].rawValue;
+        results.push('Streckkod: ' + foundArtnr);
+      }
+    } catch(e) {}
+  }
+
+  // Try TextDetector
+  if ('TextDetector' in window) {
+    try {
+      const td = new TextDetector();
+      const texts = await td.detect(canvas);
+      const allText = texts.map(t => t.rawValue).join(' ').trim();
+      if (allText) {
+        foundName = allText;
+        results.push('Text: ' + allText.slice(0, 60));
+      }
+    } catch(e) {}
+  }
+
+  // Fill form fields with whatever was found
+  if (foundArtnr) document.getElementById('scanF_artnr').value = foundArtnr;
+  if (foundName) document.getElementById('scanF_name').value = foundName;
+
+  status.textContent = results.length > 0 ? results.join(' | ') : 'Inget hittades — fyll i manuellt';
+  input.value = '';
 }
 
 function scanAddItem() {
@@ -1733,9 +1679,11 @@ function scanAddItem() {
 }
 
 function openScan() {
-  document.getElementById('scanFormWrap').classList.add('hidden');
-  document.getElementById('scanChooseWrap').style.display = '';
-  document.getElementById('scanResultArea').textContent = 'Ta ett foto med kameran';
+  document.getElementById('scanF_name').value = '';
+  document.getElementById('scanF_artnr').value = '';
+  document.getElementById('scanF_qty').value = 1;
+  document.getElementById('scanF_price').value = 0;
+  document.getElementById('scanStatus').textContent = '';
   document.getElementById('scanOverlay').classList.remove('hidden');
 }
 
