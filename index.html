@@ -1630,41 +1630,25 @@ async function handleScanFile(input) {
     canvas.getContext('2d').drawImage(img, 0, 0);
     URL.revokeObjectURL(imgUrl);
 
-    let foundName = '';
     let foundArtnr = '';
-    const results = [];
 
-    // Try BarcodeDetector
+    // Try BarcodeDetector (barcode only — text OCR is unreliable)
     if ('BarcodeDetector' in window) {
       try {
         const bd = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'upc_a', 'upc_e'] });
         const barcodes = await bd.detect(canvas);
         if (barcodes.length > 0) {
           foundArtnr = barcodes[0].rawValue;
-          results.push('Streckkod: ' + foundArtnr);
         }
-      } catch(e) { results.push('Streckkodsfel: ' + e.message); }
+      } catch(e) {}
+    }
+
+    if (foundArtnr) {
+      document.getElementById('scanF_artnr').value = foundArtnr;
+      status.textContent = 'Streckkod: ' + foundArtnr;
     } else {
-      results.push('BarcodeDetector stöds ej');
+      status.textContent = 'Ingen streckkod hittades — fyll i manuellt';
     }
-
-    // Try TextDetector
-    if ('TextDetector' in window) {
-      try {
-        const td = new TextDetector();
-        const texts = await td.detect(canvas);
-        const allText = texts.map(t => t.rawValue).join(' ').trim();
-        if (allText) {
-          foundName = allText;
-          results.push('Text: ' + allText.slice(0, 60));
-        }
-      } catch(e) { results.push('Textfel: ' + e.message); }
-    }
-
-    if (foundArtnr) document.getElementById('scanF_artnr').value = foundArtnr;
-    if (foundName) document.getElementById('scanF_name').value = foundName;
-
-    status.textContent = results.length > 0 ? results.join(' | ') : 'Inget hittades — fyll i manuellt';
   } catch(e) {
     status.textContent = '❌ Fel: ' + e.message;
   }
