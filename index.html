@@ -1142,7 +1142,7 @@ function filterItems() {
   cards.forEach(card => {
     const name = card.dataset.name || "";
     const key = card.dataset.key || "";
-    if (!q || name.startsWith(q)) {
+    if (!q || (q.length === 1 ? name.startsWith(q) : name.includes(q))) {
       card.style.display = "";
     } else {
       card.style.display = "none";
