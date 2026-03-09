@@ -162,7 +162,8 @@
     .item-card.low { background: var(--warn-bg); border-color: var(--warn-border); }
 
     .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .item-name { font-size: var(--font-name); font-weight: 600; }
+    .item-name { font-size: 19px; font-weight: 700; }
+    .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; }
     .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
     .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
     .item-qty { font-size: var(--font-qty); font-weight: 700; line-height: 1; }
@@ -929,29 +930,11 @@ function render() {
       <div class="stat-box"><div class="stat-value">${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}</div><div class="stat-label">Lagervärde</div></div>
       <div class="stat-box"><div class="stat-value">${lowItems.length}</div><div class="stat-label">Lågt saldo</div></div>
     </div>
-    <div class="backup-bar">
+    ${isAdmin ? `<div class="backup-bar">
       <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
       <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
-    </div>`;
+    </div>` : ""}`;
 
-  // Log
-  const deptLog = logEntries.filter(e => e.dept === activeDept);
-  html += `<button class="log-toggle" onclick="showLog=!showLog;render()">📋 Historik (${deptLog.length} händelser) ${showLog ? "▲" : "▼"}</button>`;
-  if (showLog && deptLog.length > 0) {
-    html += `<div class="log-list">`;
-    deptLog.forEach(e => {
-      const d = new Date(e.timestamp);
-      const time = d.toLocaleDateString("sv-SE") + " " + d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
-      let actionClass = "log-action-take", actionText = "";
-      if (e.action === "take") { actionClass = "log-action-take"; actionText = `Tog ${Math.abs(e.delta)} st`; }
-      else if (e.action === "fill") { actionClass = "log-action-fill"; actionText = `Fyllde på ${e.delta} st`; }
-      else if (e.action === "add") { actionClass = "log-action-add"; actionText = `La till artikel`; }
-      html += `<div class="log-entry"><span class="${actionClass}">${actionText}</span> — <strong>${e.item}</strong> (${e.oldQty} → ${e.newQty})<br><span class="log-time">${time}</span> · <span class="log-who">${e.who}</span></div>`;
-    });
-    html += `</div>`;
-  } else if (showLog) {
-    html += `<div class="log-list"><div class="log-entry" style="color:var(--text-dim)">Ingen historik ännu</div></div>`;
-  }
 
   // Alert
   if (lowItems.length > 0 && activeBrand === "Alla" && !search) {
@@ -974,13 +957,13 @@ function render() {
         <div class="item-top">
           <div>
             <div class="item-name">${item.name}</div>
-            ${item.brand && item.brand !== "Övrigt" ? `<div class="item-brand">${item.brand}</div>` : ""}
-            <div class="item-brand">Art.nr: ${key}</div>
+            <div class="item-artnr">${item.artnr || key}</div>
+            ${isAdmin && item.brand && item.brand !== "Övrigt" ? `<div class="item-brand">${item.brand}</div>` : ""}
             ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
           </div>
           <div style="text-align:right">
             <div class="item-qty ${isLow ? "low" : "ok"}">${item.qty}</div>
-            <div class="item-meta">${item.unit}${item.min > 0 ? ` (min: ${item.min})` : ""}</div>
+            ${isAdmin && item.min > 0 ? `<div class="item-meta">${item.unit} (min: ${item.min})</div>` : `<div class="item-meta">${item.unit}</div>`}
             ${item.price > 0 ? `<div class="item-meta">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
           </div>
         </div>
