@@ -1265,6 +1265,14 @@ function speak(text) {
   synth.speak(utter);
 }
 
+const SPOKEN_NAME = {
+  "filter t4190": "Filter fyrtioett nittio",
+  "filter t5190": "Filter femtioett nittio",
+  "filter t4121": "Filter fyrtioett tjugoett",
+  "filter t5121": "Filter femtioett tjugoett",
+  "filter le t5190": "Filter LE femtioett nittio",
+};
+
 function speakClips(itemName, num, remaining) {
   const gender = ITEM_GENDER[itemName.toLowerCase()] || null;
   let numWord;
@@ -1276,7 +1284,8 @@ function speakClips(itemName, num, remaining) {
     numWord = String(num);
   }
   const remWord = (remaining <= 10) ? NUM_SV[remaining] : "mer än tio";
-  const phrase = `Tog ${numWord} ${itemName}, ${remWord} kvar`;
+  const spokenItem = SPOKEN_NAME[itemName.toLowerCase()] || itemName;
+  const phrase = `Tog ${numWord} ${spokenItem}, ${remWord} kvar`;
   speak(phrase);
 }
 
@@ -1357,6 +1366,21 @@ function parseVoiceCommand(transcript) {
   }
   if (!action) return null;
 
+  // Split on "och" to support multi-item commands
+  const parts = t.split(/\s+och\s+/);
+  if (parts.length > 1) {
+    const commands = parts.map(part => {
+      const pw = part.split(/\s+/);
+      let num = 1;
+      for (const w of pw) {
+        if (/^\d+$/.test(w)) { num = Math.min(parseInt(w), 10); break; }
+        if (WORD_TO_NUM[w]) { num = WORD_TO_NUM[w]; break; }
+      }
+      return { action, num, name: part };
+    });
+    return { multi: true, commands };
+  }
+
   let num = 1;
   for (const w of words) {
     if (/^\d+$/.test(w)) { num = Math.min(parseInt(w), 10); break; }
@@ -1389,25 +1413,61 @@ function findItemByVoice(spoken) {
   ) || null;
 }
 
-function executeVoiceCommand(cmd) {
+function executeSingleVoiceCommand(cmd) {
   const key = findItemByVoice(cmd.name);
   if (!key) {
-    speak("Förstod inte.");
     showToast(`❌ Förstod inte artikeln`);
-    return;
+    return null;
   }
 
   const item = items[key];
   if (cmd.action === "take") {
     if (item.qty < cmd.num) {
-      speak(`Det finns bara ${item.qty} kvar.`);
       showToast(`❌ Bara ${item.qty} ${item.name} kvar`);
-      return;
+      return null;
     }
     updateItem(key, -cmd.num);
     const newQty = item.qty - cmd.num;
-    speakClips(item.name, cmd.num, newQty);
+    return { name: item.name, num: cmd.num, remaining: newQty };
   }
+  return null;
+}
+
+function executeVoiceCommand(cmd) {
+  if (cmd.multi) {
+    const results = [];
+    for (const sub of cmd.commands) {
+      const r = executeSingleVoiceCommand(sub);
+      if (r) results.push(r);
+    }
+    if (results.length === 0) {
+      speak("Förstod inte.");
+      return;
+    }
+    // Speak all items taken in one phrase
+    const parts = results.map(r => {
+      const gender = ITEM_GENDER[r.name.toLowerCase()] || null;
+      let numWord;
+      if (r.num === 1 && gender) {
+        numWord = gender === "ett" ? "ett" : "en";
+      } else if (r.num <= 10) {
+        numWord = NUM_SV[r.num];
+      } else {
+        numWord = String(r.num);
+      }
+      const spokenItem = SPOKEN_NAME[r.name.toLowerCase()] || r.name;
+      return `${numWord} ${spokenItem}`;
+    });
+    speak(`Tog ${parts.join(" och ")}`);
+    return;
+  }
+
+  const r = executeSingleVoiceCommand(cmd);
+  if (!r) {
+    speak("Förstod inte.");
+    return;
+  }
+  speakClips(r.name, r.num, r.remaining);
 }
 
 function startVoice() {
