@@ -1271,6 +1271,7 @@ const SPOKEN_NAME = {
   "filter t4121": "Filter fyrtioett tjugoett",
   "filter t5121": "Filter femtioett tjugoett",
   "filter le t5190": "Filter LE femtioett nittio",
+  "luckhandtag": "Luckhanntag",
 };
 
 function speakClips(itemName, num, remaining) {
@@ -1492,7 +1493,7 @@ function startVoice() {
     if (cmd) {
       executeVoiceCommand(cmd);
     } else {
-      speak("Förstod inte. Säg till exempel: ta tre filter, eller fyll fem lucklås.");
+      speak("Förstod inte. Säg till exempel: tagit ett lucklås eller lägg till fem drivremmar.");
       showToast("❌ Förstod inte kommandot");
     }
   };
