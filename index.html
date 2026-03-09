@@ -1241,144 +1241,20 @@ function doDeleteItem(key) {
 let isListening = false;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const synth = window.speechSynthesis;
-const VOICE_BASE_URL = "https://raw.githubusercontent.com/jespertrafik/Lagerapp/main/";
-
-const ALL_CLIPS = [
-  "tog","tog_en","tog_ett","kvar","mer_an_tio",
-  "num_1","num_2","num_3","num_4","num_5","num_6","num_7","num_8","num_9","num_10",
-  "lucklas","luckhandtag","programvaljare","display",
-  "motorstyrning_o1","motorstyrning_o2",
-  "element_2500w","element_1000w",
-  "kondensator_5uf","flaktkondensator_3uf",
-  "dorrmagnet","drivrem","stotdampare","flaktmotor_torkskap","mangelduk",
-  "filter_t4190","filter_t5190","filter_t4121","filter_t5121","filter_le_t5190",
-  "avloppsventil","stodrullar"
-];
-
-// AudioContext-baserad uppspelning — noll gap mellan klipp
-let audioCtx = null;
-const audioBufferCache = {};
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  return audioCtx;
-}
-
-let preloadPromise = null;
-function preloadVoiceClips() {
-  if (preloadPromise) return preloadPromise;
-  preloadPromise = (async () => {
-    const ctx = getAudioCtx();
-    await Promise.all(ALL_CLIPS.map(async key => {
-      try {
-        const resp = await fetch(`${VOICE_BASE_URL}${key}.mp3`);
-        const buf = await resp.arrayBuffer();
-        audioBufferCache[key] = await ctx.decodeAudioData(buf);
-      } catch(e) { /* ignorera enskilda fel */ }
-    }));
-  })();
-  return preloadPromise;
-}
-
-// Preload voice clips on first user interaction (AudioContext requires gesture)
-document.addEventListener('click', function _preload() {
-  document.removeEventListener('click', _preload);
-  preloadVoiceClips();
-}, { once: true });
-
-async function playClip(key) {
-  return new Promise((resolve) => {
-    const ctx = getAudioCtx();
-    const buf = audioBufferCache[key];
-    if (!buf) { resolve(); return; }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.playbackRate.value = 1.25;
-    src.connect(ctx.destination);
-    src.onended = resolve;
-    src.start(0);
-  });
-}
-
-const CLIP_GENDER = {
-  "lucklas": "ett", "luckhandtag": "ett", "programvaljare": "en", "display": "en",
-  "motorstyrning_o1": "en", "motorstyrning_o2": "en",
-  "element_2500w": "ett", "element_1000w": "ett",
-  "kondensator_5uf": "en", "flaktkondensator_3uf": "en",
-  "dorrmagnet": "en", "drivrem": "en", "stotdampare": "en",
-  "flaktmotor_torkskap": "en", "mangelduk": "en",
-  "filter_t4190": "ett", "filter_t5190": "ett", "filter_t4121": "ett", "filter_t5121": "ett", "filter_le_t5190": "ett",
-  "avloppsventil": "en", "stodrullar": null,
+// ====== GENDER MAP (en/ett) ======
+const ITEM_GENDER = {
+  "lucklås": "ett", "luckhandtag": "ett", "programväljare": "en", "display": "en",
+  "motorstyrning o1": "en", "motorstyrning o2": "en",
+  "element 2500w": "ett", "element 1000w": "ett",
+  "kondensator 5µf torktumlare": "en", "kondensator 3µf fläkt torkskåp": "en",
+  "dörrmagnet": "en", "drivrem": "en", "stötdämpare 4pack": "en",
+  "fläktmotor torkskåp": "en", "mangelduk": "en",
+  "filter t4190": "ett", "filter t5190": "ett", "filter t4121": "ett", "filter t5121": "ett", "filter le t5190": "ett",
+  "avloppsventil": "en", "stödrullar komplett": null,
 };
 
-const NAME_TO_CLIP = {
-  "lucklås": "lucklas", "luckhandtag": "luckhandtag", "programväljare": "programvaljare",
-  "display": "display", "motorstyrning o1": "motorstyrning_o1", "motorstyrning o2": "motorstyrning_o2",
-  "element 2500w": "element_2500w", "element 1000w": "element_1000w",
-  "kondensator 5µf torktumlare": "kondensator_5uf", "fläktkondensator 3µf": "flaktkondensator_3uf",
-  "dörrmagnet": "dorrmagnet", "drivrem": "drivrem", "stötdämpare (pack/4 st)": "stotdampare",
-  "fläktmotor torkskåp": "flaktmotor_torkskap", "mangelduk": "mangelduk",
-  "filter t4190": "filter_t4190", "filter t5190": "filter_t5190",
-  "filter t4121": "filter_t4121", "filter t5121": "filter_t5121",
-  "filter le t5190": "filter_le_t5190", "avloppsventil": "avloppsventil",
-  "stödrullar komplett": "stodrullar",
-};
-
-const NUM_WORDS_SV = ["noll","en","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
-const NUM_WORDS_ETT = ["noll","ett","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
-
-function buildPhrase(itemName, num, remaining) {
-  const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
-  const gender = nameClip ? CLIP_GENDER[nameClip] : null;
-  const numWord = (num <= 10) ? (gender === "ett" ? NUM_WORDS_ETT[num] : NUM_WORDS_SV[num]) : String(num);
-  const remWord = (remaining <= 10) ? NUM_WORDS_SV[remaining] : "mer än tio";
-  const phrase = `Tog ${numWord} ${itemName}, ${remWord} kvar`;
-  return phrase;
-}
-
-function speakTTS(text) {
-  return new Promise((resolve) => {
-    if (!synth) { resolve(false); return; }
-    const voices = synth.getVoices();
-    const svVoice = voices.find(v => v.lang.startsWith("sv"));
-    if (!svVoice) { resolve(false); return; }
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.voice = svVoice;
-    utter.lang = "sv-SE";
-    utter.rate = 1.1;
-    utter.onend = () => resolve(true);
-    utter.onerror = () => resolve(false);
-    synth.speak(utter);
-  });
-}
-
-async function speakClipsFallback(itemName, num, remaining) {
-  if (preloadPromise) await preloadPromise;
-  const nameClip = NAME_TO_CLIP[itemName.toLowerCase()];
-  const gender = nameClip ? CLIP_GENDER[nameClip] : null;
-  if (num === 1 && gender) {
-    await playClip(`tog_${gender}`);
-  } else {
-    await playClip("tog");
-    await playClip(`num_${num}`);
-  }
-  if (nameClip) await playClip(nameClip);
-  if (remaining <= 10) {
-    await playClip(`num_${remaining}`);
-  } else {
-    await playClip("mer_an_tio");
-    return;
-  }
-  await playClip("kvar");
-}
-
-async function speakClips(itemName, num, remaining) {
-  const phrase = buildPhrase(itemName, num, remaining);
-  const ok = await speakTTS(phrase);
-  if (!ok) await speakClipsFallback(itemName, num, remaining);
-}
+const NUM_SV = ["noll","en","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
+const NUM_ETT = ["noll","ett","två","tre","fyra","fem","sex","sju","åtta","nio","tio"];
 
 function speak(text) {
   if (!synth) return;
@@ -1387,6 +1263,21 @@ function speak(text) {
   utter.lang = "sv-SE";
   utter.rate = 1.1;
   synth.speak(utter);
+}
+
+function speakClips(itemName, num, remaining) {
+  const gender = ITEM_GENDER[itemName.toLowerCase()] || null;
+  let numWord;
+  if (num === 1 && gender) {
+    numWord = gender === "ett" ? "ett" : "en";
+  } else if (num <= 10) {
+    numWord = NUM_SV[num];
+  } else {
+    numWord = String(num);
+  }
+  const remWord = (remaining <= 10) ? NUM_SV[remaining] : "mer än tio";
+  const phrase = `Tog ${numWord} ${itemName}, ${remWord} kvar`;
+  speak(phrase);
 }
 
 // === RÖSTKOMMANDON — FUZZY PARSER ===
@@ -1501,7 +1392,7 @@ function findItemByVoice(spoken) {
 function executeVoiceCommand(cmd) {
   const key = findItemByVoice(cmd.name);
   if (!key) {
-    speak("forstod_inte");
+    speak("Förstod inte.");
     showToast(`❌ Förstod inte artikeln`);
     return;
   }
@@ -1520,8 +1411,6 @@ function executeVoiceCommand(cmd) {
 }
 
 function startVoice() {
-  getAudioCtx(); // Skapa AudioContext synkront i user gesture
-  preloadVoiceClips(); // starta preload vid första user gesture
   if (!SpeechRecognition) {
     showToast("Röststyrning stöds inte i denna webbläsare");
     return;
@@ -1679,8 +1568,6 @@ function handleBarcode(code, resultArea) {
 }
 
 async function openScan() {
-  getAudioCtx(); // Skapa AudioContext synkront i user gesture
-  preloadVoiceClips(); // starta preload vid första user gesture
   const overlay = document.getElementById('scanOverlay');
   overlay.classList.remove('hidden');
   document.getElementById('scanResultArea').textContent = 'Startar kamera...';
