@@ -1058,7 +1058,7 @@ function render() {
   } // end felkoder view
 
   // Scan button
-  html += `<button class="scan-btn-fab" onclick="openScan()" title="Lägg till artikel">➕</button>`;
+  html += `<button class="scan-btn-fab" onclick="document.getElementById('cameraInput').click()" title="Ta foto">📷</button>`;
 
   // Mic button
   html += `<button class="mic-btn ${isListening ? 'listening' : ''}" onclick="startVoice()" title="Röststyrning">${isListening ? '⏹️' : '🎤'}</button>`;
@@ -1579,6 +1579,9 @@ function startVoice() {
 }
 // Preload sker vid första mic/scan-knapptryck
 </script>
+<!-- Hidden camera input -->
+<input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none" onchange="onCameraPhoto()">
+
 <!-- ===== ADD ITEM MODAL ===== -->
 <div class="scan-overlay hidden" id="scanOverlay">
   <div class="scan-header">
@@ -1601,11 +1604,24 @@ function startVoice() {
       </div>
     </div>
     <button onclick="scanAddItem()" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;margin-top:4px">Lägg till i lager</button>
+    <button onclick="document.getElementById('cameraInput').click()" style="background:none;color:var(--text-dim);border:1px solid var(--card-border);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;cursor:pointer;width:100%">📷 Ta nytt foto</button>
   </div>
 </div>
 
 <script>
 // ===== ADD ITEM =====
+function onCameraPhoto() {
+  const input = document.getElementById('cameraInput');
+  if (!input.files[0]) return;
+  // Clear form and show overlay
+  document.getElementById('scanF_name').value = '';
+  document.getElementById('scanF_artnr').value = '';
+  document.getElementById('scanF_qty').value = 1;
+  document.getElementById('scanF_price').value = 0;
+  document.getElementById('scanOverlay').classList.remove('hidden');
+  input.value = '';
+}
+
 function scanAddItem() {
   const name = document.getElementById('scanF_name').value.trim();
   const artnr = document.getElementById('scanF_artnr').value.trim();
@@ -1617,14 +1633,6 @@ function scanAddItem() {
   writeLog({ action: 'add', item: name, brand: activeBrand !== 'Alla' ? activeBrand : 'Övrigt', delta: qty, oldQty: 0, newQty: qty, dept: activeDept });
   showToast('✅ ' + name + ' tillagd');
   closeScan();
-}
-
-function openScan() {
-  document.getElementById('scanF_name').value = '';
-  document.getElementById('scanF_artnr').value = '';
-  document.getElementById('scanF_qty').value = 1;
-  document.getElementById('scanF_price').value = 0;
-  document.getElementById('scanOverlay').classList.remove('hidden');
 }
 
 function closeScan() {
