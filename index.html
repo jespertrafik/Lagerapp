@@ -1758,21 +1758,10 @@ async function openScan() {
   document.getElementById('scanResultArea').textContent = 'Startar kamera...';
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: 'environment' },
       audio: false
     });
-    const video = document.getElementById('scanVideo');
-    video.srcObject = scanStream;
-    // Enable continuous autofocus via applyConstraints
-    const track = scanStream.getVideoTracks()[0];
-    if (track) {
-      try {
-        const caps = track.getCapabilities ? track.getCapabilities() : {};
-        if (caps.focusMode && caps.focusMode.includes('continuous')) {
-          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-        }
-      } catch(e) { /* autofocus not supported on this device */ }
-    }
+    document.getElementById('scanVideo').srcObject = scanStream;
     setScanMode(scanMode);
   } catch(e) {
     document.getElementById('scanResultArea').textContent = '❌ Kan inte öppna kameran: ' + e.message;
