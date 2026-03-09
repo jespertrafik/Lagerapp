@@ -953,11 +953,11 @@ function render() {
     const isLow = item.min > 0 && item.qty <= item.min;
     const priceTotal = (item.qty || 0) * (item.price || 0);
     html += `
-      <div class="item-card ${isLow ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-brand="${item.brand}">>
+      <div class="item-card ${isLow ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-brand="${item.brand}">
         <div class="item-top">
           <div>
             <div class="item-name">${item.name}</div>
-            <div class="item-artnr">${item.artnr || key}</div>
+            <div class="item-artnr">Artnr: ${item.artnr || key}</div>
             ${isAdmin && item.brand && item.brand !== "Övrigt" ? `<div class="item-brand">${item.brand}</div>` : ""}
             ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
           </div>
