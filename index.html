@@ -211,6 +211,13 @@
     #scanVideo { width: 100%; flex: 1; object-fit: cover; }
     .scan-footer { background: rgba(0,0,0,0.85); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
     .scan-snap-btn { background: #fff; color: #000; border: none; border-radius: 50px; padding: 14px 32px; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .scan-capture-btn { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; background: rgba(255,255,255,0.3); cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
+    .scan-capture-btn::after { content: ''; width: 56px; height: 56px; border-radius: 50%; background: #fff; display: block; }
+    .scan-capture-btn:active::after { background: #ccc; }
+    .scan-mode-tabs { display: flex; gap: 8px; }
+    .scan-mode-tab { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .scan-mode-tab.active { background: var(--accent); }
+    .scan-barcode-status { color: #aaa; font-size: 13px; }
     .scan-result-area { color: #fff; font-size: 14px; text-align: center; min-height: 40px; }
     .scan-match-btn { background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; width: 100%; }
     #scanCanvas { display: none; }
@@ -1545,14 +1552,109 @@ function startVoice() {
   <video id="scanVideo" autoplay playsinline muted></video>
   <canvas id="scanCanvas"></canvas>
   <div class="scan-footer">
-    <div class="scan-result-area" id="scanResultArea">Peka kameran mot artikelnamnet och tryck Skanna</div>
-    <button class="scan-snap-btn" onclick="doScan()">📸 Skanna</button>
+    <div class="scan-mode-tabs">
+      <button class="scan-mode-tab active" id="tabText" onclick="setScanMode('text')">📝 Text</button>
+      <button class="scan-mode-tab" id="tabBarcode" onclick="setScanMode('barcode')">⬛ Streckkod</button>
+    </div>
+    <div class="scan-result-area" id="scanResultArea">Peka kameran mot artikelnamnet och tryck på knappen</div>
+    <button class="scan-capture-btn" id="scanCaptureBtn" onclick="doScan()" title="Skanna"></button>
   </div>
 </div>
 
 <script>
-// ===== TEXT SCANNER =====
+// ===== TEXT & BARCODE SCANNER =====
 let scanStream = null;
+let scanMode = 'text'; // 'text' or 'barcode'
+let barcodeReader = null;
+let barcodeScanning = false;
+
+function setScanMode(mode) {
+  scanMode = mode;
+  document.getElementById('tabText').classList.toggle('active', mode === 'text');
+  document.getElementById('tabBarcode').classList.toggle('active', mode === 'barcode');
+  const captureBtn = document.getElementById('scanCaptureBtn');
+  const resultArea = document.getElementById('scanResultArea');
+  if (mode === 'text') {
+    stopBarcodeScanning();
+    captureBtn.style.display = 'flex';
+    resultArea.textContent = 'Peka kameran mot artikelnamnet och tryck på knappen';
+  } else {
+    captureBtn.style.display = 'none';
+    resultArea.textContent = '⏳ Startar streckkodsläsare...';
+    startBarcodeScanning();
+  }
+}
+
+async function loadZXing() {
+  if (window.ZXing) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/@zxing/library@latest';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function startBarcodeScanning() {
+  const resultArea = document.getElementById('scanResultArea');
+  try {
+    await loadZXing();
+    barcodeReader = new ZXing.BrowserMultiFormatReader();
+    barcodeScanning = true;
+    const video = document.getElementById('scanVideo');
+    resultArea.innerHTML = '<span class="scan-barcode-status">📡 Söker streckkod i realtid...</span>';
+    const loop = async () => {
+      if (!barcodeScanning || !scanStream) return;
+      try {
+        const canvas = document.getElementById('scanCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const luminance = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+        const binarizer = new ZXing.HybridBinarizer(luminance);
+        const bitmap = new ZXing.BinaryBitmap(binarizer);
+        const result = barcodeReader.decodeBitmap(bitmap);
+        if (result && result.getText()) {
+          handleBarcode(result.getText(), resultArea);
+          return; // stop scanning on match
+        }
+      } catch(e) { /* no barcode found this frame, continue */ }
+      if (barcodeScanning) requestAnimationFrame(loop);
+    };
+    // wait for video to be ready
+    if (video.readyState >= 2) { loop(); }
+    else { video.addEventListener('loadeddata', loop, { once: true }); }
+  } catch(e) {
+    resultArea.textContent = '❌ Kunde inte starta streckkodsläsare: ' + e.message;
+  }
+}
+
+function stopBarcodeScanning() {
+  barcodeScanning = false;
+  barcodeReader = null;
+}
+
+function handleBarcode(code, resultArea) {
+  // Match against artnr
+  let matchKey = null;
+  for (const [key, item] of Object.entries(items)) {
+    if (item.artnr && item.artnr === code) { matchKey = key; break; }
+  }
+  if (matchKey) {
+    const item = items[matchKey];
+    resultArea.innerHTML = `
+      <div style="color:#22b455;font-weight:700;font-size:16px">✅ ${item.name}</div>
+      <div style="color:#aaa;font-size:13px;margin:4px 0">Art.nr: ${code} — Saldo: ${item.qty} st</div>
+      <button class="scan-match-btn" onclick="scanTakeItem('${matchKey}');closeScan()">Ta 1 st →</button>
+    `;
+  } else {
+    resultArea.innerHTML = `
+      <div style="color:#ffa500;font-weight:700;font-size:16px">⚠️ Streckkod: ${code}</div>
+      <div style="color:#aaa;font-size:13px;margin:4px 0">Ingen artikel matchar detta artikelnummer</div>
+      <span class="scan-barcode-status" style="cursor:pointer;text-decoration:underline" onclick="barcodeScanning=true;startBarcodeScanning()">Skanna igen</span>
+    `;
+  }
+}
 
 async function openScan() {
   getAudioCtx(); // Skapa AudioContext synkront i user gesture
@@ -1567,13 +1669,14 @@ async function openScan() {
     });
     const video = document.getElementById('scanVideo');
     video.srcObject = scanStream;
-    document.getElementById('scanResultArea').textContent = 'Peka mot artikelnamnet och tryck Skanna';
+    setScanMode(scanMode); // apply current mode
   } catch(e) {
     document.getElementById('scanResultArea').textContent = '❌ Kan inte öppna kameran: ' + e.message;
   }
 }
 
 function closeScan() {
+  stopBarcodeScanning();
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
   document.getElementById('scanOverlay').classList.add('hidden');
   document.getElementById('scanVideo').srcObject = null;
