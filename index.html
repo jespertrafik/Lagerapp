@@ -1742,7 +1742,7 @@ async function openScan() {
   document.getElementById('scanResultArea').textContent = 'Startar kamera...';
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, focusMode: { ideal: 'continuous' } },
       audio: false
     });
     const video = document.getElementById('scanVideo');
