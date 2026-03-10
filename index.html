@@ -1424,9 +1424,39 @@ const CLIP_TO_NAME = {
   "stodrullar": "Stödrullar komplett",
 };
 
+function findErrorCode(spoken) {
+  const s = spoken.toLowerCase().trim();
+  // Remove "felkod" prefix if present
+  const cleaned = s.replace(/^.*felkod\s*/, "").replace(/^.*fel\s*kod\s*/, "").trim();
+  // Try matching patterns: "e20", "f1", "10:1", "10 1", "01", etc.
+  const normalized = cleaned.replace(/\s+/g, ":").replace(/:+/g, ":");
+
+  for (const ec of ERROR_CODES) {
+    const code = ec.code.toLowerCase();
+    if (code === normalized) return ec;
+    if (code === cleaned) return ec;
+    // Match without colon: "10 1" → "10:1"
+    if (code === cleaned.replace(/\s+/g, ":")) return ec;
+    // Match spoken numbers: "tio ett" → try as-is
+  }
+  // Fuzzy: try if cleaned starts with or matches code
+  for (const ec of ERROR_CODES) {
+    const code = ec.code.toLowerCase();
+    if (cleaned === code.replace(":", " ")) return ec;
+    if (cleaned === code.replace(":", "")) return ec;
+  }
+  return null;
+}
+
 function parseVoiceCommand(transcript) {
   const t = transcript.toLowerCase().trim();
   const words = t.split(/\s+/);
+
+  // Check for error code lookup first
+  if (t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t)) {
+    const ec = findErrorCode(t);
+    if (ec) return { action: "errorcode", errorCode: ec };
+  }
 
   let action = null;
   // Check phrase-based add commands first ("lägg till", "fyll på", etc.)
@@ -1541,6 +1571,13 @@ function executeSingleVoiceCommand(cmd) {
 }
 
 function executeVoiceCommand(cmd) {
+  if (cmd.action === "errorcode") {
+    const ec = cmd.errorCode;
+    const desc = ec.desc.replace(/\n/g, " ").substring(0, 200);
+    showToast(`🔧 ${ec.code}: ${ec.name}`);
+    speak(`Felkod ${ec.code}. ${ec.name}. ${desc}`);
+    return;
+  }
   if (cmd.multi) {
     // Debug: show what was parsed before executing
     const debugParts = cmd.commands.map(c => {
