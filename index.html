@@ -1499,7 +1499,17 @@ function findItemByVoice(spoken) {
 function executeSingleVoiceCommand(cmd) {
   const key = findItemByVoice(cmd.name);
   if (!key) {
-    showToast(`❌ Hörde: "${cmd.name}" — ingen match`);
+    const s = cmd.name.toLowerCase();
+    let debugClip = "none";
+    let debugScore = 0;
+    for (const [ck, kws] of Object.entries(ARTICLE_KEYWORDS)) {
+      let sc = 0;
+      for (const kw of kws) { if (s.includes(kw.toLowerCase())) sc += kw.length; }
+      if (sc > debugScore) { debugScore = sc; debugClip = ck; }
+    }
+    const debugTarget = CLIP_TO_NAME[debugClip] || "?";
+    const dbNames = Object.values(items).map(i => i.name).slice(0,3).join(", ");
+    showToast(`❌ "${cmd.name}" → clip:${debugClip} score:${debugScore} target:"${debugTarget}" db:[${dbNames}]`);
     return null;
   }
 
