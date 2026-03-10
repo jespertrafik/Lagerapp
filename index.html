@@ -930,7 +930,7 @@ function render() {
       <div class="header-top">
         <div>
           <h1>📦 Lager</h1>
-          <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 ? ` • ${lowItems.length} behöver beställas` : ""}</div>
+          <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
       </div>
@@ -954,7 +954,7 @@ function render() {
       <span class="search-icon">🔍</span>
       <input class="search-input" type="search" placeholder="Sök artikel..." id="lager-search" oninput="search=this.value;filterItems()" autocomplete="off">
     </div>
-    <div class="stats-bar">${totalPcs} artiklar · ${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"} · ${lowItems.length} lågt saldo</div>
+    <div class="stats-bar">${totalPcs} artiklar · ${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}${viewMode === "dashboard" ? ` · ${lowItems.length} lågt saldo` : ""}</div>
     ${isAdmin && viewMode === "dashboard" ? `<div class="backup-bar">
       <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
       <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
@@ -978,16 +978,16 @@ function render() {
     const isLow = item.min > 0 && item.qty <= item.min;
     const priceTotal = (item.qty || 0) * (item.price || 0);
     html += `
-      <div class="item-card ${isLow ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-brand="${item.brand}">
+      <div class="item-card ${isLow && viewMode === "dashboard" ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-brand="${item.brand}">
         <div class="item-top">
           <div>
             <div class="item-name">${item.name}</div>
             <div class="item-artnr">Artnr: ${item.artnr || key}</div>
             ${item.price > 0 ? `<div class="item-price" style="text-align:left">${item.price} kr/st${item.qty > 0 ? " = " + Math.round(priceTotal).toLocaleString("sv-SE") + " kr" : ""}</div>` : ""}
-            ${isLow ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
+            ${isLow && viewMode === "dashboard" ? '<div class="item-warn">⚠ Under minsta saldo</div>' : ""}
           </div>
           <div style="text-align:right">
-            <div class="item-qty ${isLow ? "low" : "ok"}">${item.qty}</div>
+            <div class="item-qty ${isLow && viewMode === "dashboard" ? "low" : "ok"}">${item.qty}</div>
             ${isAdmin && item.min > 0 ? `<div class="item-meta">${item.unit} (min: ${item.min})</div>` : `<div class="item-meta">${item.unit}</div>`}
           </div>
         </div>
