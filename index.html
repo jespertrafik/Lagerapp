@@ -1487,8 +1487,11 @@ function findItemByVoice(spoken) {
   const targetName = CLIP_TO_NAME[bestClipKey];
   if (!targetName) return null;
 
+  const tn = targetName.toLowerCase();
   return Object.keys(items).find(k =>
-    items[k].name.toLowerCase() === targetName.toLowerCase()
+    items[k].name.toLowerCase() === tn
+  ) || Object.keys(items).find(k =>
+    items[k].name.toLowerCase().includes(tn) || tn.includes(items[k].name.toLowerCase())
   ) || null;
 }
 
