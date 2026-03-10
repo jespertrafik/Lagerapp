@@ -179,10 +179,10 @@
     .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; white-space: nowrap; }
     .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
     .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
-    .item-qty { font-size: var(--font-qty); font-weight: 800; line-height: 1; }
-    .item-qty.ok { color: #fff; }
-    body.light-mode .item-qty.ok { color: #000; }
-    .item-qty.low { color: var(--accent); }
+    .item-qty { font-size: var(--font-qty); font-weight: 800; line-height: 1; color: #fff !important; }
+    .item-qty.low { color: var(--accent) !important; }
+    body.light-mode .item-qty { color: #000 !important; }
+    body.light-mode .item-qty.low { color: var(--accent) !important; }
     .item-meta { font-size: var(--font-meta); color: var(--text-dim); text-align: right; word-break: break-word; }
     .item-price { font-size: 14px; font-weight: 600; color: var(--text); text-align: right; margin-top: 2px; }
 
