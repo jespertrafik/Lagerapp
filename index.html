@@ -23,6 +23,15 @@
       --input-bg: #0a0a0a;
     }
 
+    body.light-mode {
+      --bg: #f5f5f5; --card: #ffffff; --card-border: #e0e0e0;
+      --text: #1a1a1a; --text-dim: #666; --accent: #d4911a;
+      --green: #1a9a45; --red: #c22828;
+      --warn-bg: #fff8e6; --warn-border: #e6cc66;
+      --header-bg: rgba(245,245,245,0.92);
+      --input-bg: #ffffff;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -60,7 +69,7 @@
     .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
     .login-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
     .login-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 32px; }
-    .login-btn { display: flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #333; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
+    .login-btn { display: flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #333; border: 1px solid var(--card-border); border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
     .login-btn:active { opacity: 0.7; }
     .login-btn svg { width: 20px; height: 20px; }
     .login-error { margin-top: 16px; color: var(--red); font-size: 13px; }
@@ -91,8 +100,13 @@
     .admin-add-row { display: flex; gap: 8px; }
     .admin-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
 
+    /* ===== THEME TOGGLE ===== */
+    .theme-toggle { background: none; border: 1px solid var(--card-border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s; flex-shrink: 0; }
+    .theme-toggle:active { opacity: 0.7; }
+
     /* ===== HEADER ===== */
     .header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 6px 16px 0; border-bottom: 1px solid var(--card-border); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
     .header h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
     .header .subtitle { font-size: 10px; color: var(--text-dim); margin-top: 0; }
 
@@ -551,16 +565,37 @@ const ERROR_CODES = [
   { code: "E24", name: "Kondensatbehållare full", desc: "Kondensatbehållaren är full. Kondensatpumpen tömmer ej.", brand: "Electrolux", machine: "T4130, T4190" },
 ];
 
+// ====== THEME TOGGLE ======
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('lager-theme', isLight ? 'light' : 'dark');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = isLight ? '#f5f5f5' : '#0a0a0a';
+  render();
+}
+
+function applyTheme() {
+  const saved = localStorage.getItem('lager-theme');
+  if (saved === 'light') {
+    document.body.classList.add('light-mode');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = '#f5f5f5';
+  }
+}
+applyTheme();
+
 // ====== VIEW MODE ======
 function applyViewMode(mode) {
   viewMode = mode;
   const vm = VIEW_MODES.find(v => v.id === mode) || VIEW_MODES[0];
+  const isLight = document.body.classList.contains('light-mode');
   document.body.className = "";
   if (vm.sizeClass) document.body.classList.add(vm.sizeClass);
   if (vm.themeClass) document.body.classList.add(vm.themeClass);
+  if (isLight) document.body.classList.add('light-mode');
   // Update theme-color meta
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = "#0a0a0a";
+  if (meta) meta.content = isLight ? '#f5f5f5' : '#0a0a0a';
 }
 
 function setViewMode(mode) {
@@ -892,8 +927,13 @@ function render() {
       </div>
     </div>
     <div class="header">
-      <h1>📦 Lager</h1>
-      <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 ? ` • ${lowItems.length} behöver beställas` : ""}</div>
+      <div class="header-top">
+        <div>
+          <h1>📦 Lager</h1>
+          <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 ? ` • ${lowItems.length} behöver beställas` : ""}</div>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
+      </div>
       <div class="dept-tabs">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
