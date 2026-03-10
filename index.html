@@ -611,10 +611,13 @@ function loadViewMode() {
   if (!currentUser) return;
   db.ref("users/" + currentUser.uid + "/viewMode").once("value").then(snap => {
     const mode = snap.val();
-    if (mode) {
+    if (mode && VIEW_MODES.find(v => v.id === mode)) {
       applyViewMode(mode);
-      render();
+    } else {
+      applyViewMode(VIEW_MODES[0].id);
+      db.ref("users/" + currentUser.uid + "/viewMode").set(VIEW_MODES[0].id);
     }
+    render();
   });
 }
 
