@@ -1,4 +1,4 @@
-<!-- v2.5 -->
+<!-- v2.6 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Lager v2.5</title>
+  <title>Lager v2.6</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -564,6 +564,260 @@ const ERROR_CODES = [
   { code: "E17", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "T4130, T4190" },
   { code: "E18", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "T4130, T4190" },
   { code: "E24", name: "Kondensatbehållare full", desc: "Kondensatbehållaren är full. Kondensatpumpen tömmer ej.", brand: "Electrolux", machine: "T4130, T4190" },
+
+  // Missing T4130/T4190 codes
+  { code: "E10", name: "Parametrar felaktiga", desc: "En eller flera parametrar är felaktiga eller saknas.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E13", name: "Torktid överstiger bokad tid", desc: "Vald torktid överstiger betal/bokningssystemets bokade torktid.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E14", name: "Gaslåga saknas", desc: "Gaslåga saknas, tändsäkring utlöst. Gäller gasuppvärmda maskiner.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E16", name: "Vacuumbrytare påverkad vid start", desc: "Vaccumbrytare/tryckgivare påverkad (alt kortsluten) vid maskinstart.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E20", name: "CMIS stängt av torktumlaren", desc: "PC-programmet för processövervakning CMIS har stängt av torktumlaren.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E21", name: "CMIS ingen kontakt", desc: "PC-programmet för processövervakning CMIS har ingen kontakt med torktumlaren.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E22", name: "Betalsystem ingen kontakt", desc: "Bokning/betalsystemet har ingen kontakt med torktumlaren.", brand: "Electrolux", machine: "T4130, T4190" },
+  { code: "E28", name: "Inluftstemperatur pendlar", desc: "Inluftstemperatur pendlar. Kontrollera ventilation, evt filter, rördragning.", brand: "Electrolux", machine: "T4130, T4190" },
+
+  // Missing Compass Control W455H/W465H/W475H codes
+  { code: "11", name: "Obalansbrytare påverkad", desc: "Obalansbrytaren mekaniskt påverkad vid programstart, om sådan finns.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "12", name: "Programvarufel", desc: "Programvarufel, tanka ny mjukvara alt byt CPU.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "15", name: "Nödstopp aktiverat", desc: "Nödstopp aktiverat, om sådan finns.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "18", name: "Start ej tillåten", desc: "Start ej tillåten, inget startvillkor från bokning/betalsystem.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "19", name: "Seriell kommunikation saknas", desc: "Seriell kommunikation mellan tvättmaskin och bokning/betalsystemet saknas.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "22", name: "Fyll på olja", desc: "Fyll på olja i oljebehållare för oljesmörjning.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "23", name: "Saknar I/O adresser", desc: "Saknar samtliga I/O adresser i maskinen.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "24", name: "Checksummefel DLCU", desc: "Checksummefel från DLCU, byt CPU.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "28", name: "Pressostat felaktigt värde", desc: "Den elektroniska pressostaten visar ett felaktigt värde i förhållande till mekaniska pressostaten.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "33", name: "Ingen interlocksignal", desc: "Ingen interlocksignal till motorstyrning.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "36", name: "Interlockfel hårdvara", desc: "Interlock fel i motorstyrningens ingående komponenter.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "42", name: "Parameterfel motorstyrning", desc: "Parameterfel i motorstyrningen.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "43", name: "Obalansbrytare kortsluten", desc: "Obalansbrytaren kortsluten.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "44", name: "Varvtal högre än beordrat", desc: "Motorstyrningen indikerar ett högre varvtal än beordrat.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "51", name: "Internt kommunikationsfel CPU", desc: "Internt kommunikationsfel i CPU, bryt spänningen i 2 min.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "52", name: "Internt fel CPU", desc: "Internt fel på CPU, bryt spänningen i 2 min.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "54", name: "Tachosignal vid programslut", desc: "Tachogenerator ger signal vid programslut trots att inget varvtal är beordrat.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "56", name: "Varvtal med öppen lucka", desc: "CPU har beordrat varvtal trots att luckan är öppen.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+  { code: "58", name: "Tachosignal saknas", desc: "Tachosignal saknas trots att CPU beordrat varvtal.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
+
+  // === ELECTROLUX WASH & DRY (WD4130, WD4240) ===
+  { code: "29", name: "Ingen kommunikation Selecta", desc: "CPU Compass Control har ingen kommunikation med Selecta kort.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "73", name: "Kortsluten inluftstermistor", desc: "Kortsluten inluftstermistor.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "74", name: "Kortsluten utluftstermistor", desc: "Kortsluten utluftstermistor.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "75", name: "Fläktmotor överhettad", desc: "Fläktmotor överhettad.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "76", name: "Drivmotor överhettad", desc: "Drivmotor överhettad.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "78", name: "Överhettningsskydd utlöst", desc: "Överhettningsskydd har löst ut.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "79", name: "Filterdörr öppen vid start", desc: "Filterdörr öppen vid programstart.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "80", name: "Programmeringsfel", desc: "Programmeringsfel, parameterfel.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "81", name: "RMC-tid överskriden", desc: "Max tillåten RMC-tid överskriden (torktid med restfuktighetsmätning).", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "82", name: "Autostopp-tid överskriden", desc: "Max tillåten Autostopp-tid överskriden (temperaturstyrd torkning).", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "83", name: "Torktid överstiger bokad tid", desc: "Vald torktid överstiger betal/bokningssystemets bokade torktid.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "84", name: "Gaslåga saknas", desc: "Gaslåga saknas, tändsäkring utlöst. Gäller gasuppvärmda maskiner.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "85", name: "Vacuumbrytare inget undertryck", desc: "Vacuumbrytare/tryckgivare indikerar inget undertryck inom 12 sek från maskinstart.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "86", name: "Vacuumbrytare påverkad vid start", desc: "Vacuumbrytare/tryckgivare påverkad (alt kortsluten) vid maskinstart.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "87", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "88", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott alt kablageavbrott, eller indikerar mindre än 30° efter 2 min värme.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "91", name: "CMIS ingen kontakt", desc: "PC-programmet för processövervakning CMIS har ingen kontakt med torktumlaren.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "92", name: "Betalsystem ingen kontakt", desc: "Bokning/betalsystemet har ingen kontakt med torktumlaren.", brand: "Electrolux", machine: "WD4130, WD4240" },
+  { code: "94", name: "Kondensattank överfylld", desc: "Kondensattank överfylld, pumpen tömmer ej.", brand: "Electrolux", machine: "WD4130, WD4240" },
+
+  // === ELECTROLUX EXACTA (W365–W3240H/N) ===
+  { code: "01E", name: "Vattennivåkvittens saknas", desc: "Vattennivåkvittens saknas inom fastställd tid.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "02E", name: "Lucka stängd signal saknas", desc: "Signal från brytare S3 'Lucka stängd' saknas under programkörning.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "03E", name: "Lucka låst signal saknas", desc: "Signal från brytarna S4a och b 'Lucka låst' saknas vid programstart eller programkörning.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "04E", name: "Temperatur under -5°C", desc: "Temperaturavkänningen indikerar temperatur under -5°C alt. avbrott i givare.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "05E", name: "Temperatur över 98°C", desc: "Temperaturavkänningen indikerar temperatur över 98°C alt. kortsluten givare.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "06E", name: "Vattennivå för hög vid start", desc: "Vattennivån för hög vid programstart.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "07E", name: "Vattennivå för hög", desc: "Vattennivån för hög under programkörning.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "08E", name: "Långsam uppvärmning", desc: "Temperaturstegringen på vattnet är för långsam.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "10E", name: "Vatten efter avlopp", desc: "Vatten i trumma efter avlopp alt. tömningstid för lång.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "11E", name: "Obalansbrytare alltid tillslagen", desc: "Mekanisk obalansbrytare alltid tillslagen.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "12E", name: "Programminne ej läsbart", desc: "Programverket kan inte läsa programminnet (EPROM).", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "13E", name: "Ingen motorkontakt", desc: "Programverket får ingen kontakt med motorstyrningen.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "14E", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "17E", name: "Lucka låst signal felaktig", desc: "Signal från brytarna S4a och b 'Lucka låst' finns trots att signal från brytare S3 'Lucka stängd' saknas.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "18E", name: "Start ej tillåten", desc: "Betal/bokningssystem tillåter inte start av valt program.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "19E", name: "Kommunikation betalsystem avbruten", desc: "Kommunikation mellan betal/bokningssystem och programverkskort avbruten.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "21E", name: "Mikroprocessorfel", desc: "Fel i mikroprocessorn (Konfigurationsregistret).", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "22E", name: "Nivåsystem felaktigt värde", desc: "Nivåsystemet indikerar ett så felaktigt värde vid programstart att den automatiska nivåkalibreringen inte kan korrigera felet.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "31E", name: "Kylfläns hög temp", desc: "Motorstyrningen indikerar för hög temperatur på motorstyrningens kylfläns.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "32E", name: "Motor överhettad", desc: "Motorstyrningen indikerar att motorns överhettningsskydd har löst ut.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "33E", name: "Ingen interlock", desc: "Motorstyrningen får startkommando från programverket utan att ha signal från brytare S2 'Lucka låst'.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "35E", name: "Kortslutning motor", desc: "Motorstyrningen indikerar kortslutning i motorlindningarna, kablaget eller internt i motorstyrningen.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "36E", name: "Interlockfel hårdvara", desc: "Motorstyrningen indikerar fel i mottagningskretsen för interlock (troligtvis felaktig motorstyrning).", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "37E", name: "Låg DC-spänning", desc: "Motorstyrningen indikerar för låg likspänningsnivå.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "38E", name: "Hög DC-spänning", desc: "Motorstyrningen indikerar för hög likspänningsnivå.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "41E", name: "Överhettningsskydd krets fel", desc: "Motorstyrningen indikerar fel i kretsarna till motorns överhettningsskydd (troligtvis felaktig motorstyrning).", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "43E", name: "Obalansbrytare aktiverad", desc: "RDC-kort indikerar att mekanisk obalansbrytare är aktiverad när inget motorvarv pågår.", brand: "Electrolux", machine: "W365–W3240H/N" },
+  { code: "45E", name: "Tachosignal saknas", desc: "RDC-kort/Motorstyrning indikerar att hallgivaren/tachogeneratorns signal saknas vid beordrat varvtal.", brand: "Electrolux", machine: "W365–W3240H/N" },
+
+  // === ELECTROLUX GENERATION V (WE53-W355H) ===
+  { code: "01E", name: "Vattennivå ej uppnådd", desc: "Vattennivån ej uppnådd inom fastställd tid. Åtgärda felet. Tryck åter på START.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "02E", name: "Lucklägeskontakt öppen", desc: "Lucklägeskontakten öppen under programkörning. Åtgärda felet. Tryck åter på START.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "03E", name: "Lucka ej låst", desc: "Låset har ej låst luckan inom fastställd tid. Åtgärda felet. Tryck åter på START.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "04E", name: "Temperatur under -5°C", desc: "Temperaturgivaren indikerar temperatur under -5°C (avbrott i givare/kablage).", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "05E", name: "Temperatur över 98°C", desc: "Temperaturgivaren indikerar temperatur över 98°C (kortslutning i givare/kablage).", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "06E", name: "Vattennivå hög vid start", desc: "Vattennivån över fastställt värde vid start. Kontrollera avloppsventil.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "07E", name: "Vattennivå hög under program", desc: "Vattennivån över fastställt värde under programkörning.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "08E", name: "Långsam uppvärmning", desc: "Temperaturstegringen för långsam. Kontrollera element, ev. läckage avloppsventil.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "10E", name: "Vatten efter avlopp", desc: "Vattennivån är över fastställt värde efter avlopp. Kontrollera avloppsventil.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "11E", name: "Obalansbrytare tillslagen", desc: "Mekanisk obalansbrytare alltid tillslagen.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "12E", name: "Programminne ej läsbart", desc: "Programverket kan inte läsa programminnet (EPROM).", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "13E", name: "Ingen motorkontakt", desc: "Programverket får ingen kontakt med motorstyrningen.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "14E", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat. Åtgärda felet. Tryck åter på START.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "17E", name: "Lucka låst utan stängd-signal", desc: "Lucka låst signal finns trots att lucka stängd signal saknas.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "18E", name: "Start ej tillåten", desc: "Betal/bokningssystem tillåter inte start.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "19E", name: "Kommunikation betalsystem avbruten", desc: "Kommunikation mellan betal/bokningssystem och programverkskort avbruten.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "21E", name: "Mikroprocessorfel", desc: "Fel i mikroprocessorn.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "22E", name: "Nivåsystem felaktigt värde", desc: "Nivåsystemet indikerar felaktigt värde, automatisk kalibrering kan inte korrigera.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "31E", name: "Kylfläns hög temp", desc: "Motorstyrningen indikerar för hög temperatur på kylfläns.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "32E", name: "Motor överhettad", desc: "Motorns överhettningsskydd har löst ut.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "33E", name: "Ingen interlock", desc: "Motorstyrningen får startkommando utan interlocksignal.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "35E", name: "Kortslutning motor", desc: "Kortslutning i motorlindningarna, kablaget eller internt i motorstyrningen.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "36E", name: "Interlockfel hårdvara", desc: "Fel i mottagningskretsen för interlock.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "37E", name: "Låg DC-spänning", desc: "För låg likspänningsnivå i motorstyrningen.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "38E", name: "Hög DC-spänning", desc: "För hög likspänningsnivå i motorstyrningen.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "41E", name: "Överhettningsskydd krets fel", desc: "Fel i kretsarna till motorns överhettningsskydd.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "43E", name: "Obalansbrytare aktiverad", desc: "RDC-kort indikerar att mekanisk obalansbrytare är aktiverad.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+  { code: "45E", name: "Tachosignal saknas", desc: "Hallgivaren/tachogeneratorns signal saknas vid beordrat varvtal.", brand: "Electrolux", machine: "Generation V (WE53–W355H)" },
+
+  // === ELECTROLUX GENERATION III (W74/75-230MP) ===
+  { code: "01", name: "Vattennivå ej uppnådd", desc: "Vattennivån ej uppnådd. Är avstängningsventilen för vatten öppen?", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "02", name: "Dörrlås ur funktion", desc: "Dörrlås ur funktion. Öppna och stäng luckan igen.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "03", name: "Temperatur under -5°C", desc: "Temperatur under -5°C. Avbrott i kablage eller givare.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "04", name: "Vattentemperatur över 98°C", desc: "Vattentemperatur över 98°C. Kortslutning i kablage eller givare.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "05", name: "Vatten vid programstart", desc: "Vatten i maskinen vid programstart. Kontrollera avloppsventil, avloppsslang, nivåslang och nivågivarens funktion.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "06", name: "Fel i programminnet", desc: "Fel i programminnet.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "07", name: "Maskinen värmer ej korrekt", desc: "Maskinen värmer ej korrekt. Kontrollera uppvärmningssystem och termostat.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "08", name: "Vattnet töms ej", desc: "Vattnet töms ej tillräckligt snabbt. Kontrollera avlopp, nivåslang och nivågivarens funktion.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "09", name: "Obalansbrytare ur funktion", desc: "Obalansbrytare ur funktion.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+  { code: "18", name: "CALCAD start ej tillåten", desc: "Start ej tillåten: programmet inte fullt betalt eller bokningstiden för kort. Kommunikationen mellan CALCAD 4400 och programverkskort kan vara avbruten.", brand: "Electrolux", machine: "Generation III (W74–W230MP)" },
+
+  // === ELECTROLUX GENERATION II (W74-184MP, WE60-105MP) ===
+  { code: "01", name: "Vatteninlopp >10 min", desc: "Vattenpåfyllning längre än 10 min. Öppna vattenkran. Rengör filter. Kontrollera ventil och nivåkontroll.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "02", name: "Luckan öppen under program", desc: "Luckan öppen någon gång under programmet. Kontrollera lucklåset.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "03", name: "Avbrott temperaturgivare", desc: "Avbrott till eller i temperaturgivaren. Kontrollera kabel och givare.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "04", name: "Vattentemp över 98°C", desc: "Vattentemperatur över 98°C. Byt temperaturgivare.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "05", name: "Vatten vid programstart", desc: "Vatten i maskinen vid programstart. Kontrollera nivåkontroll och avloppsventil.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "06", name: "Inget programminne anslutet", desc: "Inget programminne anslutet. Kontrollera att minnet är korrekt anslutet.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "07", name: "Långsam uppvärmning", desc: "Vattentemperaturen stigit mindre än 5° på 10 min. Kontrollera element, kontakter och timer.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "08", name: "Vattnet töms ej", desc: "Vattnet rinner ej ur maskinen tillräckligt snabbt. Kontrollera element och avloppsventil.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "09", name: "Obalansbrytare aktiverad", desc: "Obalansbrytare aktiverad före centrifugering. Kontrollera obalansbrytaren.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+  { code: "10", name: "Felaktig centrifugsignal", desc: "Felaktig signal till centrifugkontakter.", brand: "Electrolux", machine: "Generation II (W74–W184MP)" },
+
+  // === ELECTROLUX COMPASS PRO TORK — missing codes (TD6-6, T5130, T5190) ===
+  { code: "10:13", name: "Initialisering misslyckades", desc: "Initialiseringen misslyckades.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:4", name: "Inluftsgivare under 0°C", desc: "Temperaturgivaren för inluft visar temperatur under 0°C, alt. kortslutning i kablaget.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:5", name: "Frånluftsgivare under -10°C", desc: "Temperaturgivaren för frånluft visar temperatur under -10°C, alt. avbrott i kablaget.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:6", name: "Frånluftsgivare över 100°C", desc: "Temperaturgivaren för frånluft visar temperatur över 100°C, alt. kortslutning i kablaget.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:9", name: "Värmepump lågtryck", desc: "Varningssignal: värmepumpens lågtryckspressostat har aktiverats för många gånger under ett torkprogram. Kolla kylmedel och skadade kablar.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:10", name: "Värmepump högtryck", desc: "Varningssignal: värmepumpens högtryckspressostat har aktiverats för många gånger under ett torkprogram. Kolla kylvattentillförseln och luftflödet.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:13", name: "TID-program tid överskriden", desc: "Maxtiden för TID-programmet överskridit (normalt 90 min).", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:14", name: "Gaständning fel", desc: "Fel vid tändningen av gasvärmda tumlare.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:16", name: "Vacuumbrytare påverkad vid start", desc: "Vaccumbrytaren påverkad vid programstart (alt. kortsluten).", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:18", name: "Omfördelning av last", desc: "Omfördelning av last nödvändig.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:253", name: "Bygel 1 saknas", desc: "Bygel 1 för bortkoppling av vissa funktioner saknas.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:254", name: "Bygel 2 saknas", desc: "Bygel 2 för bortkoppling av vissa funktioner saknas.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "12:255", name: "Bygel 3 saknas", desc: "Bygel 3 för bortkoppling av vissa funktioner saknas.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "17:20", name: "Värmepump kritiskt fel", desc: "Värmepump kritiskt fel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "17:21", name: "Värmepump internt fel", desc: "Värmepump internt fel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "17:22", name: "Värmepumpskommunikation förlorad", desc: "Värmepumpskommunikation förlorad.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "17:23", name: "Ingen värmepumpskommunikation", desc: "Ingen värmepumpskommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "17:24", name: "Värmepump mjukvara missanpassning", desc: "Värmepump mjukvara missanpassning.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "20:2", name: "Ingen motorkommunikation (trum)", desc: "Ingen motorkommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "20:3", name: "Motorkommunikation tappad (trum)", desc: "Tappat motorkommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:1", name: "Kylfläns hög temp (trum)", desc: "Kylfläns hög temperatur.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:2", name: "Motor för varm (trum)", desc: "Motor för varm.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:3", name: "Ingen interlock (trum)", desc: "Ingen interlock.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:4", name: "Ingen motorkommunikation (MCU trum)", desc: "Ingen motorkommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:6", name: "Interlock hårdvarufel (trum)", desc: "Interlock hårdvarufel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:8", name: "Hög DC-spänning (trum)", desc: "Hög DC spänning.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:12", name: "Ingen parameter i växelriktare (trum)", desc: "Ingen parameter ställd i växelriktaren.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "23:255", name: "Odefinierat fel (trum)", desc: "Odefinierat fel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "30:2", name: "Ingen fläktmotorkommunikation", desc: "Ingen motorkommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "30:3", name: "Fläktmotorkommunikation tappad", desc: "Motorkommunikation förlorad.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:1", name: "Kylfläns hög temp (fläkt)", desc: "Kylfläns hög temperatur.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:2", name: "Motor för varm (fläkt)", desc: "Motor för varm.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:3", name: "Ingen interlock (fläkt)", desc: "Ingen interlock.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:4", name: "Ingen motorkommunikation (fläkt)", desc: "Ingen motorkommunikation.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:6", name: "Interlock hårdvarufel (fläkt)", desc: "Interlock hårdvarufel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:7", name: "Låg DC-spänning (fläkt)", desc: "Låg DC spänning.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:8", name: "Hög DC-spänning (fläkt)", desc: "Hög DC spänning.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:12", name: "Ingen parameter i växelriktare (fläkt)", desc: "Ingen parameter ställd i växelriktaren.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "33:255", name: "Odefinierat fel (fläkt)", desc: "Odefinierat fel.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "40:1–40:10", name: "Interlock saknas I/O-kort (tork)", desc: "Interlocksignal fattas på I/O-kort. I/O-kortets adress visas i displayen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "40:11–40:20", name: "Ingen kommunikation I/O-kort (tork)", desc: "Ingen kommunikation mellan CPU och I/O-kort via D-bussen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "40:22", name: "Felaktigt I/O-kort (tork)", desc: "Felaktigt I/O-kort monterat eller felaktig adress på I/O-kort.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "50:18", name: "MIS tillåter inte start (tork)", desc: "Externa MIS-systemet tillåter inte start.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "50:20", name: "MIS stängt av maskinen (tork)", desc: "Externa MIS-systemet har stängt av maskinen under gång.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "51:22", name: "Betalsystem tappat kontakt (tork)", desc: "Bokning/betalsystemet har tappat kontakt med maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "52:1", name: "CST ingen kontakt (tork)", desc: "PC-programmet för processövervakning har ingen kontakt med maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "52:2", name: "Tvättmedelsdosering bruten (tork)", desc: "Kommunikationen mellan externt system för tvättmedelsdosering och maskinen bruten.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:5", name: "Fatalt fel körläge (tork)", desc: "Fatalt fel ogiltigt körläge. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:11", name: "Skrivfel flash (tork)", desc: "Fatalt fel skrivfel externt flash. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:17", name: "Ogiltigt tillval (tork)", desc: "Fatalt fel ogiltigt tillval. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:18", name: "Ogiltig modul (tork)", desc: "Fatalt fel ogiltig modul. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:28", name: "Ogiltig myntinput (tork)", desc: "Fatalt fel ogiltig myntinput. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+  { code: "60:29", name: "Ogiltigt typsnitt (tork)", desc: "Fatalt fel ogiltigt typsnitt. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
+
+  // === ELECTROLUX SELECTA I (T3190 m.fl.) ===
+  { code: "E01", name: "För hög tilluftstemperatur", desc: "För hög tilluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E02", name: "För hög frånluftstemperatur", desc: "För hög frånluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E03", name: "Tilluft NTC kortsluten", desc: "NTC givare tilluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E04", name: "Frånluft NTC kortsluten", desc: "NTC givare frånluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E05", name: "Fläktmotor överhettad", desc: "Fläktmotorns inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E06", name: "Drivmotor överhettad", desc: "Drivmotorns alt. driv- och fläktmotorns (T3190) inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E08", name: "Överhettningsskydd utlöst", desc: "Manuellt återställningsbart överhettningsskydd till- eller frånluft utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E09", name: "Luddlåda ej tömd", desc: "Indikerar luddlådan ej tömd.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E10", name: "Parametrar saknas/felaktiga", desc: "Parameterinställning saknas/felaktig.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E11", name: "RMC-tid överskriden", desc: "RMC-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E12", name: "Autostopp-tid överskriden", desc: "Autostopp-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E13", name: "Torktid överstiger bokad tid", desc: "Betalsystemet/bokningssystemet begär längre torktid än maskinens maximala torktid.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E14", name: "Gasfel", desc: "Gasfel, endast gasuppvärmda maskiner.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E15", name: "Vacuumbrytare ej stängd", desc: "Vakuumbrytare stänger inte inom 5 sek från start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E16", name: "Vacuumbrytare stängd vid start", desc: "Vacuumbrytare stängd vid start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E17", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott eller indikerar mindre än 30° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E18", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott eller indikerar mindre än 12° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "E99", name: "Kommunikationsfel processor-panel", desc: "Kommunikationsfel mellan processorkort och panelkretskort.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+
+  // === ELECTROLUX BASIC II/III (TT130, TT166, TT200K) ===
+  { code: "F1", name: "EEPROM-läsfel", desc: "EEPROM-läsfel på kortet. Ställ in maskinparametrarna i serviceprogrammet.", brand: "Electrolux", machine: "Basic II/III (TT130, TT166, TT200K)" },
+  { code: "F4", name: "Temperaturgivare bruten", desc: "Temperaturgivarkretsen bruten. Fel eller brott på givare eller kabel.", brand: "Electrolux", machine: "Basic II/III (TT130, TT166, TT200K)" },
+
+  // === ELECTROLUX BASIC I / DELUXE STANDARD / DELUXE RMC ===
+  { code: "F1", name: "Spänningsfall >20%", desc: "För låg spänning, mer än 20% spänningsfall.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F3", name: "Tilluft NTC avbrott", desc: "NTC givare tilluft avbrott eller indikerar mindre än 30°C efter 2 min.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F4", name: "Frånluft NTC avbrott", desc: "NTC givare frånluft avbrott eller indikerar mindre än 0°C efter 3 min.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F5", name: "Fel variantinställning", desc: "Fel variantinställning. Fel kombination av brytare på kretskortet.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F6", name: "Elektronikfel", desc: "Elektronikfel. Fel i mikroprocessor.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F7", name: "Serviceprogram felaktigt", desc: "Serviceprogram felaktigt aktiverat.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+  { code: "F8", name: "Vakuumbrytarfel", desc: "Vakuumbrytarfel.", brand: "Electrolux", machine: "Basic I / Deluxe Standard / Deluxe RMC" },
+
+  // === ELECTROLUX TT127/C, 127T, 127TK ===
+  { code: "F1", name: "Överfyllnad kondensatbehållare", desc: "Överfyllnad i kondensvattenbehållaren.", brand: "Electrolux", machine: "TT127/C, TT127T, TT127TK" },
+  { code: "F2", name: "Max gångtid uppnådd", desc: "Maximal gångtid uppnådd, 3 tim.", brand: "Electrolux", machine: "TT127/C, TT127T, TT127TK" },
+  { code: "F3", name: "Termistorfel", desc: "Termistorfel.", brand: "Electrolux", machine: "TT127/C, TT127T, TT127TK" },
+  { code: "F4", name: "Ludd i filter/kondensorpaket", desc: "Ludd i filter eller kondensorpaket.", brand: "Electrolux", machine: "TT127/C, TT127T, TT127TK" },
+  { code: "F5", name: "Fuktighetssensor fel", desc: "Fel i fuktighetssensor.", brand: "Electrolux", machine: "TT127/C, TT127T, TT127TK" },
+
+  // === ELECTROLUX TORKSKÅP TS560LE/h ===
+  { code: "ER 03", name: "Fel på fuktgivare", desc: "Fel på fuktgivare.", brand: "Electrolux", machine: "Torkskåp TS560LE/h" },
+  { code: "ER 04", name: "Maxtid torkprocess", desc: "Maxtid för torkprocess.", brand: "Electrolux", machine: "Torkskåp TS560LE/h" },
+  { code: "ER 06", name: "Kontrollera vattenpump", desc: "Kontrollera vattenpump (TS560LEh).", brand: "Electrolux", machine: "Torkskåp TS560LE/h" },
+  { code: "ER 08", name: "Rengör filtret", desc: "Rengör filtret.", brand: "Electrolux", machine: "Torkskåp TS560LE/h" },
+  { code: "ER 10", name: "Kontrollera vattenpump", desc: "Kontrollera vattenpump.", brand: "Electrolux", machine: "Torkskåp TS560LE/h" },
+
+  // === ELECTROLUX TORKSKÅP TS5140LE (Master/Slave) ===
+  { code: "ER 03", name: "Fel på fuktgivare (Master)", desc: "Fel på fuktgivare (MASTER).", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER 04", name: "Maxtid torkprocess (Master)", desc: "Maxtid för torkprocess (MASTER).", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER 06", name: "Rengör filter Master", desc: "Rengör filtret i Master enheten.", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER 08", name: "Rengör filter Slave", desc: "Rengör filtret i Slave enheten.", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER 10", name: "Vattenpump Master", desc: "Kontrollera vattenpumpen i MASTER enheten.", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER S 10", name: "Vattenpump Slave", desc: "Kontrollera vattenpumpen i Slave enheten.", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER M 12", name: "Timeout kommunikation Master", desc: "Timeout kommunikation (MASTER).", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+  { code: "ER S 12", name: "Timeout kommunikation Slave", desc: "Timeout kommunikation (SLAVE).", brand: "Electrolux", machine: "Torkskåp TS5140LE" },
+
+  // === ELECTROLUX TORKSKÅP TS5121LE/QLE ===
+  { code: "ERR 03", name: "Fel på fuktgivare", desc: "Fel på fuktgivare.", brand: "Electrolux", machine: "Torkskåp TS5121LE/QLE" },
+  { code: "ERR 04", name: "Maxtid torkprocess", desc: "Maxtid för torkprocess.", brand: "Electrolux", machine: "Torkskåp TS5121LE/QLE" },
+  { code: "ERR 05", name: "Överbelastning", desc: "Överbelastning.", brand: "Electrolux", machine: "Torkskåp TS5121LE/QLE" },
+  { code: "ERR 12", name: "Timeout kommunikation", desc: "Timeout kommunikation.", brand: "Electrolux", machine: "Torkskåp TS5121LE/QLE" },
 ];
 
 // ====== THEME TOGGLE ======
@@ -934,7 +1188,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.5</h1>
+          <h1>📦 Lager v2.6</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
