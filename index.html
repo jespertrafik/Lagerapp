@@ -173,10 +173,10 @@
     .item-card.low { background: var(--warn-bg); border-color: var(--warn-border); }
 
     .item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
-    .item-top > div:first-child { min-width: 0; flex: 1; }
+    .item-top > div:first-child { min-width: 0; flex: 1; overflow: hidden; }
     .item-top > div:last-child { flex-shrink: 0; min-width: 60px; text-align: right; }
-    .item-name { font-size: 19px; font-weight: 700; }
-    .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; white-space: nowrap; }
+    .item-name { font-size: 19px; font-weight: 700; word-wrap: break-word; overflow-wrap: break-word; }
+    .item-artnr { font-size: 15px; color: var(--accent); font-weight: 600; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; }
     .item-brand { font-size: var(--font-meta); color: var(--text-dim); margin-top: 2px; }
     .item-warn { font-size: var(--font-meta); color: var(--accent); margin-top: 2px; }
     .item-qty { font-size: var(--font-qty); font-weight: 800; line-height: 1; color: #fff !important; }
