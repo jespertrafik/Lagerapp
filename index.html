@@ -266,7 +266,6 @@ const DEPARTMENTS = [
 ];
 
 const VIEW_MODES = [
-  { id: "compact", name: "Normal", icon: "📱", desc: "Standardvy — bra för telefon", sizeClass: "", themeClass: "" },
   { id: "large", name: "Stor & Tydlig", icon: "🖐️", desc: "Stora knappar och text — lättare att använda", sizeClass: "size-large", themeClass: "" },
   { id: "dashboard", name: "Dashboard", icon: "🖥️", desc: "Rutnät med 2 kolumner — bäst på dator", sizeClass: "size-dashboard", themeClass: "" },
 ];
@@ -274,28 +273,28 @@ const VIEW_MODES = [
 // Default items per department from inventory PDF
 // qty set to random 0-15 for demo, prices from PDF
 const DEFAULT_TVATTSTUGOR = [
-  { name: "Lucklås", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 1938, artnr: "438956101" },
-  { name: "Luckhandtag", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 849, artnr: "472992033" },
-  { name: "Programväljare", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 747, artnr: "432681002" },
-  { name: "Display", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 1403, artnr: "432870204" },
-  { name: "Motorstyrning O1", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 5797, artnr: "472992901" },
-  { name: "Motorstyrning O2", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 5959, artnr: "472992902" },
-  { name: "Element 2500W", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 605, artnr: "471983701" },
-  { name: "Element 1000W", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 740, artnr: "471983704" },
-  { name: "Kondensator 5µF Torktumlare", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "471952511" },
-  { name: "Kondensator 3µF Fläkt torkskåp", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Dörrmagnet", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 241, artnr: "487089303" },
-  { name: "Drivrem", unit: "st", qty: 10, min: 3, brand: "Electrolux", price: 170, artnr: "487223396" },
-  { name: "Stötdämpare 4pack", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 756, artnr: "472991308" },
-  { name: "Fläktmotor torkskåp", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Mangelduk", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 255, artnr: "" },
-  { name: "Filter T4190", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 547, artnr: "487041108" },
-  { name: "Filter T5190", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Filter T4121", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Filter T5121", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Filter LE T5190", unit: "st", qty: 10, min: 2, brand: "Electrolux", price: 751, artnr: "432731177" },
-  { name: "Avloppsventil", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 1607, artnr: "432250201" },
-  { name: "Stödrullar komplett", unit: "st", qty: 10, min: 1, brand: "Electrolux", price: 1513, artnr: "490431501" },
+  { name: "Lucklås", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1938, artnr: "438956101" },
+  { name: "Luckhandtag", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 849, artnr: "472992033" },
+  { name: "Programväljare", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 747, artnr: "432681002" },
+  { name: "Display", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1403, artnr: "432870204" },
+  { name: "Motorstyrning O1", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 5797, artnr: "472992901" },
+  { name: "Motorstyrning O2", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 5959, artnr: "472992902" },
+  { name: "Element 2500W", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 605, artnr: "471983701" },
+  { name: "Element 1000W", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 740, artnr: "471983704" },
+  { name: "Kondensator 5µF Torktumlare", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "471952511" },
+  { name: "Kondensator 3µF Fläkt torkskåp", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Dörrmagnet", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 241, artnr: "487089303" },
+  { name: "Drivrem", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 170, artnr: "487223396" },
+  { name: "Stötdämpare 4pack", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 756, artnr: "472991308" },
+  { name: "Fläktmotor torkskåp", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Mangelduk", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 255, artnr: "" },
+  { name: "Filter T4190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 547, artnr: "487041108" },
+  { name: "Filter T5190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Filter T4121", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Filter T5121", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
+  { name: "Filter LE T5190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 751, artnr: "432731177" },
+  { name: "Avloppsventil", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1607, artnr: "432250201" },
+  { name: "Stödrullar komplett", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1513, artnr: "490431501" },
 ];
 
 
@@ -378,7 +377,7 @@ let loginError = "";
 let currentListener = null;
 let showLog = false;
 let logEntries = [];
-let viewMode = "compact";
+let viewMode = "large";
 let showSettings = false;
 let showAdmin = false;
 let allowedUsers = {};
