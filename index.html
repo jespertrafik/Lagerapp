@@ -1543,7 +1543,6 @@ function executeVoiceCommand(cmd) {
       if (r && !r.skip) results.push(r);
     }
     if (results.length === 0) {
-      speak("Förstod inte.");
       return;
     }
     // Speak all items taken in one phrase
@@ -1570,7 +1569,6 @@ function executeVoiceCommand(cmd) {
   const r = executeSingleVoiceCommand(cmd);
   if (r && r.skip) return;
   if (!r) {
-    speak("Förstod inte.");
     return;
   }
   if (r.action === "add") {
@@ -1625,7 +1623,6 @@ function startVoice() {
       showToast(`🎤 "${transcript}"`);
       executeVoiceCommand(cmd);
     } else {
-      speak("Förstod inte. Säg till exempel: tagit ett lucklås eller lägg till fem drivremmar.");
       showToast(`❌ Hörde: "${transcript}"`);
     }
   };
