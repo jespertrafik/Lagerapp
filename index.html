@@ -1,4 +1,4 @@
-<!-- v2.3 -->
+<!-- v2.4 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Lager v2.3</title>
+  <title>Lager v2.4</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -934,7 +934,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.3</h1>
+          <h1>📦 Lager v2.4</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1059,6 +1059,10 @@ function render() {
     let filtered = ERROR_CODES.filter(e => {
       if (ecBrand && e.brand !== ecBrand) return false;
       if (ecMachine && !e.machine.includes(ecMachine)) return false;
+      if (ecSearch) {
+        const q = ecSearch.toLowerCase();
+        if (!e.code.toLowerCase().includes(q) && !e.name.toLowerCase().includes(q) && !e.desc.toLowerCase().includes(q) && !e.machine.toLowerCase().includes(q)) return false;
+      }
       return true;
     });
     ecFilteredCodes = filtered;
@@ -1082,7 +1086,7 @@ function render() {
     }
 
     // Search
-    html += `<div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. F10, motor, lucka..." id="ec-search" oninput="ecSearch=this.value;filterEC()" autocomplete="off"></div>`;
+    html += `<div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. F10, motor, lucka..." id="ec-search" oninput="ecSearch=this.value;render()" autocomplete="off"></div>`;
 
     // Count
     html += `<div class="ec-count">${filtered.length} felkoder</div>`;
@@ -1453,15 +1457,20 @@ function findErrorCode(spoken) {
   // Remove extra spaces
   cleaned = cleaned.replace(/\s+/g, " ").trim();
 
+  // Speech rec often hears "i" instead of "e"
+  cleaned = cleaned.replace(/^i\s+/, "e ").replace(/^i(\d)/, "e$1");
+
   // Build variants to try
+  const compact = cleaned.replace(/\s+/g, "");
   const variants = [
     cleaned,
     cleaned.replace(/\s+/g, ":"),
-    cleaned.replace(/\s+/g, ""),
+    compact,
     cleaned.replace(/^([a-z])(\d)/, "$1$2"),       // "e 20" → "e20"
     cleaned.replace(/^([a-z])\s+(\d)/, "$1$2"),     // "f 10" → "f10"
-    "e" + cleaned.replace(/^e\s*/, ""),              // ensure "e" prefix
-    "f" + cleaned.replace(/^f\s*/, ""),              // ensure "f" prefix
+    "e" + compact.replace(/^[eif]\s*/, ""),          // ensure "e" prefix
+    "f" + compact.replace(/^[fei]\s*/, ""),          // ensure "f" prefix
+    compact.replace(/^i/, "e"),                       // "i20" → "e20"
   ];
 
   for (const ec of ERROR_CODES) {
@@ -1487,11 +1496,12 @@ function parseVoiceCommand(transcript) {
   const words = t.split(/\s+/);
 
   // Check for error code lookup first
-  const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t) || /^[ef]?\d+$/i.test(t);
+  const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[efi]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t) || /^[efi]?\d+$/i.test(t);
   if (felkodDetected) {
     const ec = findErrorCode(t);
     if (ec) return { action: "errorcode", errorCode: ec };
-    showToast(`🔍 Felkod-läge: "${t}" — ingen matchande kod`);
+    showToast(`🔍 Felkod: "${t}" — ingen matchande kod`);
+    return { action: "noop" };
   }
 
   let action = null;
@@ -1607,6 +1617,7 @@ function executeSingleVoiceCommand(cmd) {
 }
 
 function executeVoiceCommand(cmd) {
+  if (cmd.action === "noop") return;
   if (cmd.action === "errorcode") {
     const ec = cmd.errorCode;
     const desc = ec.desc.replace(/\n/g, " ").substring(0, 200);
