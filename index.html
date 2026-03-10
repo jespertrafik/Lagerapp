@@ -1501,9 +1501,18 @@ function executeSingleVoiceCommand(cmd) {
 
   const item = items[key];
   if (cmd.action === "take") {
+    if (item.qty === 0) {
+      const spokenItem = SPOKEN_NAME[item.name.toLowerCase()] || item.name;
+      speak(`${spokenItem} är slut i lager, noll kvar`);
+      showToast(`⚠ ${item.name} — 0 i lager`);
+      return { skip: true };
+    }
     if (item.qty < cmd.num) {
-      showToast(`❌ Bara ${item.qty} ${item.name} kvar`);
-      return null;
+      const spokenItem = SPOKEN_NAME[item.name.toLowerCase()] || item.name;
+      const remWord = item.qty <= 10 ? NUM_SV[item.qty] : String(item.qty);
+      speak(`Det finns bara ${remWord} ${spokenItem}, du kan inte ta ${cmd.num <= 10 ? NUM_SV[cmd.num] : cmd.num}`);
+      showToast(`⚠ Bara ${item.qty} ${item.name} kvar`);
+      return { skip: true };
     }
     updateItem(key, -cmd.num);
     const newQty = item.qty - cmd.num;
@@ -1529,7 +1538,7 @@ function executeVoiceCommand(cmd) {
     const results = [];
     for (const sub of cmd.commands) {
       const r = executeSingleVoiceCommand(sub);
-      if (r) results.push(r);
+      if (r && !r.skip) results.push(r);
     }
     if (results.length === 0) {
       speak("Förstod inte.");
@@ -1557,6 +1566,7 @@ function executeVoiceCommand(cmd) {
   }
 
   const r = executeSingleVoiceCommand(cmd);
+  if (r && r.skip) return;
   if (!r) {
     speak("Förstod inte.");
     return;
