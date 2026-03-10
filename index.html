@@ -1,4 +1,4 @@
-<!-- v2.6 -->
+<!-- v2.7 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Lager v2.6</title>
+  <title>Lager v2.7</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1188,7 +1188,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.6</h1>
+          <h1>📦 Lager v2.7</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1314,8 +1314,12 @@ function render() {
       if (ecBrand && e.brand !== ecBrand) return false;
       if (ecMachine && !e.machine.includes(ecMachine)) return false;
       if (ecSearch) {
-        const q = ecSearch.toLowerCase();
-        if (!e.code.toLowerCase().includes(q) && !e.name.toLowerCase().includes(q) && !e.desc.toLowerCase().includes(q) && !e.machine.toLowerCase().includes(q)) return false;
+        const q = ecSearch.toLowerCase().trim();
+        const isCodeQ = /^[a-z0-9]/i.test(q);
+        const code = e.code.toLowerCase();
+        if (isCodeQ && code.startsWith(q)) { /* match */ }
+        else if (e.name.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || e.machine.toLowerCase().includes(q)) { /* match */ }
+        else return false;
       }
       return true;
     });
@@ -1340,15 +1344,17 @@ function render() {
     }
 
     // Search
-    html += `<div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. F10, motor, lucka..." id="ec-search" oninput="ecSearch=this.value;render()" autocomplete="off"></div>`;
+    html += `<div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" oninput="ecSearch=this.value;filterEC()" autocomplete="off"></div>`;
 
     // Count
     html += `<div class="ec-count">${filtered.length} felkoder</div>`;
 
     if (!ecBrand && !ecSearch) {
-      html += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center"><div style="font-size:48px;margin-bottom:12px">👆</div><div style="font-size:18px;color:#555">Välj tillverkare ovan för att se felkoder</div></div>`;
-    } else {
-      html += `<div class="ec-section">`;
+      html += `<div class="ec-hint" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center"><div style="font-size:48px;margin-bottom:12px">👆</div><div style="font-size:18px;color:#555">Välj tillverkare eller sök felkod</div></div>`;
+    }
+    {
+      const hideCards = !ecBrand && !ecSearch;
+      html += `<div class="ec-section" ${hideCards ? 'style="display:none"' : ''}>`;
       filtered.forEach((e, i) => {
         html += `<div class="ec-card-wrap" data-code="${e.code.toLowerCase()}" data-ecname="${e.name.toLowerCase()}" data-desc="${e.desc.toLowerCase()}" data-machine="${e.machine.toLowerCase()}">
           <div class="ec-card" onclick="openEC(${i})">
@@ -1451,17 +1457,38 @@ function filterItems() {
 // Filter error codes without re-rendering
 let ecFilteredCodes = [];
 function filterEC() {
-  const q = ecSearch.toLowerCase();
+  const q = ecSearch.toLowerCase().trim();
+  const section = document.querySelector(".ec-section");
+  const hint = document.querySelector(".ec-hint");
+  // Show/hide hint and card section
+  if (q) {
+    if (section) section.style.display = "";
+    if (hint) hint.style.display = "none";
+  } else if (!ecBrand) {
+    if (section) section.style.display = "none";
+    if (hint) hint.style.display = "";
+  }
+  // Check if query looks like a code prefix (starts with letter or digit)
+  const isCodeQuery = /^[a-z0-9]/i.test(q);
   document.querySelectorAll(".ec-card-wrap").forEach(card => {
     const code = card.dataset.code || "";
     const name = card.dataset.ecname || "";
     const desc = card.dataset.desc || "";
     const machine = card.dataset.machine || "";
-    if (!q || code.includes(q) || name.includes(q) || desc.includes(q) || machine.includes(q)) {
-      card.style.display = "";
+    let match;
+    if (!q) {
+      match = true;
+    } else if (isCodeQuery && code.startsWith(q)) {
+      // Code prefix match — "e" shows E-codes, "f" shows F-codes, "e20" shows E20 etc
+      match = true;
+    } else if (!isCodeQuery) {
+      // Text search in name/desc/machine
+      match = name.includes(q) || desc.includes(q) || machine.includes(q);
     } else {
-      card.style.display = "none";
+      // Code query didn't match prefix — also try name/desc as fallback
+      match = name.includes(q) || desc.includes(q);
     }
+    card.style.display = match ? "" : "none";
   });
   const visible = document.querySelectorAll(".ec-card-wrap:not([style*='display: none'])").length;
   const countEl = document.querySelector(".ec-count");
