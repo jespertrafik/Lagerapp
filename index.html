@@ -1494,7 +1494,7 @@ function findItemByVoice(spoken) {
 function executeSingleVoiceCommand(cmd) {
   const key = findItemByVoice(cmd.name);
   if (!key) {
-    showToast(`❌ Förstod inte artikeln`);
+    showToast(`❌ Hörde: "${cmd.name}" — ingen match`);
     return null;
   }
 
