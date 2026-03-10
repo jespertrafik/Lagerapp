@@ -194,7 +194,7 @@
     .btn:active { opacity: 0.7; }
     .btn-red { background: var(--red); color: #fff; }
     .btn-green { background: var(--green); color: #fff; }
-    .btn-dim { background: #222; color: #999; border: 1px solid #333; }
+    .btn-dim { background: var(--card); color: var(--text-dim); border: 1px solid var(--card-border); }
     .btn-accent { background: var(--accent); color: #000; }
 
     .add-btn { width: 100%; background: var(--card); border: 1px dashed var(--card-border); border-radius: var(--radius-card); padding: var(--pad-card); color: var(--text-dim); font-size: var(--font-name); font-family: inherit; cursor: pointer; text-align: center; grid-column: 1 / -1; }
@@ -974,6 +974,7 @@ function render() {
 
   // Items
   html += `<div class="items-list">`;
+  const brandOptions = Array.from(allBrands).sort();
   filteredKeys.forEach(key => {
     const item = items[key];
     const isLow = item.min > 0 && item.qty <= item.min;
@@ -1005,7 +1006,7 @@ function render() {
               ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}" ${item.min === v ? 'selected' : ''}>Min: ${v}</option>`).join('')}
             </select>
             <select class="item-input" id="edit_brand_${key}" style="flex:1">
-              ${Array.from(allBrands).sort().map(b => `<option value="${b}" ${item.brand === b ? 'selected' : ''}>${b}</option>`).join('')}
+              ${brandOptions.map(b => `<option value="${b}" ${item.brand === b ? 'selected' : ''}>${b}</option>`).join('')}
             </select>
           </div>
           <div style="display:flex;gap:6px">
