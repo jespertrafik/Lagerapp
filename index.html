@@ -1,4 +1,4 @@
-<!-- v2.2 -->
+<!-- v2.3 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Lager v2.2</title>
+  <title>Lager v2.3</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -934,7 +934,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.2</h1>
+          <h1>📦 Lager v2.3</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1424,38 +1424,70 @@ const CLIP_TO_NAME = {
   "stodrullar": "Stödrullar komplett",
 };
 
+const SV_NUM_WORDS = {
+  "noll": "0", "ett": "1", "en": "1", "två": "2", "tre": "3", "fyra": "4",
+  "fem": "5", "sex": "6", "sju": "7", "åtta": "8", "nio": "9", "tio": "10",
+  "elva": "11", "tolv": "12", "tretton": "13", "fjorton": "14", "femton": "15",
+  "sexton": "16", "sjutton": "17", "arton": "18", "nitton": "19", "tjugo": "20",
+  "tjugoett": "21", "tjugotvå": "22", "tjugotre": "23", "tjugofyra": "24", "tjugofem": "25",
+  "trettio": "30", "fyrtio": "40", "femtio": "50", "sextio": "60",
+  "hundra": "100", "etthundra": "100",
+};
+
+function svWordsToDigits(text) {
+  let result = text;
+  // Replace Swedish number words with digits (longest first)
+  const sorted = Object.entries(SV_NUM_WORDS).sort((a, b) => b[0].length - a[0].length);
+  for (const [word, digit] of sorted) {
+    result = result.replace(new RegExp("\\b" + word + "\\b", "gi"), digit);
+  }
+  return result.trim();
+}
+
 function findErrorCode(spoken) {
   const s = spoken.toLowerCase().trim();
-  // Remove "felkod" prefix if present
-  const cleaned = s.replace(/^.*felkod\s*/, "").replace(/^.*fel\s*kod\s*/, "").trim();
-  // Try matching patterns: "e20", "f1", "10:1", "10 1", "01", etc.
-  const normalized = cleaned.replace(/\s+/g, ":").replace(/:+/g, ":");
+  // Remove "felkod" prefix
+  let cleaned = s.replace(/^.*felkod\s*/, "").replace(/^.*fel\s*kod\s*/, "").trim();
+  // Convert Swedish number words to digits
+  cleaned = svWordsToDigits(cleaned);
+  // Remove extra spaces
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  // Build variants to try
+  const variants = [
+    cleaned,
+    cleaned.replace(/\s+/g, ":"),
+    cleaned.replace(/\s+/g, ""),
+    cleaned.replace(/^([a-z])(\d)/, "$1$2"),       // "e 20" → "e20"
+    cleaned.replace(/^([a-z])\s+(\d)/, "$1$2"),     // "f 10" → "f10"
+    "e" + cleaned.replace(/^e\s*/, ""),              // ensure "e" prefix
+    "f" + cleaned.replace(/^f\s*/, ""),              // ensure "f" prefix
+  ];
 
   for (const ec of ERROR_CODES) {
     const code = ec.code.toLowerCase();
-    if (code === normalized) return ec;
-    if (code === cleaned) return ec;
-    // Match without colon: "10 1" → "10:1"
-    if (code === cleaned.replace(/\s+/g, ":")) return ec;
-    // Match spoken numbers: "tio ett" → try as-is
+    const codeNoColon = code.replace(":", "");
+    const codeSpace = code.replace(":", " ");
+    for (const v of variants) {
+      if (v === code || v === codeNoColon || v === codeSpace) return ec;
+    }
   }
-  // Fuzzy: try if cleaned starts with or matches code
+  // Fuzzy: check if any variant starts with a code or code starts with variant
   for (const ec of ERROR_CODES) {
     const code = ec.code.toLowerCase();
-    if (cleaned === code.replace(":", " ")) return ec;
-    if (cleaned === code.replace(":", "")) return ec;
+    for (const v of variants) {
+      if (v.length >= 2 && (code.startsWith(v) || v.startsWith(code)) && v.length <= code.length + 1) return ec;
+    }
   }
   return null;
 }
 
 function parseVoiceCommand(transcript) {
   const t = transcript.toLowerCase().trim();
-  alert("PARSE: " + t);
   const words = t.split(/\s+/);
 
   // Check for error code lookup first
-  const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t);
-  alert("FELKOD CHECK: " + felkodDetected);
+  const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t) || /^[ef]?\d+$/i.test(t);
   if (felkodDetected) {
     const ec = findErrorCode(t);
     if (ec) return { action: "errorcode", errorCode: ec };
@@ -1671,13 +1703,11 @@ function startVoice() {
     recognition.stop();
     isListening = false;
     render();
-    alert("HEARD: " + transcript);
     const cmd = parseVoiceCommand(transcript);
     if (cmd) {
-      alert("EXECUTE: " + cmd.action);
       executeVoiceCommand(cmd);
     } else {
-      alert("NO CMD from: " + transcript);
+      showToast(`❓ Förstod inte: "${transcript}"`);
     }
   };
 
