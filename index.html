@@ -1001,11 +1001,15 @@ function render() {
         ${isAdmin && editingItem === key ? `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:6px">
           <div style="display:flex;gap:6px">
-            <input class="add-input" id="edit_min_${key}" type="number" placeholder="Min-saldo" value="${item.min}" inputmode="numeric" style="flex:1">
-            <input class="add-input" id="edit_price_${key}" type="number" placeholder="Pris/st" value="${item.price || ''}" inputmode="decimal" style="flex:1">
+            <select class="item-input" id="edit_min_${key}" style="flex:1">
+              ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}" ${item.min === v ? 'selected' : ''}>Min: ${v}</option>`).join('')}
+            </select>
+            <select class="item-input" id="edit_brand_${key}" style="flex:1">
+              ${Array.from(allBrands).sort().map(b => `<option value="${b}" ${item.brand === b ? 'selected' : ''}>${b}</option>`).join('')}
+            </select>
           </div>
           <div style="display:flex;gap:6px">
-            <input class="add-input" id="edit_brand_${key}" placeholder="Märke" value="${item.brand || ''}" style="flex:1">
+            <input class="add-input" id="edit_price_${key}" type="number" placeholder="Pris/st" value="${item.price || ''}" inputmode="decimal" style="flex:1">
             <button class="btn btn-accent" onclick="doSaveEdit('${key}')">Spara</button>
             <button class="btn btn-red" style="font-size:11px" onclick="doDeleteItem('${key}')">🗑️</button>
           </div>
