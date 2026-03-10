@@ -1453,9 +1453,11 @@ function parseVoiceCommand(transcript) {
   const words = t.split(/\s+/);
 
   // Check for error code lookup first
-  if (t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t)) {
+  const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t);
+  if (felkodDetected) {
     const ec = findErrorCode(t);
     if (ec) return { action: "errorcode", errorCode: ec };
+    showToast(`🔍 Felkod-läge: "${t}" — ingen matchande kod`);
   }
 
   let action = null;
