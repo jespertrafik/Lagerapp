@@ -1303,7 +1303,7 @@ const NUM_ETT = ["noll","ett","två","tre","fyra","fem","sex","sju","åtta","nio
 function speak(text) {
   if (!synth) return;
   synth.cancel();
-  text = text.replace(/5µF/g, "fem mikrofarad").replace(/3µF/g, "tre mikrofarad");
+  text = text.replace(/5µF/g, "fem mikrofarad").replace(/3µF/g, "tre mikrofarad").replace(/(\d+)W/g, "$1 watt");
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "sv-SE";
   utter.rate = 1.1;
@@ -1379,8 +1379,8 @@ const ARTICLE_KEYWORDS = {
   "display":             ["display", "skärm", "panel", "kontrollpanel"],
   "motorstyrning_o1":    ["motorstyrning", "nolletta", "01", "o1", "styrning"],
   "motorstyrning_o2":    ["motorstyrning", "nolltvåa", "nolltvå", "02", "o2", "styrning"],
-  "element_2500w":       ["element", "2500", "två tusen", "tvåtusen", "2500w", "värmeelement"],
-  "element_1000w":       ["element", "1000", "tusen", "etttusen", "1000w", "värmeelement"],
+  "element_2500w":       ["element 2500", "2500", "två tusen", "tvåtusen", "2500w", "2500 watt", "2500 dubbel", "värmeelement 2500"],
+  "element_1000w":       ["element 1000", "1000", "tusen", "etttusen", "1000w", "1000 watt", "1000 dubbel", "värmeelement 1000"],
   "kondensator_5uf":     ["femkondensator", "fem kondensator", "kondens fem", "fem farad", "femfarad", "5uf", "5µf", "torktumlare kondensator", "kondensator torktumlare", "kondensatorer torktumlare", "torktumlare", "kondensator tork", "kondensatorer tork"],
   "flaktkondensator_3uf":["trekondensator", "tre kondensator", "kondens tre", "tre farad", "trefarad", "3uf", "3µf", "fläktkondensator", "fläktkondens", "fläkt kondens"],
   "dorrmagnet":          ["dörrmagnet", "dorrmagnet", "magnet", "dörr magnet", "luckmag"],
