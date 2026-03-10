@@ -731,7 +731,8 @@ function showToast(msg) {
   toastMsg = msg;
   render();
   if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => { toastMsg = ""; render(); }, 2500);
+  const duration = msg.includes("❌") || msg.includes("⚠") ? 5000 : 2500;
+  toastTimeout = setTimeout(() => { toastMsg = ""; render(); }, duration);
 }
 
 // ====== DB ======
