@@ -1303,7 +1303,8 @@ const NUM_ETT = ["noll","ett","två","tre","fyra","fem","sex","sju","åtta","nio
 function speak(text) {
   if (!synth) return;
   synth.cancel();
-  text = text.replace(/5µF/gi, "fem mikrofarad").replace(/3µF/gi, "tre mikrofarad").replace(/(\d+)W/gi, "$1 watt");
+  text = text.replace(/5µF/gi, "fem mikrofarad").replace(/3µF/gi, "tre mikrofarad").replace(/\d+\s*[wW]/g, m => m.replace(/[wW]/, " watt"));
+  showToast("🔊 " + text);
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "sv-SE";
   utter.rate = 1.1;
