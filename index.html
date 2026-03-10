@@ -1450,11 +1450,12 @@ function findErrorCode(spoken) {
 
 function parseVoiceCommand(transcript) {
   const t = transcript.toLowerCase().trim();
-  showToast("PARSE: " + t);
+  alert("PARSE: " + t);
   const words = t.split(/\s+/);
 
   // Check for error code lookup first
   const felkodDetected = t.includes("felkod") || t.includes("fel kod") || /^[ef]\s?\d/i.test(t) || /^\d+[\s:]\d+/.test(t);
+  alert("FELKOD CHECK: " + felkodDetected);
   if (felkodDetected) {
     const ec = findErrorCode(t);
     if (ec) return { action: "errorcode", errorCode: ec };
@@ -1670,12 +1671,13 @@ function startVoice() {
     recognition.stop();
     isListening = false;
     render();
+    alert("HEARD: " + transcript);
     const cmd = parseVoiceCommand(transcript);
     if (cmd) {
-      showToast(`🎤 "${transcript}"`);
+      alert("EXECUTE: " + cmd.action);
       executeVoiceCommand(cmd);
     } else {
-      showToast(`❌ Hörde: "${transcript}"`);
+      alert("NO CMD from: " + transcript);
     }
   };
 
