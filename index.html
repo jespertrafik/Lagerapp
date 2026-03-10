@@ -1,4 +1,4 @@
-<!-- v2.4 -->
+<!-- v2.5 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <title>Lager v2.4</title>
+  <title>Lager v2.5</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -934,7 +934,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.4</h1>
+          <h1>📦 Lager v2.5</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1460,31 +1460,45 @@ function findErrorCode(spoken) {
   // Speech rec often hears "i" instead of "e"
   cleaned = cleaned.replace(/^i\s+/, "e ").replace(/^i(\d)/, "e$1");
 
-  // Build variants to try
+  // Build primary variant (preserves original prefix)
   const compact = cleaned.replace(/\s+/g, "");
-  const variants = [
+  const primary = [
+    compact,
     cleaned,
     cleaned.replace(/\s+/g, ":"),
-    compact,
-    cleaned.replace(/^([a-z])(\d)/, "$1$2"),       // "e 20" → "e20"
-    cleaned.replace(/^([a-z])\s+(\d)/, "$1$2"),     // "f 10" → "f10"
-    "e" + compact.replace(/^[eif]\s*/, ""),          // ensure "e" prefix
-    "f" + compact.replace(/^[fei]\s*/, ""),          // ensure "f" prefix
-    compact.replace(/^i/, "e"),                       // "i20" → "e20"
+    cleaned.replace(/^([a-z])\s+(\d)/, "$1$2"),
   ];
 
+  // Pass 1: exact match with original prefix — E20 must match E20, not F20
   for (const ec of ERROR_CODES) {
     const code = ec.code.toLowerCase();
     const codeNoColon = code.replace(":", "");
     const codeSpace = code.replace(":", " ");
-    for (const v of variants) {
+    for (const v of primary) {
       if (v === code || v === codeNoColon || v === codeSpace) return ec;
     }
   }
-  // Fuzzy: check if any variant starts with a code or code starts with variant
+
+  // Pass 2: try alternate prefixes (e↔f, i→e)
+  const altVariants = [
+    compact.replace(/^i/, "e"),
+    "e" + compact.replace(/^[eif]/, ""),
+    "f" + compact.replace(/^[fei]/, ""),
+  ].filter(v => !primary.includes(v));
+
   for (const ec of ERROR_CODES) {
     const code = ec.code.toLowerCase();
-    for (const v of variants) {
+    const codeNoColon = code.replace(":", "");
+    for (const v of altVariants) {
+      if (v === code || v === codeNoColon) return ec;
+    }
+  }
+
+  // Pass 3: fuzzy — prefix match with original variants only
+  const allVariants = [...primary, ...altVariants];
+  for (const ec of ERROR_CODES) {
+    const code = ec.code.toLowerCase();
+    for (const v of allVariants) {
       if (v.length >= 2 && (code.startsWith(v) || v.startsWith(code)) && v.length <= code.length + 1) return ec;
     }
   }
