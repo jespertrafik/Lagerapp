@@ -1450,6 +1450,7 @@ function findErrorCode(spoken) {
 
 function parseVoiceCommand(transcript) {
   const t = transcript.toLowerCase().trim();
+  showToast("PARSE: " + t);
   const words = t.split(/\s+/);
 
   // Check for error code lookup first
