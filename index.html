@@ -962,7 +962,7 @@ function render() {
 
 
   // Alert
-  if (lowItems.length > 0 && activeBrand === "Alla" && !search) {
+  if (lowItems.length > 0 && activeBrand === "Alla" && !search && viewMode === "dashboard") {
     html += `<div class="alert-banner"><div class="alert-title">⚠ Behöver beställas</div>`;
     lowItems.forEach(k => {
       const i = items[k];
