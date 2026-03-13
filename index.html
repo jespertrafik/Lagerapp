@@ -1829,8 +1829,27 @@ const SV_NUM_WORDS = {
   "elva": "11", "tolv": "12", "tretton": "13", "fjorton": "14", "femton": "15",
   "sexton": "16", "sjutton": "17", "arton": "18", "nitton": "19", "tjugo": "20",
   "tjugoett": "21", "tjugotvå": "22", "tjugotre": "23", "tjugofyra": "24", "tjugofem": "25",
-  "trettio": "30", "fyrtio": "40", "femtio": "50", "sextio": "60",
+  "tjugosex": "26", "tjugosju": "27", "tjugoåtta": "28", "tjugonio": "29",
+  "trettio": "30", "trettioett": "31", "trettiotvå": "32", "trettiotre": "33",
+  "trettiofyra": "34", "trettiofem": "35", "trettiosex": "36", "trettiosju": "37",
+  "trettioåtta": "38", "trettionio": "39",
+  "fyrtio": "40", "fyrtioett": "41", "fyrtiotvå": "42", "fyrtiotre": "43",
+  "fyrtiofyra": "44", "fyrtiofem": "45", "fyrtiosex": "46", "fyrtiosju": "47",
+  "fyrtioåtta": "48", "fyrtionio": "49",
+  "femtio": "50", "femtioett": "51", "femtiotvå": "52", "femtiotre": "53",
+  "femtiofyra": "54", "femtiofem": "55", "femtiosex": "56", "femtiosju": "57",
+  "femtioåtta": "58", "femtionio": "59",
+  "sextio": "60", "sextioett": "61", "sextiotvå": "62", "sextiotre": "63",
+  "sextiofyra": "64", "sextiofem": "65", "sextiosex": "66",
+  "nittio": "90", "nittioett": "91", "nittiotvå": "92", "nittiotre": "93",
+  "nittiofyra": "94", "nittiofem": "95", "nittiosex": "96",
   "hundra": "100", "etthundra": "100",
+  "hundraett": "101", "hundratvå": "102", "hundratre": "103", "hundrafyra": "104",
+  "etthundraett": "101", "etthundratvå": "102", "etthundratre": "103", "etthundrafyra": "104",
+  "hundratrettio": "130", "hundratrettioett": "131", "hundratrettiosju": "137", "hundratrettioåtta": "138",
+  "etthundratrettio": "130", "etthundratrettioett": "131", "etthundratrettiosju": "137", "etthundratrettioåtta": "138",
+  "hundrafemtioett": "151", "hundrafemtiotvå": "152", "hundrafemtiotre": "153", "hundrafemtiofyra": "154", "hundrafemtiofem": "155",
+  "etthundrafemtioett": "151", "etthundrafemtiotvå": "152", "etthundrafemtiotre": "153", "etthundrafemtiofyra": "154", "etthundrafemtiofem": "155",
 };
 
 function svWordsToDigits(text) {
@@ -1840,6 +1859,10 @@ function svWordsToDigits(text) {
   for (const [word, digit] of sorted) {
     result = result.replace(new RegExp("\\b" + word + "\\b", "gi"), digit);
   }
+  // Combine adjacent numbers: "100 30" → "130", "30 5" → "35", "100 30 5" → "135"
+  result = result.replace(/\b(100)\s+(10|20|30|40|50|60|70|80|90)\b/g, (_, a, b) => String(parseInt(a) + parseInt(b)));
+  result = result.replace(/\b([1-9]0)\s+([1-9])\b/g, (_, a, b) => String(parseInt(a) + parseInt(b)));
+  result = result.replace(/\b(100)\s+([1-9])\b/g, (_, a, b) => String(parseInt(a) + parseInt(b)));
   return result.trim();
 }
 
@@ -2030,7 +2053,12 @@ function executeVoiceCommand(cmd) {
   if (cmd.action === "errorcode") {
     const ec = cmd.errorCode;
     const desc = ec.desc.replace(/\n/g, " ").substring(0, 200);
-    try { showECPopup(ec); } catch(err) { showToast(`🔧 ${ec.code}: ${ec.name}`); }
+    // Switch to felkoder view and populate search field
+    activeView = "felkoder";
+    ecSearch = ec.code;
+    ecBrand = null;
+    ecMachine = null;
+    render();
     // Try edge-tts mp3 first, fall back to Web Speech API
     const clipName = "ec_" + ec.code.toLowerCase().replace(/[: ]/g, "_") + ".mp3";
     const audio = new Audio(clipName);
