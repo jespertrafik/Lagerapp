@@ -1,4 +1,4 @@
-<!-- v2.50 -->
+<!-- v2.51 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -180,7 +180,7 @@
     .ec-popup-parts { margin-top: 16px; padding: 14px; background: var(--bg); border-radius: 12px; border: 1px solid var(--card-border); }
     .ec-popup-parts-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
     .ec-popup-parts-note { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-style: italic; }
-    .ec-popup-part { font-size: 16px; color: var(--text-dim); padding: 5px 0; }
+    .ec-popup-part { font-size: 16px; color: var(--text); padding: 5px 0; }
     .ec-popup-close { width: 100%; margin-top: 20px; padding: 16px; background: var(--card-border); color: var(--text); border: none; border-radius: 12px; font-size: 18px; font-weight: 700; font-family: inherit; cursor: pointer; }
     .ec-notes { margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px; }
     .ec-notes-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
@@ -611,7 +611,7 @@ const ERROR_CODES = [
   { code: "14", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat eller fungerar ej.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "16", name: "Temperatur ej uppnådd", desc: "Maskinen når ej inställd temperatur inom tidsgränsen för uppvärmning.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "17", name: "Lucka låst vid start", desc: "Lucka låst signal (brytare S4) är aktiverad vid programstart.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
-  { code: "20", name: "Interlock saknas", desc: "Interlock saknas i motorstyrning eller I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H", partLinks: ["Lucklås", "Luckhandtag"], parts: ["Lucklåskabel/kabelstam"] },
+  { code: "20", name: "Interlock saknas", desc: "Interlock saknas i motorstyrning eller I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H", partLinks: ["Lucklås", "Luckhandtag"] },
   { code: "21", name: "I/O kommunikation saknas", desc: "Saknar I/O kommunikation från något/några I/O kort. Alt. ej adresserade I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "27", name: "Vattennivå hög vid start", desc: "Vattennivån över fastställt värde vid start. Kontrollera avloppsventil och nivåsystem evt överdosering av tvättmedel.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "31", name: "Kylfläns överhettad", desc: "Kylfläns på motorstyrningen är överhettad.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
