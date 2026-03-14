@@ -1,4 +1,4 @@
-<!-- v2.29 -->
+<!-- v2.30 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.29</title>
+  <title>Lager v2.30</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -925,9 +925,8 @@ function renderLogin() {
       </button>
       <div class="login-divider"><span>eller</span></div>` : ""}
       <div class="login-email-form">
-        <input class="login-input" id="login-email" type="email" placeholder="E-postadress" autocomplete="email">
+        <input class="login-input" id="login-email" type="email" placeholder="E-postadress" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
         <input class="login-input" id="login-password" type="password" placeholder="Lösenord${isRegister ? " (minst 6 tecken)" : ""}" autocomplete="${isRegister ? "new-password" : "current-password"}" onkeydown="if(event.key==='Enter')${isRegister ? "doRegister()" : "doEmailLogin()"}">
-        <button class="login-btn login-email-btn" onclick="${isRegister ? "doRegister()" : "doEmailLogin()}">${isRegister ? "Skapa konto" : "Logga in"}</button>
         <button style="background:none;border:none;color:var(--accent);font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:12px;padding:10px 16px" onclick="loginMode='${isRegister ? "login" : "register"}';loginError='';renderLogin()">${isRegister ? "← Tillbaka till inloggning" : "Skapa nytt konto →"}</button>
       </div>
       ${loginError ? `<div class="login-error">${loginError}</div>` : ""}
@@ -1169,7 +1168,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.29</h1>
+          <h1>📦 Lager v2.30</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
