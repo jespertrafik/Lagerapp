@@ -1,4 +1,4 @@
-<!-- v2.49 -->
+<!-- v2.50 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -611,7 +611,7 @@ const ERROR_CODES = [
   { code: "14", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat eller fungerar ej.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "16", name: "Temperatur ej uppnådd", desc: "Maskinen når ej inställd temperatur inom tidsgränsen för uppvärmning.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "17", name: "Lucka låst vid start", desc: "Lucka låst signal (brytare S4) är aktiverad vid programstart.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
-  { code: "20", name: "Interlock saknas", desc: "Interlock saknas i motorstyrning eller I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H", parts: ["Lucklås komplett (art.nr: —)", "Lucklåskabel/kabelstam (art.nr: —)", "Luckhandtag (art.nr: —)"] },
+  { code: "20", name: "Interlock saknas", desc: "Interlock saknas i motorstyrning eller I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H", partLinks: ["Lucklås", "Luckhandtag"], parts: ["Lucklåskabel/kabelstam"] },
   { code: "21", name: "I/O kommunikation saknas", desc: "Saknar I/O kommunikation från något/några I/O kort. Alt. ej adresserade I/O kort.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "27", name: "Vattennivå hög vid start", desc: "Vattennivån över fastställt värde vid start. Kontrollera avloppsventil och nivåsystem evt överdosering av tvättmedel.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "31", name: "Kylfläns överhettad", desc: "Kylfläns på motorstyrningen är överhettad.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
@@ -1700,7 +1700,21 @@ function openEC(i) {
     <div class="ec-popup-name">${e.name}</div>
     <div class="ec-popup-machine">${e.brand} — ${e.machine}</div>
     <div class="ec-popup-desc">${e.desc.replace(/\n/g, '<br>')}</div>`;
-  if (e.parts && e.parts.length > 0) {
+  if (e.partLinks && e.partLinks.length > 0) {
+    const allItems = Object.values(items);
+    const linked = e.partLinks.map(name => {
+      const found = allItems.find(i => i.name.toLowerCase() === name.toLowerCase());
+      return found
+        ? `<div class="ec-popup-part">• ${found.name} — art.nr: <strong>${found.artnr || '—'}</strong> &nbsp;|&nbsp; ${found.qty} ${found.unit} i lager</div>`
+        : `<div class="ec-popup-part">• ${name} — ej i lager</div>`;
+    });
+    const extra = (e.parts || []).map(p => `<div class="ec-popup-part">• ${p}</div>`);
+    html += `<div class="ec-popup-parts">
+      <div class="ec-popup-parts-title">🔩 Reservdelar att kontrollera</div>
+      <div class="ec-popup-parts-note">📦 Saldo hämtat från lagret</div>
+      ${linked.join("")}${extra.join("")}
+    </div>`;
+  } else if (e.parts && e.parts.length > 0) {
     html += `<div class="ec-popup-parts">
       <div class="ec-popup-parts-title">🔩 Reservdelar som kan behövas</div>
       <div class="ec-popup-parts-note">💡 Tips — kontrollera alltid innan beställning</div>
