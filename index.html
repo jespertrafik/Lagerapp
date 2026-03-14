@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.36</title>
+  <title>Lager v2.37</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -176,6 +176,16 @@
     .ec-popup-parts-note { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-style: italic; }
     .ec-popup-part { font-size: 16px; color: var(--text-dim); padding: 5px 0; }
     .ec-popup-close { width: 100%; margin-top: 20px; padding: 16px; background: var(--card-border); color: var(--text); border: none; border-radius: 12px; font-size: 18px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .ec-notes { margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px; }
+    .ec-notes-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+    .ec-note { background: var(--bg); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .ec-note-body { flex: 1; }
+    .ec-note-text { font-size: 15px; color: var(--text); line-height: 1.5; }
+    .ec-note-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    .ec-note-del { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+    .ec-note-add { display: flex; gap: 8px; margin-top: 10px; }
+    .ec-note-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit; color: var(--text); resize: none; min-height: 44px; }
+    .ec-note-submit { background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 10px 16px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
 
     .alert-banner { margin: 12px 16px 0; background: var(--warn-bg); border: 2px solid var(--warn-border); border-radius: 14px; padding: 18px 20px; animation: fadeIn 0.3s ease; }
     .alert-title { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 10px; }
@@ -1169,7 +1179,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.36</h1>
+          <h1>📦 Lager v2.37</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1459,9 +1469,14 @@ function ecSearchRender() {
 // Legacy alias
 function filterEC() { ecSearchRender(); }
 
+function ecNoteKey(e) {
+  return (e.brand + "_" + e.machine + "_" + e.code).replace(/[.#$[\]/]/g, "_");
+}
+
 function openEC(i) {
   const e = ecFilteredCodes[i];
   if (!e) return;
+  const codeKey = ecNoteKey(e);
   let html = `
     <div class="ec-popup-code">${e.code}</div>
     <div class="ec-popup-name">${e.name}</div>
@@ -1474,14 +1489,58 @@ function openEC(i) {
       ${e.parts.map(p => `<div class="ec-popup-part">• ${p}</div>`).join("")}
     </div>`;
   }
+  html += `<div class="ec-notes">
+    <div class="ec-notes-title">💬 Anteckningar</div>
+    <div id="ec-notes-list">Laddar...</div>
+    <div class="ec-note-add">
+      <textarea class="ec-note-input" id="ec-note-input" placeholder="Skriv en anteckning..." rows="2"></textarea>
+      <button class="ec-note-submit" onclick="doAddECNote('${codeKey}')">Spara</button>
+    </div>
+  </div>`;
   html += `<button class="ec-popup-close" onclick="closeEC()">Stäng</button>`;
   document.getElementById("ec-popup").innerHTML = html;
   document.getElementById("ec-overlay").classList.add("open");
+  db.ref("ecNotes").orderByChild("codeKey").equalTo(codeKey).on("value", (snap) => {
+    const notes = snap.val();
+    const listEl = document.getElementById("ec-notes-list");
+    if (!listEl) return;
+    if (!notes) { listEl.innerHTML = '<div style="font-size:13px;color:var(--text-dim)">Inga anteckningar ännu.</div>'; return; }
+    const sorted = Object.entries(notes).sort((a, b) => b[1].timestamp - a[1].timestamp);
+    listEl.innerHTML = sorted.map(([id, n]) => `
+      <div class="ec-note">
+        <div class="ec-note-body">
+          <div class="ec-note-text">${n.text.replace(/</g, "&lt;")}</div>
+          <div class="ec-note-meta">${n.userName} · ${new Date(n.timestamp).toLocaleDateString("sv-SE")}</div>
+        </div>
+        ${isAdmin ? `<button class="ec-note-del" onclick="doDeleteECNote('${id}')" title="Ta bort">🗑️</button>` : ""}
+      </div>`).join("");
+  });
 }
 
 function closeEC() {
   const overlay = document.getElementById("ec-overlay");
   if (overlay) overlay.classList.remove("open");
+  db.ref("ecNotes").off();
+}
+
+async function doAddECNote(codeKey) {
+  const input = document.getElementById("ec-note-input");
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  await db.ref("ecNotes").push({
+    codeKey,
+    text,
+    userName: currentUser.displayName || currentUser.email,
+    userId: currentUser.uid,
+    timestamp: Date.now()
+  });
+}
+
+async function doDeleteECNote(noteId) {
+  if (!isAdmin) return;
+  await db.ref("ecNotes/" + noteId).remove();
 }
 
 
