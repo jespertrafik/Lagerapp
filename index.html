@@ -1,4 +1,4 @@
-<!-- v2.38 -->
+<!-- v2.46 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -155,7 +155,7 @@
     /* ===== ERROR CODES ===== */
     .ec-section { padding: 8px 16px 80px; }
     .ec-filters { display: flex; gap: 8px; padding: 0 16px; flex-wrap: wrap; }
-    .ec-filter { padding: 12px 20px; font-size: 16px; font-weight: 700; font-family: inherit; color: var(--text-dim); background: var(--card); border: 2px solid var(--card-border); border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .ec-filter { padding: 12px 20px; font-size: 16px; font-weight: 700; font-family: inherit; color: #ffffff; background: var(--card); border: 2px solid var(--card-border); border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
     .ec-filter.active { color: #000; background: var(--accent); border-color: var(--accent); }
     .ec-card-wrap { margin-bottom: 10px; }
     .ec-card { background: var(--card); border: 2px solid var(--card-border); border-radius: 14px; padding: 20px; cursor: pointer; transition: border-color 0.2s; }
@@ -1489,48 +1489,57 @@ function render() {
 
     // Lucklås blink panel
     if (ecRefPanel === 'lucklås') {
-      const L = `<span style="display:inline-block;width:22px;height:11px;background:#f5a623;border-radius:2px;margin:0 2px;vertical-align:middle"></span>`;
-      const S = `<span style="display:inline-block;width:9px;height:11px;background:#f5a623;border-radius:2px;margin:0 2px;vertical-align:middle"></span>`;
-      const G = `<span style="display:inline-block;width:10px"></span>`;
+      const td = `style="text-align:center;padding:7px 5px;font-size:17px;width:32px;color:#fff"`;
+      const blink = (p) => `<span style="display:inline-block;width:22px;text-align:center;font-size:16px">${p}</span>`;
+      const LLL = blink('●')+blink('●')+blink('●');
+      const LSL = blink('●')+blink('○')+blink('●');
       html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
         <div style="padding:14px 16px 10px;font-size:15px;font-weight:700;color:#f5a623">🔒 Lucklåsets styrenhet — Statusindikering</div>
-        <div style="margin:0 16px 14px;background:#fff;border-radius:12px;color:#000;overflow:hidden">
+        <div style="margin:0 16px 14px;background:#242424;border-radius:12px;overflow:hidden">
           <div style="background:#f5a623;padding:9px 14px;font-weight:700;font-size:13px;color:#000">Normalfunktion</div>
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff">
             <thead><tr style="border-bottom:2px solid #f5a623">
-              <th style="padding:7px 6px;text-align:center;width:30px">A</th><th style="padding:7px 6px;text-align:center;width:30px">B</th><th style="padding:7px 6px;text-align:center;width:30px">C</th>
-              <th style="padding:7px 10px;text-align:left">Funktion</th><th style="padding:7px 10px;text-align:left;min-width:80px">Blinkmönster</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">A</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">B</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">C</th>
+              <th style="padding:7px 10px;text-align:left;color:#f5a623">Funktion</th>
+              <th style="padding:7px 10px;text-align:left;color:#f5a623;min-width:80px">Blinkmönster</th>
             </tr></thead>
             <tbody>
-              <tr style="border-bottom:1px solid #eee">
-                <td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td>
-                <td style="padding:8px 10px">Ingen felfunktion, trumman står stilla</td><td style="padding:8px 10px">${L}${L}${L}</td>
+              <tr style="border-bottom:1px solid #333">
+                <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
+                <td style="padding:7px 10px">Ingen felfunktion, trumman står stilla</td>
+                <td style="padding:7px 10px;letter-spacing:2px">${LLL}</td>
               </tr>
-              <tr style="border-bottom:1px solid #eee">
-                <td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td>
-                <td style="padding:8px 10px">Nivåvakt B2: vatten i trumman (stillastående)</td><td style="padding:8px 10px">${L}${G}${S}${G}${L}</td>
+              <tr style="border-bottom:1px solid #333">
+                <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
+                <td style="padding:7px 10px">Nivåvakt B2: vatten i trumman (stillastående)</td>
+                <td style="padding:7px 10px;letter-spacing:2px">${LSL}</td>
               </tr>
               <tr>
-                <td style="text-align:center;padding:8px 6px;font-size:16px">○</td><td style="text-align:center;padding:8px 6px;font-size:16px">○</td><td style="text-align:center;padding:8px 6px;font-size:16px">○</td>
-                <td style="padding:8px 10px">Ingen felfunktion, trumman roterar</td><td style="padding:8px 10px;color:#aaa;font-size:12px">ingen blinkning</td>
+                <td ${td}>○</td><td ${td}>○</td><td ${td}>○</td>
+                <td style="padding:7px 10px">Ingen felfunktion, trumman roterar</td>
+                <td style="padding:7px 10px;color:#666;font-size:12px">ingen blinkning</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div style="margin:0 16px;background:#fff;border-radius:12px;color:#000;overflow:hidden">
+        <div style="margin:0 16px;background:#242424;border-radius:12px;overflow:hidden">
           <div style="background:#f5a623;padding:9px 14px;font-weight:700;font-size:13px;color:#000">Felfunktion</div>
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff">
             <thead><tr style="border-bottom:2px solid #f5a623">
-              <th style="padding:7px 6px;text-align:center;width:30px">A</th><th style="padding:7px 6px;text-align:center;width:30px">B</th><th style="padding:7px 6px;text-align:center;width:30px">C</th>
-              <th style="padding:7px 10px;text-align:left">Felfunktion</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">A</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">B</th>
+              <th style="padding:7px 5px;text-align:center;width:32px;color:#f5a623">C</th>
+              <th style="padding:7px 10px;text-align:left;color:#f5a623">Felfunktion</th>
             </tr></thead>
             <tbody>
-              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
-              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
-              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
-              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
-              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
-              <tr><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
+              <tr style="border-bottom:1px solid #333"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
+              <tr style="border-bottom:1px solid #333"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #333"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #333"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
+              <tr style="border-bottom:1px solid #333"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
+              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
             </tbody>
           </table>
           <div style="font-size:11px;color:#888;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
