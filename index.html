@@ -1,4 +1,4 @@
-<!-- v2.34 -->
+<!-- v2.35 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.41</title>
+  <title>Lager v2.42</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -680,6 +680,36 @@ const ERROR_CODES = [
   { code: "56", name: "Varvtal med öppen lucka", desc: "CPU har beordrat varvtal trots att luckan är öppen.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
   { code: "58", name: "Tachosignal saknas", desc: "Tachosignal saknas trots att CPU beordrat varvtal.", brand: "Electrolux", machine: "W455H, W465H, W475H" },
 
+  // === ELECTROLUX W365-SERIEN — EXACTA ELEKTRONIK (xxE-format) ===
+  { code: "01E", name: "Vattennivåkvittens saknas", desc: "Vattennivåkvittens saknas inom fastställd tid.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "02E", name: "Lucka stängd signal saknas", desc: "Signal från brytare S3 'Lucka stängd' saknas under programkörning.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "03E", name: "Lucka låst signal saknas", desc: "Signal från brytarna S4a och b 'Lucka låst' saknas vid programstart eller programkörning.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "04E", name: "Temperaturgivare under -5°C", desc: "Temperaturavkänningen indikerar temperatur under -5°C alt. avbrott i givare.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "05E", name: "Temperaturgivare över 98°C", desc: "Temperaturavkänningen indikerar temperatur över 98°C alt. kortsluten givare.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "06E", name: "Hög vattennivå vid start", desc: "Vattennivån för hög vid programstart.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "07E", name: "Hög vattennivå under program", desc: "Vattennivån för hög under programkörning.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "08E", name: "Långsam uppvärmning", desc: "Temperaturstegringen på vattnet är för långsam.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "10E", name: "Vatten i trumma efter avlopp", desc: "Vatten i trumma efter avlopp alt. tömningstid för lång.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "11E", name: "Obalansbrytare alltid tillslagen", desc: "Mekanisk obalansbrytare alltid tillslagen.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "12E", name: "Kan inte läsa programminnet", desc: "Programverket kan inte läsa programminnet (EPROM).", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "13E", name: "Ingen kontakt med motorstyrning", desc: "Programverket får ingen kontakt med motorstyrningen.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "14E", name: "Nivåsystem ej kalibrerat", desc: "Vattennivåsystemet ej kalibrerat.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "17E", name: "Lucka låst utan lucka stängd", desc: "Signal från brytarna S4a och b 'Lucka låst' finns trots att signal från brytare S3 'Lucka stängd' saknas.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "18E", name: "Betalsystem tillåter inte start", desc: "Betal/bokningssystem tillåter inte start av valt program.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "19E", name: "Kommunikation betalsystem avbruten", desc: "Kommunikation mellan betal/bokningssystem och programverkskort avbruten.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "21E", name: "Mikroprocessorfel", desc: "Fel i mikroprocessorn (Konfigurationsregistret).", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "22E", name: "Nivåkalibrering misslyckades", desc: "Nivåsystemet indikerar ett så felaktigt värde vid programstart att den automatiska nivåkalibreringen inte kan korrigera felet.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "31E", name: "Motorstyrning kylfläns överhettad", desc: "Motorstyrningen indikerar för hög temperatur på motorstyrningens kylfläns.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "32E", name: "Motorns överhettningsskydd utlöst", desc: "Motorstyrningen indikerar att motorns överhettningsskydd har löst ut.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "33E", name: "Startkommando utan lucka låst", desc: "Motorstyrningen får startkommando utan signal från brytare S2 'Lucka låst'.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "35E", name: "Kortslutning motor/motorstyrning", desc: "Motorstyrningen indikerar kortslutning i motorlindningarna, kablaget eller internt i motorstyrningen.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "36E", name: "Interlock mottagningskretsfel", desc: "Motorstyrningen indikerar fel i mottagningskretsen för interlock.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "37E", name: "Låg likspänning motorstyrning", desc: "Motorstyrningen indikerar för låg likspänningsnivå.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "38E", name: "Hög likspänning motorstyrning", desc: "Motorstyrningen indikerar för hög likspänningsnivå.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "41E", name: "Fel i överhettningsskyddskrets", desc: "Motorstyrningen indikerar fel i kretsarna till motorns överhettningsskydd.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "43E", name: "Obalansbrytare aktiverad vid stillstånd", desc: "RDC-kort indikerar att mekanisk obalansbrytare är aktiverad när inget motorvarv pågår.", brand: "Electrolux", machine: "W365H (Exacta)" },
+  { code: "45E", name: "Tachosignal saknas", desc: "RDC-kort/Motorstyrning indikerar att hallgivarens/tachogeneratorns signal saknas vid beordrat varvtal.", brand: "Electrolux", machine: "W365H (Exacta)" },
+
   // === ELECTROLUX COMPASS PRO TORK — missing codes (TD6-6, T5130, T5190) ===
   { code: "10:13", name: "Initialisering misslyckades", desc: "Initialiseringen misslyckades.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
   { code: "12:4", name: "Inluftsgivare under 0°C", desc: "Temperaturgivaren för inluft visar temperatur under 0°C, alt. kortslutning i kablaget.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
@@ -1181,7 +1211,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.41</h1>
+          <h1>📦 Lager v2.42</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
