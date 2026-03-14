@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.32</title>
+  <title>Lager v2.33</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -806,7 +806,7 @@ function loadViewMode() {
   });
 }
 
-const ADMIN_EMAIL = "jesper.franzen@bravida.se";
+const ADMIN_EMAIL = "jespertrafik@gmail.com";
 
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
@@ -983,7 +983,8 @@ function initDB() {
     allowedUsers = snap.val() || {};
     // Check if current user is admin
     if (currentUser && allowedUsers[currentUser.uid]) {
-      isAdmin = allowedUsers[currentUser.uid].role === "admin";
+      isAdmin = allowedUsers[currentUser.uid].role === "admin"
+        || currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     }
     if (showAdmin) render();
   });
@@ -1168,7 +1169,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.32</h1>
+          <h1>📦 Lager v2.33</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
