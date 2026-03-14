@@ -1,4 +1,4 @@
-<!-- v2.30 -->
+<!-- v2.31 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.30</title>
+  <title>Lager v2.31</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1161,14 +1161,14 @@ function render() {
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
         ${isAdmin && viewMode === "dashboard" ? '<button class="small-btn" style="background:var(--red)" onclick="resetDeptToDefault()">🔄 Återställ avdelning</button>' : ''}
-        ${isAdmin ? '<button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>' : ''}
+        <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.30</h1>
+          <h1>📦 Lager v2.31</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1407,7 +1407,7 @@ function render() {
     html += `<div class="modal-overlay" onclick="if(event.target===this){showSettings=false;render()}">
       <div class="modal">
         <h2>⚙️ Välj vy</h2>
-        ${VIEW_MODES.filter(vm => vm.id !== "dashboard" || isAdmin).map(vm => `
+        ${VIEW_MODES.map(vm => `
           <div class="modal-option ${viewMode === vm.id ? "active" : ""}" onclick="setViewMode('${vm.id}')">
             <div class="modal-option-icon">${vm.icon}</div>
             <div class="modal-option-text">
