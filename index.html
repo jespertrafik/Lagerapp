@@ -1,4 +1,4 @@
-<!-- v2.36 -->
+<!-- v2.37 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.43</title>
+  <title>Lager v2.44</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -163,6 +163,8 @@
     .ec-code { font-size: 32px; font-weight: 800; color: var(--accent); min-width: 80px; }
     .ec-name { font-size: 20px; font-weight: 700; line-height: 1.3; }
     .ec-count { font-size: 14px; color: var(--text-dim); padding: 12px 16px 4px; }
+    .ec-ref-btn { flex: 1; padding: 10px 8px; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+    .ec-ref-btn.active { background: #f5a623; color: #000; border-color: #f5a623; }
 
     .ec-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 300; align-items: flex-end; justify-content: center; }
     .ec-overlay.open { display: flex; }
@@ -407,6 +409,7 @@ let activeView = "lager"; // "lager" or "felkoder"
 let ecSearch = "";
 let ecBrand = null;
 let ecMachine = null;
+let ecRefPanel = null; // "ntc" | "lucklås" | null
 
 // ====== ERROR CODE DATABASE ======
 const ERROR_CODES = [
@@ -1211,7 +1214,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.43</h1>
+          <h1>📦 Lager v2.44</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1396,6 +1399,135 @@ function render() {
 
     // Search
     html += `<div class="ec-search-wrap"><div class="ec-search-inner"><span class="search-icon">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div><button class="ec-dismiss-btn" ontouchstart="document.activeElement.blur()" onclick="document.activeElement.blur()">Klar</button></div>`;
+
+    // Reference panel buttons
+    html += `<div style="display:flex;gap:8px;padding:10px 16px 0">
+      <button class="ec-ref-btn ${ecRefPanel==='ntc'?'active':''}" onclick="ecRefPanel=ecRefPanel==='ntc'?null:'ntc';render()">🌡️ NTC-värden</button>
+      <button class="ec-ref-btn ${ecRefPanel==='lucklås'?'active':''}" onclick="ecRefPanel=ecRefPanel==='lucklås'?null:'lucklås';render()">🔒 Lucklås blink</button>
+    </div>`;
+
+    // Reference panels
+    if (ecRefPanel === 'ntc') {
+      const long = `<span style="display:inline-block;width:20px;height:10px;background:#888;border-radius:2px;margin:0 1px"></span>`;
+      html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
+        <div style="padding:14px 16px 8px;font-size:15px;font-weight:700;color:#f5a623">🌡️ NTC-motstånd — Tvättmaskiner (10–95°C)</div>
+        <div style="margin:0 16px 16px;background:#242424;border-radius:12px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff">
+            <thead><tr style="border-bottom:2px solid #f5a623">
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">10°C</td><td style="padding:6px 12px;text-align:right">9 214</td><td style="padding:6px 12px">55°C</td><td style="padding:6px 12px;text-align:right">1 433</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">15°C</td><td style="padding:6px 12px;text-align:right">7 314</td><td style="padding:6px 12px">60°C</td><td style="padding:6px 12px;text-align:right">1 196</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">20°C</td><td style="padding:6px 12px;text-align:right">5 844</td><td style="padding:6px 12px">65°C</td><td style="padding:6px 12px;text-align:right">1 004</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">25°C</td><td style="padding:6px 12px;text-align:right">4 700</td><td style="padding:6px 12px">70°C</td><td style="padding:6px 12px;text-align:right">846</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">30°C</td><td style="padding:6px 12px;text-align:right">3 803</td><td style="padding:6px 12px">75°C</td><td style="padding:6px 12px;text-align:right">716</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">35°C</td><td style="padding:6px 12px;text-align:right">3 095</td><td style="padding:6px 12px">80°C</td><td style="padding:6px 12px;text-align:right">608,5</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">40°C</td><td style="padding:6px 12px;text-align:right">2 533</td><td style="padding:6px 12px">85°C</td><td style="padding:6px 12px;text-align:right">519,3</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">45°C</td><td style="padding:6px 12px;text-align:right">2 084</td><td style="padding:6px 12px">90°C</td><td style="padding:6px 12px;text-align:right">444,8</td></tr>
+              <tr><td style="padding:6px 12px">50°C</td><td style="padding:6px 12px;text-align:right">1 724</td><td style="padding:6px 12px">95°C</td><td style="padding:6px 12px;text-align:right">382,4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:0 16px 8px;font-size:15px;font-weight:700;color:#f5a623">🌡️ NTC-motstånd — Torktumlare Selecta II / Compass Control</div>
+        <div style="margin:0 16px 4px;font-size:12px;font-weight:700;color:#aaa;padding:0 0 4px">Frånluft (samma värden som tvättmaskiner)</div>
+        <div style="margin:0 16px 14px;background:#242424;border-radius:12px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff">
+            <thead><tr style="border-bottom:2px solid #f5a623">
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">10°C</td><td style="padding:6px 12px;text-align:right">9 214</td><td style="padding:6px 12px">55°C</td><td style="padding:6px 12px;text-align:right">1 433</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">15°C</td><td style="padding:6px 12px;text-align:right">7 314</td><td style="padding:6px 12px">60°C</td><td style="padding:6px 12px;text-align:right">1 196</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">20°C</td><td style="padding:6px 12px;text-align:right">5 844</td><td style="padding:6px 12px">65°C</td><td style="padding:6px 12px;text-align:right">1 004</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">25°C</td><td style="padding:6px 12px;text-align:right">4 700</td><td style="padding:6px 12px">70°C</td><td style="padding:6px 12px;text-align:right">846</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">30°C</td><td style="padding:6px 12px;text-align:right">3 803</td><td style="padding:6px 12px">75°C</td><td style="padding:6px 12px;text-align:right">716</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">35°C</td><td style="padding:6px 12px;text-align:right">3 095</td><td style="padding:6px 12px">80°C</td><td style="padding:6px 12px;text-align:right">608,5</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">40°C</td><td style="padding:6px 12px;text-align:right">2 533</td><td style="padding:6px 12px">85°C</td><td style="padding:6px 12px;text-align:right">519,3</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">45°C</td><td style="padding:6px 12px;text-align:right">2 084</td><td style="padding:6px 12px">90°C</td><td style="padding:6px 12px;text-align:right">444,8</td></tr>
+              <tr><td style="padding:6px 12px">50°C</td><td style="padding:6px 12px;text-align:right">1 724</td><td style="padding:6px 12px">95°C</td><td style="padding:6px 12px;text-align:right">382,4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin:0 16px 4px;font-size:12px;font-weight:700;color:#aaa;padding:0 0 4px">Tilluft (PTC-givare)</div>
+        <div style="margin:0 16px;background:#242424;border-radius:12px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;color:#fff">
+            <thead><tr style="border-bottom:2px solid #f5a623">
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+              <th style="padding:8px 12px;text-align:left;color:#f5a623">Temp</th><th style="padding:8px 12px;text-align:right;color:#f5a623">Ω</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">15°C</td><td style="padding:6px 12px;text-align:right">106</td><td style="padding:6px 12px">60°C</td><td style="padding:6px 12px;text-align:right">123</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">20°C</td><td style="padding:6px 12px;text-align:right">108</td><td style="padding:6px 12px">70°C</td><td style="padding:6px 12px;text-align:right">127</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">25°C</td><td style="padding:6px 12px;text-align:right">110</td><td style="padding:6px 12px">80°C</td><td style="padding:6px 12px;text-align:right">131</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">30°C</td><td style="padding:6px 12px;text-align:right">112</td><td style="padding:6px 12px">90°C</td><td style="padding:6px 12px;text-align:right">135</td></tr>
+              <tr style="border-bottom:1px solid #333"><td style="padding:6px 12px">40°C</td><td style="padding:6px 12px;text-align:right">115</td><td style="padding:6px 12px">100°C</td><td style="padding:6px 12px;text-align:right">139</td></tr>
+              <tr><td style="padding:6px 12px">50°C</td><td style="padding:6px 12px;text-align:right">119</td><td style="padding:6px 12px"></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    if (ecRefPanel === 'lucklås') {
+      const L = `<span style="display:inline-block;width:22px;height:11px;background:#f5a623;border-radius:2px;margin:0 2px;vertical-align:middle"></span>`;
+      const S = `<span style="display:inline-block;width:9px;height:11px;background:#f5a623;border-radius:2px;margin:0 2px;vertical-align:middle"></span>`;
+      const G = `<span style="display:inline-block;width:10px"></span>`;
+      html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
+        <div style="padding:14px 16px 10px;font-size:15px;font-weight:700;color:#f5a623">🔒 Lucklåsets styrenhet — Statusindikering</div>
+        <div style="margin:0 16px 14px;background:#fff;border-radius:12px;color:#000;overflow:hidden">
+          <div style="background:#f5a623;padding:9px 14px;font-weight:700;font-size:13px;color:#000">Normalfunktion</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="border-bottom:2px solid #f5a623">
+              <th style="padding:7px 6px;text-align:center;width:30px">A</th>
+              <th style="padding:7px 6px;text-align:center;width:30px">B</th>
+              <th style="padding:7px 6px;text-align:center;width:30px">C</th>
+              <th style="padding:7px 10px;text-align:left">Funktion</th>
+              <th style="padding:7px 10px;text-align:left;min-width:80px">Blinkmönster</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #eee">
+                <td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td>
+                <td style="padding:8px 10px">Ingen felfunktion, trumman står stilla</td>
+                <td style="padding:8px 10px">${L}${L}${L}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #eee">
+                <td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td><td style="text-align:center;padding:8px 6px;font-size:16px">●</td>
+                <td style="padding:8px 10px">Nivåvakt B2: vatten i trumman (stillastående)</td>
+                <td style="padding:8px 10px">${L}${G}${S}${G}${L}</td>
+              </tr>
+              <tr>
+                <td style="text-align:center;padding:8px 6px;font-size:16px">○</td><td style="text-align:center;padding:8px 6px;font-size:16px">○</td><td style="text-align:center;padding:8px 6px;font-size:16px">○</td>
+                <td style="padding:8px 10px">Ingen felfunktion, trumman roterar</td>
+                <td style="padding:8px 10px;color:#aaa;font-size:12px">ingen blinkning</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin:0 16px;background:#fff;border-radius:12px;color:#000;overflow:hidden">
+          <div style="background:#f5a623;padding:9px 14px;font-weight:700;font-size:13px;color:#000">Felfunktion</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="border-bottom:2px solid #f5a623">
+              <th style="padding:7px 6px;text-align:center;width:30px">A</th>
+              <th style="padding:7px 6px;text-align:center;width:30px">B</th>
+              <th style="padding:7px 6px;text-align:center;width:30px">C</th>
+              <th style="padding:7px 10px;text-align:left">Felfunktion</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
+              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
+              <tr style="border-bottom:1px solid #eee"><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
+              <tr><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">○</td><td style="text-align:center;padding:7px 6px;font-size:16px">●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
+            </tbody>
+          </table>
+          <div style="font-size:11px;color:#888;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
+        </div>
+      </div>`;
+    }
 
     // Count
     html += `<div class="ec-count">${filtered.length} felkoder</div>`;
