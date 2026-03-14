@@ -1,4 +1,4 @@
-<!-- v2.19 -->
+<!-- v2.20 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.19</title>
+  <title>Lager v2.20</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -218,11 +218,6 @@
 
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 200; animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards; pointer-events: none; }
 
-    .mic-btn { position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); border: none; font-size: 28px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .mic-btn:active { transform: scale(0.9); }
-    .mic-btn.listening { background: var(--red); animation: pulse 1s ease infinite; }
-    .scan-btn-fab { position: fixed; bottom: 24px; right: 104px; width: 64px; height: 64px; border-radius: 50%; background: #2a4a8a; border: none; font-size: 26px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .scan-btn-fab:active { transform: scale(0.9); }
     .scan-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: flex; flex-direction: column; overflow: hidden; }
     .scan-overlay.hidden { display: none; }
     .scan-header { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--card); border-bottom: 1px solid var(--card-border); flex-shrink: 0; }
@@ -395,6 +390,108 @@ let autoVoice = localStorage.getItem('lager-autovoice') !== 'off';
 
 // ====== ERROR CODE DATABASE ======
 const ERROR_CODES = [
+  // === MIELE PW 6065 ===
+  { code: "F0", name: "Inget fel", desc: "Inget fel. Tillverkningsindex 55: programavbrott i desinfektionsprogrammet om temperatursänkning är aktiverad eller maskinen är ansluten med en fas.", brand: "Miele", machine: "PW 6065" },
+  { code: "F1", name: "Kortslutning NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning kortsluten. Uppvärmningen stängs av inom 10 sekunder. Programmet fortsätter utan uppvärmning.", brand: "Miele", machine: "PW 6065" },
+  { code: "F2", name: "Avbrott NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning avbruten. Uppvärmningen stängs av inom 10 sekunder. Programmet fortsätter utan uppvärmning.", brand: "Miele", machine: "PW 6065" },
+  { code: "F10", name: "Vattentillopp kallt", desc: "Tilloppsfel. Kontrollera: vattenkran öppen, silor rena, vattentryck min 1 bar, magnetventil fungerande. Kan även orsakas av WCS-läcka.", brand: "Miele", machine: "PW 6065" },
+  { code: "F11", name: "Vattenavlopp", desc: "Avloppsfel. Kontrollera avloppspumpens nålfälla, avloppsslang, återsugningsskydd, luftning och funktion.", brand: "Miele", machine: "PW 6065" },
+  { code: "F15", name: "Vattentilloppsfel varmvatten", desc: "Programmet arbetar vidare med kallvatten. Kontrollera varmvattenkran, silor och vattentryck.", brand: "Miele", machine: "PW 6065" },
+  { code: "F16", name: "Överdosering skum", desc: "Kontrollera doseringen. Skumbildning pga överdosering av tvättmedel. Kontrollera avluftningsslang och avlopp.", brand: "Miele", machine: "PW 6065" },
+  { code: "F19", name: "Flödesmätaren går trögt", desc: "Inga eller för få impulser från flödesmätarens Reedkontakt (B3/4). Kontrollera kabelstam och strömkrets. Kontrollera att programmeringsfunktionen Flödesmätare är aktiverad.", brand: "Miele", machine: "PW 6065" },
+  { code: "F20", name: "Värmeelement defekt", desc: "Börtemperaturen ej uppnådd. Kontrollera värmereleät (K1/1) och värmeelementet (R1) med avseende på kortslutning och ledningsbrott.", brand: "Miele", machine: "PW 6065" },
+  { code: "F39", name: "Elektronikfel (EW)", desc: "Programvalselektroniken (EW) defekt.", brand: "Miele", machine: "PW 6065" },
+  { code: "F41", name: "Felaktigt EEPROM/felaktiga data", desc: "Tekniskt fel. Programmet avbryts. Felaktigt EEPROM/felaktiga data.", brand: "Miele", machine: "PW 6065" },
+  { code: "F43", name: "Ingen programmerad maskinmodell", desc: "Tekniskt fel. Programvalselektroniken (EW) och effekt- och programelektroniken (ELP) passar inte ihop.", brand: "Miele", machine: "PW 6065" },
+  { code: "F45", name: "Felaktigt Flash RAM/felaktiga data", desc: "Internt fel i effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PW 6065" },
+  { code: "F46", name: "Display", desc: "Internt displayfel i programvalselektronik (EW). Indikatordrivenheten till LCD-modulen är defekt.", brand: "Miele", machine: "PW 6065" },
+  { code: "F47", name: "Gränssnitt EW/ELP felaktigt", desc: "Gränssnitt EW/ELP felaktigt.", brand: "Miele", machine: "PW 6065" },
+  { code: "F50", name: "Motor", desc: "Tekniskt fel. Ingen drivkraft. Kontrollera motorn och frekvensomriktaren (FU).", brand: "Miele", machine: "PW 6065" },
+  { code: "F51", name: "Trycksensor", desc: "Tekniskt fel. Analog trycksensor (ADS) defekt eller arbetsområdet förskjutet.", brand: "Miele", machine: "PW 6065" },
+  { code: "F53", name: "Varvtalssensor (takogenerator)", desc: "Tekniskt fel. Trumman blockerad eller takogenerator defekt. Kontrollera motor och takogenerator.", brand: "Miele", machine: "PW 6065" },
+  { code: "F56", name: "Ingen centrifugering", desc: "Slutcentrifugeringsvarvtal < 400 rpm trots börvarvtal minst 450 rpm.", brand: "Miele", machine: "PW 6065" },
+  { code: "F63", name: "Fel på vattenfördelaren", desc: "Tekniskt fel. Vattenfördelaren är defekt.", brand: "Miele", machine: "PW 6065" },
+  { code: "F65", name: "Kåpa till trumbelysningen saknas", desc: "Tekniskt fel. Kontrollera att belysningsenhetens kåpa sitter ordentligt eller programmera bort trumbelysning.", brand: "Miele", machine: "PW 6065" },
+  { code: "F92", name: "Risk för bakteriebildning", desc: "Info Hygien. Kör ett program med börtemperatur ≥ 60°C för att återställa mätaren.", brand: "Miele", machine: "PW 6065" },
+  { code: "F96", name: "Vattentilloppsfel bruksvatten", desc: "Programmet arbetar vidare med kallvatten. Kontrollera bruksvattenkran, silor och vattentryck.", brand: "Miele", machine: "PW 6065" },
+  { code: "F100", name: "Felaktig kommunikation till IK-6", desc: "Felaktig kommunikation till IK-6.", brand: "Miele", machine: "PW 6065" },
+  { code: "F101", name: "IK-6 felaktig/inkompatibel", desc: "IK-6 felaktig.", brand: "Miele", machine: "PW 6065" },
+  { code: "F104", name: "Underspänning mellankrets", desc: "För låg nätspänning. Kontrollera nätspänning, motorlindningens överhettningsskydd (Klixon) och ELP.", brand: "Miele", machine: "PW 6065" },
+  { code: "F130", name: "Kommunikation extra reläkort EZL256", desc: "Kontrollera att rätt ELP och EZL är monterade. Kontrollera elektrisk förbindelse. Byt EZL eller ELP vid behov.", brand: "Miele", machine: "PW 6065" },
+  { code: "F137", name: "Temperatur hålltid", desc: "Börtemperaturen underskreds under hålltiden i desinfektionsprogram. Kontrollera fasanslutning, NTC och värmeelement.", brand: "Miele", machine: "PW 6065" },
+  { code: "F138", name: "Vatten på bottenplåten", desc: "Waterproof-fel. Stäng vattenkranen. Tilloppsventilen stänger inte eller läcka i maskinen.", brand: "Miele", machine: "PW 6065" },
+
+  // === MIELE PW 5105 ===
+  { code: "F0", name: "Inget fel", desc: "Inget fel i felminnet för effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PW 5105" },
+  { code: "F1", name: "Kortslutning NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning kortsluten. Uppvärmningen stängs av inom 10 sekunder.", brand: "Miele", machine: "PW 5105" },
+  { code: "F2", name: "Avbrott NTC-motstånd vatten/värme", desc: "Temperatursensorn (NTC-motstånd, R30) eller ledning avbruten. Uppvärmningen stängs av inom 10 sekunder.", brand: "Miele", machine: "PW 5105" },
+  { code: "F10", name: "Vattentillopp kallt", desc: "Tilloppsfel. Kontrollera vattenkran, silor, vattentryck och magnetventil.", brand: "Miele", machine: "PW 5105" },
+  { code: "F11", name: "Vattenavlopp", desc: "Avloppsfel. Kontrollera avloppspump, avloppsslang, återsugningsskydd och avloppsventil.", brand: "Miele", machine: "PW 5105" },
+  { code: "F15", name: "Vattentilloppsfel varmvatten", desc: "Programmet arbetar vidare med kallvatten. Kontrollera varmvattenkran, silor och vattentryck.", brand: "Miele", machine: "PW 5105" },
+  { code: "F16", name: "Överdosering skum", desc: "Kontrollera doseringen. Skumbildning pga överdosering av tvättmedel.", brand: "Miele", machine: "PW 5105" },
+  { code: "F19", name: "Flödesmätaren går trögt", desc: "Inga eller för få impulser från flödesmätarens Reedkontakt (B3/4). Kontrollera kabelstam och aktivera programmeringsfunktionen Flödesmätare.", brand: "Miele", machine: "PW 5105" },
+  { code: "F20", name: "Värmeelement", desc: "Börtemperaturen ej uppnådd innan termostopptiden gått ut.", brand: "Miele", machine: "PW 5105" },
+  { code: "F34", name: "Lucklåset låses inte", desc: "Tekniskt fel. Kontrollera låsinställning, fjädrar i handtagets låshake, spänning på lucklåset och lucklåset (A2).", brand: "Miele", machine: "PW 5105" },
+  { code: "F35", name: "Luckan låses inte upp", desc: "Tekniskt fel. Vänta tills trumman stannat, töm ut restvattnet och kyl ned om temperaturen är för hög.", brand: "Miele", machine: "PW 5105" },
+  { code: "F39", name: "Elektronikfel (EW)", desc: "Programvalselektroniken (EW) defekt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F41", name: "Felaktigt EEPROM/felaktiga data", desc: "Tekniskt fel. Programmet avbryts. Felaktigt EEPROM/felaktiga data.", brand: "Miele", machine: "PW 5105" },
+  { code: "F43", name: "Ingen programmerad maskinmodell", desc: "Tekniskt fel. EW och ELP passar inte ihop.", brand: "Miele", machine: "PW 5105" },
+  { code: "F45", name: "Felaktigt Flash RAM-minne/felaktiga data", desc: "Internt fel i effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PW 5105" },
+  { code: "F46", name: "Display", desc: "Internt displayfel i programvalselektronik (EW). LCD-modulens indikatordrivenhet defekt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F47", name: "Gränssnitt EW/ELP felaktigt", desc: "Gränssnitt EW/ELP felaktigt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F49", name: "Gränssnitt EZL/ELP felaktigt", desc: "Gränssnitt EZL/ELP felaktigt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F50", name: "Motor", desc: "Tekniskt fel. Ingen drivkraft. Kontrollera motor och frekvensomriktare (FU).", brand: "Miele", machine: "PW 5105" },
+  { code: "F51", name: "Trycksensor", desc: "Tekniskt fel. Analog trycksensor (ADS) defekt. Kontrollera trycksensor i serviceläget och förbindelseslang.", brand: "Miele", machine: "PW 5105" },
+  { code: "F53", name: "Varvtalssensor (takogenerator)", desc: "Tekniskt fel. Takogenerator eller motor defekt. Kontrollera motor och takogenerator.", brand: "Miele", machine: "PW 5105" },
+  { code: "F56", name: "Ingen centrifugering", desc: "Slutcentrifugeringsvarvtal < 400 rpm trots börvarvtal minst 450 rpm.", brand: "Miele", machine: "PW 5105" },
+  { code: "F63", name: "Fel på vattenfördelaren", desc: "Tekniskt fel. Vattenfördelaren är defekt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F92", name: "Risk för bakteriebildning", desc: "Info Hygien. Kör ett program med börtemperatur ≥ 60°C.", brand: "Miele", machine: "PW 5105" },
+  { code: "F93", name: "Fel på extra reläkort", desc: "Extra reläkort (EZL) defekt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F96", name: "Vattentilloppsfel bruksvatten", desc: "Programmet arbetar vidare med kallvatten. Kontrollera bruksvattenkran, silor och vattentryck.", brand: "Miele", machine: "PW 5105" },
+  { code: "F100", name: "Kommunikation till IK-6 felaktig", desc: "Kommunikation till IK-6 felaktig.", brand: "Miele", machine: "PW 5105" },
+  { code: "F101", name: "IK-6 felaktig/ej kompatibel", desc: "IK-6 felaktig.", brand: "Miele", machine: "PW 5105" },
+  { code: "F102", name: "Kommunikation till bussmodulen felaktig", desc: "Kommunikationen till bussmodulen felaktig.", brand: "Miele", machine: "PW 5105" },
+  { code: "F103", name: "Bussmodulen defekt", desc: "Bussmodulen defekt.", brand: "Miele", machine: "PW 5105" },
+  { code: "F104", name: "Underspänning mellankrets", desc: "Nätspänningen för låg. Kontrollera nätspänning, Klixon och ELP.", brand: "Miele", machine: "PW 5105" },
+  { code: "F130", name: "Kommunikation extra reläkort EZL 256", desc: "Kontrollera att rätt ELP och EZL är monterade. Byt EZL eller ELP vid behov.", brand: "Miele", machine: "PW 5105" },
+  { code: "F131", name: "Extra reläkort EZL 256 felaktigt", desc: "Extra reläkort EZL defekt.", brand: "Miele", machine: "PW 5105" },
+
+  // === MIELE PT 7136 OS ===
+  { code: "F1", name: "Kortslutning NTC-sensor värmeelement (R30-30)", desc: "Tekniskt fel. Endast kalluftsprogrammet fungerar. Kontrollera temperatursensor R30-30 och kabelstam med avseende på kortslutning.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F2", name: "Avbrott NTC-sensor värmeelement (R30-30)", desc: "Tekniskt fel. Endast kalluftsprogrammet fungerar. Kontrollera sensor R30-30, kabelstam, värmeelement, värmerele K1-1 och överhettningsskydd F1.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F3", name: "Kortslutning torkluftstemperatursensor (R30-31)", desc: "Tekniskt fel. Endast kalluftsprogrammet fungerar. Kontrollera sensor R30-31 och kabelstam med avseende på kortslutning.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F4", name: "Avbrott torkluftstemperatursensor (R30-31)", desc: "Tekniskt fel. Endast kalluftsprogrammet fungerar. Kontrollera sensor R30-31 och kabelstam med avseende på avbrott.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F38", name: "Inkompatibla elektronikmoduler", desc: "Maskinen kan inte användas. ELP (N1-1) och EW (N1-2) elektronikmoduler matchar inte varandra.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F41", name: "Felaktigt EEPROM/felaktiga data", desc: "Tekniskt fel. Programvaran återställs till fabriksinställningar. Internt elektronikfel.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F43", name: "Ingen maskinmodell programmerad", desc: "EW (N1-2) och ELP (N1-1) matchar inte. Kontrollera fukt kring kondensatpumpen och byt float switch (B8-7) vid behov.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F45", name: "Felaktigt Flash RAM/felaktiga data", desc: "Tekniskt fel. Skapa minnesdump, återställ till fabriksinställningar och byt ELP (N1-1) vid behov.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F46", name: "Felaktig anslutning till LCD", desc: "Programavbrott. Internt displayfel i EW (N1-2). LCD-modulens displaydrivrutin defekt.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F47", name: "EW/ELP-gränssnitt defekt", desc: "Tekniskt fel. Kabelstam 10 är defekt.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F50", name: "Drivfel", desc: "Tekniskt fel. Fel i ELP-elektronikmodulen (N1-1).", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F55", name: "Maximal körtid överskriden", desc: "Tekniskt fel. Tvätten är för fuktig, trumman överfylld, luftkanaler igensatta eller värmeelement/relä/överhettningsskydd/restfuktighetssensor defekt.", brand: "Miele", machine: "PT 7136 OS" },
+  { code: "F66", name: "Luftflödesfel", desc: "Otillräckligt luftflöde. Rensa luddfilter och luftkanaler. Kontrollera fläkthjul och temperatursensor R30-30.", brand: "Miele", machine: "PT 7136 OS" },
+
+  // === MIELE PT 7186 ===
+  { code: "F0", name: "Inget fel", desc: "Inget fel i felminnet för effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PT 7186" },
+  { code: "F1", name: "Kortslutning NTC-sensor värmeelement torkning (2R30)", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Kortslutning i temperatursensorn (> 250°C).", brand: "Miele", machine: "PT 7186" },
+  { code: "F1b", name: "Överhettningsskydd har löst ut (1F1, 2F1, 3F1)", desc: "Överhettningsskyddet aktiverat upprepade gånger. Rensa luddfilter, luftkanalens öppningar och luft-/frånluftsvägar. Återställ överhettningsskyddet.", brand: "Miele", machine: "PT 7186" },
+  { code: "F2", name: "Avbrott NTC-sensor värmeelement torkning (2R30)", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Kontrollera ledning, kabelkontakt, värmeelement, värmerele K1/1 och överhettningsskydd F1.", brand: "Miele", machine: "PT 7186" },
+  { code: "F3", name: "Kortslutning temperatursensor processluft (1R30)", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Kortslutning (> 160°C) i NTC-motstånd 1R30.", brand: "Miele", machine: "PT 7186" },
+  { code: "F4", name: "Avbrott temperatursensor processluft (1R30)", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Avbrott (< -15°C) i NTC-motstånd 1R30.", brand: "Miele", machine: "PT 7186" },
+  { code: "F41", name: "Felaktigt EEPROM/felaktiga data", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Programmet arbetar med standardvärden.", brand: "Miele", machine: "PT 7186" },
+  { code: "F43", name: "Ingen programmerad maskinmodell", desc: "Inget felmeddelande i displayen i driftläget.", brand: "Miele", machine: "PT 7186" },
+  { code: "F45", name: "Felaktigt Flash RAM/felaktiga data", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Felaktigt Flash RAM/felaktiga data.", brand: "Miele", machine: "PT 7186" },
+  { code: "F46", name: "Display", desc: "Programavbrott, kalluftsfas. Internt displayfel i programvalselektronik (EW). LCD-modulen defekt.", brand: "Miele", machine: "PT 7186" },
+  { code: "F47", name: "Fel på kommunikation EW/ELP", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Gränssnitt EW/ELP felaktigt.", brand: "Miele", machine: "PT 7186" },
+  { code: "F50", name: "Motor stand still med värme inkopplad > 3 sek", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Internt fel i effekt- och programelektroniken (ELP).", brand: "Miele", machine: "PT 7186" },
+  { code: "F55", name: "Tidsbegränsning överskriden (~180 min)", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Tvätten för fuktig/överfylld, luftkanaler igensatta, värmeelement/relä/överhettningsskydd/restfuktighetssensor defekt.", brand: "Miele", machine: "PT 7186" },
+  { code: "F66", name: "Tryckfall", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Luftkanalerna igensatta.", brand: "Miele", machine: "PT 7186" },
+  { code: "F151", name: "Ingen jonisering", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Brännaren har inte tänts efter tre försök.", brand: "Miele", machine: "PT 7186" },
+  { code: "F152", name: "Fel på spole magnetventiler", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Gasmagnetventil (Y57) defekt.", brand: "Miele", machine: "PT 7186" },
+  { code: "F153", name: "Övertemperatur gasbrännare", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Kontrollera gasbrännare, luddfilter, luftkanaler och fläkt 1M2.", brand: "Miele", machine: "PT 7186" },
+  { code: "F154", name: "Internt fel på tändelektroniken", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Kontrollera luddfilter, luftkanaler, trumtätning, fläkt 1M2 och undertrycksdosa. Byt tändelektronik vid behov.", brand: "Miele", machine: "PT 7186" },
+  { code: "F155", name: "Parasitär flamma", desc: "Tekniskt fel. Programavbrott, kalluftsfas. Gasmagnetventilen stänger inte — lågan fortsätter brinna.", brand: "Miele", machine: "PT 7186" },
+
   // === ELECTROLUX COMPASS PRO (W555H, W575H, W5XXX) ===
   { code: "10:1", name: "Tachoingång utanför värde", desc: "Tachoingången på CPU utanför tillåtet värde.", brand: "Electrolux", machine: "W555H, W575H" },
   { code: "10:11", name: "Realtidklocka ur funktion", desc: "Realtidklockan ur funktion.", brand: "Electrolux", machine: "W555H, W575H" },
@@ -1020,7 +1117,7 @@ function render() {
       </div>
       <div class="dept-tabs">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
-        <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render();if(autoVoice&&!isListening)setTimeout(startVoice,300)" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
+        <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -1218,9 +1315,6 @@ function render() {
       html += `<div class="ec-overlay" id="ec-overlay" onclick="if(event.target===this)closeEC()"><div class="ec-popup" id="ec-popup"></div></div>`;
     }
   } // end felkoder view
-
-  // Mic button
-  html += `<button class="mic-btn ${isListening ? 'listening' : ''}" onclick="startVoice()" title="Röststyrning">${isListening ? '⏹️' : '🎤'}</button>`;
 
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
