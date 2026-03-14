@@ -1,4 +1,4 @@
-<!-- v2.33 -->
+<!-- v2.34 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.40</title>
+  <title>Lager v2.41</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -183,6 +183,8 @@
     .ec-note-text { font-size: 15px; color: var(--text); line-height: 1.5; }
     .ec-note-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
     .ec-note-del { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+    .ec-note-edit { background: none; border: none; color: var(--accent); font-size: 16px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+    .ec-note-actions { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
     .ec-note-add { display: flex; gap: 8px; margin-top: 10px; }
     .ec-note-input { flex: 1; background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit; color: var(--text); resize: none; min-height: 44px; }
     .ec-note-submit { background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 10px 16px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
@@ -1179,7 +1181,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.40</h1>
+          <h1>📦 Lager v2.41</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1513,14 +1515,21 @@ function openEC(i) {
     if (!listEl) return;
     if (!notes) { listEl.innerHTML = '<div style="font-size:13px;color:var(--text-dim)">Inga anteckningar ännu.</div>'; return; }
     const sorted = Object.entries(notes).sort((a, b) => b[1].timestamp - a[1].timestamp);
-    listEl.innerHTML = sorted.map(([id, n]) => `
+    listEl.innerHTML = sorted.map(([id, n]) => {
+      const isOwn = currentUser && n.userId === currentUser.uid;
+      const canAct = isAdmin || isOwn;
+      return `
       <div class="ec-note">
         <div class="ec-note-body">
           <div class="ec-note-text">${n.text.replace(/</g, "&lt;")}</div>
           <div class="ec-note-meta">${n.userName} · ${new Date(n.timestamp).toLocaleDateString("sv-SE")}</div>
         </div>
-        ${isAdmin ? `<button class="ec-note-del" onclick="doDeleteECNote('${id}')" title="Ta bort">🗑️</button>` : ""}
-      </div>`).join("");
+        ${canAct ? `<div class="ec-note-actions">
+          <button class="ec-note-edit" onclick="doEditECNote('${id}', this)" title="Redigera">✏️</button>
+          <button class="ec-note-del" onclick="doDeleteECNote('${id}')" title="Ta bort">🗑️</button>
+        </div>` : ""}
+      </div>`;
+    }).join("");
   });
 }
 
@@ -1545,9 +1554,44 @@ async function doAddECNote(codeKey) {
   });
 }
 
+function doEditECNote(noteId, btn) {
+  const noteEl = btn.closest(".ec-note");
+  const textEl = noteEl.querySelector(".ec-note-text");
+  const origText = textEl.textContent;
+  noteEl.dataset.origText = origText;
+  textEl.outerHTML = `<textarea class="ec-note-input" id="ec-edit-${noteId}" rows="2">${origText.replace(/</g, "&lt;")}</textarea>`;
+  const actionsEl = btn.closest(".ec-note-actions");
+  actionsEl.innerHTML = `
+    <button class="ec-note-edit" onclick="doSaveECNote('${noteId}')" title="Spara">💾</button>
+    <button class="ec-note-del" onclick="doCancelECEdit('${noteId}', this)" title="Avbryt">✕</button>`;
+}
+
+function doCancelECEdit(noteId, btn) {
+  const noteEl = btn.closest(".ec-note");
+  const origText = (noteEl.dataset.origText || "").replace(/</g, "&lt;");
+  const textarea = document.getElementById("ec-edit-" + noteId);
+  if (textarea) textarea.outerHTML = `<div class="ec-note-text">${origText}</div>`;
+  const actionsEl = btn.closest(".ec-note-actions");
+  actionsEl.innerHTML = `
+    <button class="ec-note-edit" onclick="doEditECNote('${noteId}', this)" title="Redigera">✏️</button>
+    <button class="ec-note-del" onclick="doDeleteECNote('${noteId}')" title="Ta bort">🗑️</button>`;
+}
+
+async function doSaveECNote(noteId) {
+  const input = document.getElementById("ec-edit-" + noteId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  await db.ref("ecNotes/" + noteId).update({ text });
+}
+
 async function doDeleteECNote(noteId) {
-  if (!isAdmin) return;
-  await db.ref("ecNotes/" + noteId).remove();
+  if (isAdmin) { await db.ref("ecNotes/" + noteId).remove(); return; }
+  const snap = await db.ref("ecNotes/" + noteId).once("value");
+  const note = snap.val();
+  if (note && currentUser && note.userId === currentUser.uid) {
+    await db.ref("ecNotes/" + noteId).remove();
+  }
 }
 
 
