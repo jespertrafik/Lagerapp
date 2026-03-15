@@ -1,4 +1,4 @@
-<!-- v2.75 -->
+<!-- v2.76 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.75</title>
+  <title>Lager v2.76</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.75</h1>
+          <h1>📦 Lager v2.76</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1512,6 +1512,14 @@ function render() {
         spans += `</span>`;
         return css + spans;
       };
+      // Simple on/off pulse — all 3 LEDs in sync
+      const ledPulse = (id, onMs, offMs) => {
+        const total = onMs + offMs;
+        const pct = (onMs / total * 100).toFixed(1);
+        const sz = 'display:inline-block;width:22px;height:22px;border-radius:50%;background:#e53935';
+        const sp = `<span style="${sz};animation:lp${id} ${total}ms linear infinite"></span>`;
+        return `<style>@keyframes lp${id}{0%,${pct}%{opacity:1}${pct}%,100%{opacity:.15}}</style><span style="display:inline-flex;gap:6px">${sp}${sp}${sp}</span>`;
+      };
       html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
         <div style="padding:14px 16px 10px;font-size:15px;font-weight:700;color:#f5a623">🔒 Lucklåsets styrenhet — Statusindikering</div>
         <div style="margin:0 16px 14px;background:#ffffff;border-radius:12px;overflow:hidden">
@@ -1528,7 +1536,7 @@ function render() {
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
                 <td style="padding:7px 10px">Ingen felfunktion, trumman står stilla</td>
-                <td style="padding:7px 10px">${ledBlinks('n0',[true,true,true],[3])}</td>
+                <td style="padding:7px 10px">${ledPulse('n0',800,200)}</td>
               </tr>
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
