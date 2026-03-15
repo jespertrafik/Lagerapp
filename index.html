@@ -1,4 +1,4 @@
-<!-- v2.61 -->
+<!-- v2.62 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.61</title>
+  <title>Lager v2.62</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.61</h1>
+          <h1>📦 Lager v2.62</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1584,7 +1584,7 @@ function render() {
       html += `<div class="ec-count">${filtered.length} felkoder</div>`;
       html += `<div class="ec-section">`;
       filtered.forEach((e, i) => {
-        html += `<div class="ec-card-wrap">
+        html += `<div class="ec-card-wrap" data-search="${(e.code+" "+e.name+" "+e.machine).toLowerCase()}">
           <div class="ec-card" onclick="openEC(${i})">
             <div style="display:flex;align-items:center;gap:16px">
               <div class="ec-code">${e.code}</div>
@@ -1677,12 +1677,23 @@ function filterItems() {
 // Search render for error codes — re-renders but restores focus
 let ecFilteredCodes = [];
 function ecSearchRender() {
-  render();
-  const el = document.getElementById("ec-search");
-  if (el) {
-    el.value = ecSearch || "";
-    el.focus();
-    el.setSelectionRange(el.value.length, el.value.length);
+  const q = (ecSearch || '').toLowerCase();
+  const cards = document.querySelectorAll('.ec-card-wrap');
+  if (cards.length > 0) {
+    // Filter in-place — ingen DOM-rebuild, tangentbordet stängs inte
+    let visible = 0;
+    cards.forEach(card => {
+      const match = !q || (card.dataset.search || '').includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    const countEl = document.querySelector('.ec-count');
+    if (countEl) countEl.textContent = visible + ' felkoder';
+  } else {
+    // Inga kort i DOM ännu — rendera en gång
+    render();
+    const el = document.getElementById('ec-search');
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
   }
 }
 // Legacy alias
