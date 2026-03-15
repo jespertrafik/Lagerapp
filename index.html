@@ -1,4 +1,4 @@
-<!-- v2.62 -->
+<!-- v2.63 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.62</title>
+  <title>Lager v2.63</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -132,7 +132,7 @@
     .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 9px 14px 9px 38px; font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     .search-input:focus { border-color: var(--accent); }
     .search-icon { position: absolute; left: 28px; top: 30px; font-size: 15px; pointer-events: none; opacity: 0.4; cursor: pointer; }
-    .search-icon.clickable { pointer-events: auto; opacity: 0.6; }
+    .search-icon.clickable { pointer-events: auto; opacity: 0.6; z-index: 1; touch-action: manipulation; }
     .ec-search-wrap { padding: 14px 16px 0; display: flex; gap: 8px; align-items: center; }
     .ec-search-inner { position: relative; flex: 1; }
     .ec-dismiss-btn { background: none; border: none; color: var(--accent); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; padding: 10px 4px; white-space: nowrap; flex-shrink: 0; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.62</h1>
+          <h1>📦 Lager v2.63</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1355,24 +1355,7 @@ function render() {
     const activeMachines = activeSubDef ? activeSubDef.machines
       : activeTabDef ? activeTabDef.subs.flatMap(s => s.machines) : null;
 
-    const matchesSearch = (e) => {
-      const q = ecSearch.trim().toUpperCase();
-      const code = e.code.toUpperCase();
-      if (code.startsWith(q)) return true;
-      const qPrefix = q.replace(/[0-9:]/g, "").trim();
-      const qDigits = q.replace(/[^0-9:]/g, "");
-      if (qDigits) {
-        const cPrefix = code.replace(/[0-9:]/g, "").trim();
-        const cDigits = code.replace(/[^0-9:]/g, "");
-        const prefixOk = !qPrefix || !cPrefix || qPrefix === cPrefix;
-        if (prefixOk && (cDigits === qDigits || cDigits.startsWith(qDigits + ":") || cDigits.startsWith(qDigits))) return true;
-      }
-      if (!/\d/.test(q) && !/^[EFR]{1,3}$/i.test(q)) {
-        const ql = q.toLowerCase();
-        if (e.name.toLowerCase().includes(ql) || e.desc.toLowerCase().includes(ql) || e.machine.toLowerCase().includes(ql)) return true;
-      }
-      return false;
-    };
+    const matchesSearch = (e) => ecMatchesSearch(e);
 
     let filtered = ERROR_CODES.filter(e => {
       if (ecSearch) return matchesSearch(e);
@@ -1580,11 +1563,12 @@ function render() {
     }
 
     // Error code list or placeholder
+    html += `<div id="ec-results-wrap">`;
     if (ecTab || ecSearch) {
       html += `<div class="ec-count">${filtered.length} felkoder</div>`;
       html += `<div class="ec-section">`;
       filtered.forEach((e, i) => {
-        html += `<div class="ec-card-wrap" data-search="${(e.code+" "+e.name+" "+e.machine).toLowerCase()}">
+        html += `<div class="ec-card-wrap" data-search="${(e.code+' '+e.name+' '+e.desc+' '+e.machine).toLowerCase().replace(/"/g,'&quot;')}">
           <div class="ec-card" onclick="openEC(${i})">
             <div style="display:flex;align-items:center;gap:16px">
               <div class="ec-code">${e.code}</div>
@@ -1597,6 +1581,7 @@ function render() {
     } else if (!ecRefPanel) {
       html += `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center"><div style="font-size:48px;margin-bottom:12px">👆</div><div style="font-size:18px;color:#555">Välj maskintyp eller sök felkod</div></div>`;
     }
+    html += `</div>`;
 
     html += `<div class="ec-overlay" id="ec-overlay" onclick="if(event.target===this)closeEC()"><div class="ec-popup" id="ec-popup"></div></div>`;
   } // end felkoder view
@@ -1674,26 +1659,81 @@ function filterItems() {
   });
 }
 
-// Search render for error codes — re-renders but restores focus
+// Module-level search matcher (used by both render() and ecSearchRender())
+function ecMatchesSearch(e) {
+  const q = ecSearch.trim().toUpperCase();
+  const code = e.code.toUpperCase();
+  if (code.startsWith(q)) return true;
+  const qPrefix = q.replace(/[0-9:]/g, "").trim();
+  const qDigits = q.replace(/[^0-9:]/g, "");
+  if (qDigits) {
+    const cPrefix = code.replace(/[0-9:]/g, "").trim();
+    const cDigits = code.replace(/[^0-9:]/g, "");
+    const prefixOk = !qPrefix || !cPrefix || qPrefix === cPrefix;
+    if (prefixOk && (cDigits === qDigits || cDigits.startsWith(qDigits + ":") || cDigits.startsWith(qDigits))) return true;
+  }
+  if (!/\d/.test(q) && !/^[EFR]{1,3}$/i.test(q)) {
+    const ql = q.toLowerCase();
+    if (e.name.toLowerCase().includes(ql) || e.desc.toLowerCase().includes(ql) || e.machine.toLowerCase().includes(ql)) return true;
+  }
+  return false;
+}
+
 let ecFilteredCodes = [];
 function ecSearchRender() {
   const q = (ecSearch || '').toLowerCase();
+
+  if (!q) {
+    // Sökning rensad — återställ vyn normalt (ingen tangentbordsrisk)
+    render();
+    return;
+  }
+
   const cards = document.querySelectorAll('.ec-card-wrap');
   if (cards.length > 0) {
     // Filter in-place — ingen DOM-rebuild, tangentbordet stängs inte
     let visible = 0;
     cards.forEach(card => {
-      const match = !q || (card.dataset.search || '').includes(q);
+      const match = (card.dataset.search || '').includes(q);
       card.style.display = match ? '' : 'none';
       if (match) visible++;
     });
     const countEl = document.querySelector('.ec-count');
     if (countEl) countEl.textContent = visible + ' felkoder';
   } else {
-    // Inga kort i DOM ännu — rendera en gång
-    render();
-    const el = document.getElementById('ec-search');
-    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    // Inga kort ännu (första sökning utan vald flik) — injicera utan full render()
+    const wrap = document.getElementById('ec-results-wrap');
+    if (!wrap) { render(); return; }
+
+    const filtered = ERROR_CODES.filter(e => ecMatchesSearch(e));
+    const ecQ = ecSearch.trim().toUpperCase();
+    filtered.sort((a, b) => {
+      const aExact = a.code.toUpperCase() === ecQ, bExact = b.code.toUpperCase() === ecQ;
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+      const ca = a.code.toUpperCase(), cb = b.code.toUpperCase();
+      const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
+      if (ma && mb) {
+        if (ma[1] !== mb[1]) return ma[1] < mb[1] ? -1 : 1;
+        return parseInt(ma[2]) - parseInt(mb[2]);
+      }
+      return ca < cb ? -1 : ca > cb ? 1 : 0;
+    });
+    ecFilteredCodes = filtered;
+
+    let html = `<div class="ec-count">${filtered.length} felkoder</div><div class="ec-section">`;
+    filtered.forEach((e, i) => {
+      html += `<div class="ec-card-wrap" data-search="${(e.code+' '+e.name+' '+e.desc+' '+e.machine).toLowerCase().replace(/"/g,'&quot;')}">
+        <div class="ec-card" onclick="openEC(${i})">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div class="ec-code">${e.code}</div>
+            <div class="ec-name">${e.name} <span style="font-size:11px;color:var(--text-dim)">${e.machine}</span></div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    wrap.innerHTML = html;
   }
 }
 // Legacy alias
