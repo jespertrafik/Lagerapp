@@ -1,4 +1,4 @@
-<!-- v2.70 -->
+<!-- v2.71 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.70</title>
+  <title>Lager v2.71</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.70</h1>
+          <h1>📦 Lager v2.71</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1562,6 +1562,32 @@ function render() {
             </tbody>
           </table>
           <div style="font-size:11px;color:#666;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
+        </div>
+        <style>
+          @keyframes led_r1{0%,87.3%{opacity:1}90.9%,96.4%{opacity:.15}100%{opacity:1}}
+          @keyframes led_r2{0%,4.4%{opacity:1}7.4%,11.9%{opacity:.15}14.8%,22.9%{opacity:1}25.9%,97%{opacity:.15}100%{opacity:1}}
+        </style>
+        <div style="margin:12px 0 0;background:#1a1a1a;border-radius:12px;overflow:hidden">
+          <div style="padding:10px 14px 0;font-size:12px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.05em">LED-indikatorer</div>
+          <div style="padding:6px 14px 12px">
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 0">
+              <div style="display:flex;gap:8px;flex-shrink:0">
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
+              </div>
+              <div style="font-size:13px;color:#ccc">Ingen felfunktion, trumman står stilla</div>
+            </div>
+            <div style="height:1px;background:#333;margin:0 0 2px"></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 0 0">
+              <div style="display:flex;gap:8px;flex-shrink:0">
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
+              </div>
+              <div style="font-size:13px;color:#ccc">Nivåvakt B2: vatten i trumman (stillastående)</div>
+            </div>
+          </div>
         </div>
       </div>`;
     }
