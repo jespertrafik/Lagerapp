@@ -1,4 +1,4 @@
-<!-- v2.69 -->
+<!-- v2.70 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.69</title>
+  <title>Lager v2.70</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -135,7 +135,7 @@
     .search-icon.clickable { pointer-events: auto; opacity: 0.6; z-index: 1; touch-action: manipulation; outline: none; }
     .ec-search-wrap { padding: 14px 16px 0; display: flex; gap: 8px; align-items: center; }
     .ec-search-inner { position: relative; flex: 1; }
-    .ec-dismiss-btn { background: none; border: none; color: var(--accent); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; padding: 10px 4px; white-space: nowrap; flex-shrink: 0; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+
 
     .stats-bar { padding: 8px 16px 0; font-size: 14px; color: var(--text); }
 
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.69</h1>
+          <h1>📦 Lager v2.70</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1403,7 +1403,7 @@ function render() {
     }
 
     // Search
-    html += `<div class="ec-search-wrap"><div class="ec-search-inner"><button class="search-icon clickable" type="button" ontouchend="document.activeElement.blur()" onclick="document.activeElement.blur()">🔍</button><input class="search-input" type="text" inputmode="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div><button class="ec-dismiss-btn" ontouchstart="document.activeElement.blur()" onclick="document.activeElement.blur()">Klar</button></div>`;
+    html += `<div class="ec-search-wrap"><div class="ec-search-inner"><button class="search-icon clickable" type="button" ontouchend="document.activeElement.blur()" onclick="document.activeElement.blur()">🔍</button><input class="search-input" type="text" inputmode="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div></div>`;
 
     // Reference panel buttons (not active by default)
     html += `<div style="display:flex;gap:8px;padding:10px 16px 0">
