@@ -1,4 +1,4 @@
-<!-- v2.64 -->
+<!-- v2.65 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.64</title>
+  <title>Lager v2.65</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.64</h1>
+          <h1>📦 Lager v2.65</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1376,7 +1376,11 @@ function render() {
       const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
       if (ma && mb) {
         if (ma[1] !== mb[1]) return ma[1] < mb[1] ? -1 : 1;
-        return parseInt(ma[2]) - parseInt(mb[2]);
+        const numDiff = parseInt(ma[2]) - parseInt(mb[2]);
+        if (numDiff !== 0) return numDiff;
+        // Samma prefix+nummer — tom rest ("E20") före subkod ("E20:1")
+        const ra = ca.slice(ma[0].length), rb = cb.slice(mb[0].length);
+        return ra < rb ? -1 : ra > rb ? 1 : 0;
       }
       return ca < cb ? -1 : ca > cb ? 1 : 0;
     });
@@ -1715,7 +1719,11 @@ function ecSearchRender() {
       const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
       if (ma && mb) {
         if (ma[1] !== mb[1]) return ma[1] < mb[1] ? -1 : 1;
-        return parseInt(ma[2]) - parseInt(mb[2]);
+        const numDiff = parseInt(ma[2]) - parseInt(mb[2]);
+        if (numDiff !== 0) return numDiff;
+        // Samma prefix+nummer — tom rest ("E20") före subkod ("E20:1")
+        const ra = ca.slice(ma[0].length), rb = cb.slice(mb[0].length);
+        return ra < rb ? -1 : ra > rb ? 1 : 0;
       }
       return ca < cb ? -1 : ca > cb ? 1 : 0;
     });
