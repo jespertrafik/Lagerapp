@@ -1,4 +1,4 @@
-<!-- v2.65 -->
+<!-- v2.66 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.65</title>
+  <title>Lager v2.66</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -774,24 +774,24 @@ const ERROR_CODES = [
   { code: "60:29", name: "Ogiltigt typsnitt (tork)", desc: "Fatalt fel ogiltigt typsnitt. Starta om maskinen.", brand: "Electrolux", machine: "TD6-6, T5130, T5190" },
 
   // === ELECTROLUX SELECTA I (T3190 m.fl.) ===
-  { code: "E01", name: "För hög tilluftstemperatur", desc: "För hög tilluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E02", name: "För hög frånluftstemperatur", desc: "För hög frånluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E03", name: "Tilluft NTC kortsluten", desc: "NTC givare tilluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E04", name: "Frånluft NTC kortsluten", desc: "NTC givare frånluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E05", name: "Fläktmotor överhettad", desc: "Fläktmotorns inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E06", name: "Drivmotor överhettad", desc: "Drivmotorns alt. driv- och fläktmotorns (T3190) inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E08", name: "Överhettningsskydd utlöst", desc: "Manuellt återställningsbart överhettningsskydd till- eller frånluft utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E09", name: "Luddlåda ej tömd", desc: "Indikerar luddlådan ej tömd.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E10", name: "Parametrar saknas/felaktiga", desc: "Parameterinställning saknas/felaktig.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E11", name: "RMC-tid överskriden", desc: "RMC-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E12", name: "Autostopp-tid överskriden", desc: "Autostopp-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E13", name: "Torktid överstiger bokad tid", desc: "Betalsystemet/bokningssystemet begär längre torktid än maskinens maximala torktid.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E14", name: "Gasfel", desc: "Gasfel, endast gasuppvärmda maskiner.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E15", name: "Vacuumbrytare ej stängd", desc: "Vakuumbrytare stänger inte inom 5 sek från start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E16", name: "Vacuumbrytare stängd vid start", desc: "Vacuumbrytare stängd vid start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E17", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott eller indikerar mindre än 30° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E18", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott eller indikerar mindre än 12° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
-  { code: "E99", name: "Kommunikationsfel processor-panel", desc: "Kommunikationsfel mellan processorkort och panelkretskort.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "01E", name: "För hög tilluftstemperatur", desc: "För hög tilluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "02E", name: "För hög frånluftstemperatur", desc: "För hög frånluftstemperatur.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "03E", name: "Tilluft NTC kortsluten", desc: "NTC givare tilluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "04E", name: "Frånluft NTC kortsluten", desc: "NTC givare frånluft kortsluten.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "05E", name: "Fläktmotor överhettad", desc: "Fläktmotorns inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "06E", name: "Drivmotor överhettad", desc: "Drivmotorns alt. driv- och fläktmotorns (T3190) inbyggda överhettningsskydd utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "08E", name: "Överhettningsskydd utlöst", desc: "Manuellt återställningsbart överhettningsskydd till- eller frånluft utlöst.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "09E", name: "Luddlåda ej tömd", desc: "Indikerar luddlådan ej tömd.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "10E", name: "Parametrar saknas/felaktiga", desc: "Parameterinställning saknas/felaktig.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "11E", name: "RMC-tid överskriden", desc: "RMC-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "12E", name: "Autostopp-tid överskriden", desc: "Autostopp-programmet avslutades inte inom 90 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "13E", name: "Torktid överstiger bokad tid", desc: "Betalsystemet/bokningssystemet begär längre torktid än maskinens maximala torktid.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "14E", name: "Gasfel", desc: "Gasfel, endast gasuppvärmda maskiner.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "15E", name: "Vacuumbrytare ej stängd", desc: "Vakuumbrytare stänger inte inom 5 sek från start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "16E", name: "Vacuumbrytare stängd vid start", desc: "Vacuumbrytare stängd vid start.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "17E", name: "Tilluft NTC ej ansluten", desc: "NTC givare tilluft ej ansluten, avbrott eller indikerar mindre än 30° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "18E", name: "Frånluft NTC ej ansluten", desc: "NTC givare frånluft ej ansluten, avbrott eller indikerar mindre än 12° efter 2 min.", brand: "Electrolux", machine: "Selecta I (T3190)" },
+  { code: "99E", name: "Kommunikationsfel processor-panel", desc: "Kommunikationsfel mellan processorkort och panelkretskort.", brand: "Electrolux", machine: "Selecta I (T3190)" },
 
   // === ELECTROLUX TORKSKÅP TS5121LE/QLE ===
   { code: "ERR 03", name: "Fel på fuktgivare", desc: "Fel på fuktgivare.", brand: "Electrolux", machine: "Torkskåp TS5121LE/QLE" },
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.65</h1>
+          <h1>📦 Lager v2.66</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
