@@ -1,4 +1,4 @@
-<!-- v2.76 -->
+<!-- v2.77 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.76</title>
+  <title>Lager v2.77</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.76</h1>
+          <h1>📦 Lager v2.77</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1559,15 +1559,14 @@ function render() {
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">B</th>
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">C</th>
               <th style="padding:7px 10px;text-align:left;color:#c97f00">Felfunktion</th>
-              <th style="padding:7px 10px;text-align:left;color:#c97f00;min-width:90px">LED</th>
             </tr></thead>
             <tbody>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td><td style="padding:7px 10px">${ledBlinks('f0',[true,true,false],[])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td><td style="padding:7px 10px">${ledBlinks('f1',[false,true,true],[])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td><td style="padding:7px 10px">${ledBlinks('f2',[true,false,false],[])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td><td style="padding:7px 10px">${ledBlinks('f3',[false,true,false],[])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td><td style="padding:7px 10px">${ledBlinks('f4',[true,false,true],[])}</td></tr>
-              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td><td style="padding:7px 10px">${ledBlinks('f5',[false,false,true],[])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
+              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
             </tbody>
           </table>
           <div style="font-size:11px;color:#666;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
