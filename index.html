@@ -1,4 +1,4 @@
-<!-- v2.94 -->
+<!-- v2.95 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.94</title>
+  <title>Lager v2.95</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -927,15 +927,39 @@ function doEmailLogin() {
   loginError = "";
   auth.signInWithEmailAndPassword(email, password).catch((err) => {
     if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-      loginError = "Fel e-post eller lösenord. Har du inget konto? Klicka \u201cSkapa nytt konto\u201d nedan.";
+      // Check if email is in allowlist as pending — if so, auto-create the account
+      db.ref("allowedUsers").once("value").then(snap => {
+        const allUsers = snap.val();
+        const pendingKey = allUsers && Object.keys(allUsers).find(k =>
+          allUsers[k].email.toLowerCase() === email.toLowerCase() && allUsers[k].pending
+        );
+        if (pendingKey) {
+          if (password.length < 6) {
+            loginError = "Lösenordet måste vara minst 6 tecken.";
+            renderLogin();
+            return;
+          }
+          auth.createUserWithEmailAndPassword(email, password).catch((createErr) => {
+            loginError = createErr.code === "auth/weak-password"
+              ? "Lösenordet måste vara minst 6 tecken."
+              : "Kunde inte skapa konto: " + createErr.message;
+            renderLogin();
+          });
+        } else {
+          loginError = "Fel e-post eller lösenord. Inte tillagd i systemet? Be admin lägga till din mejl.";
+          renderLogin();
+        }
+      });
     } else if (err.code === "auth/invalid-email") {
       loginError = "Ogiltig e-postadress.";
+      renderLogin();
     } else if (err.code === "auth/operation-not-allowed") {
       loginError = "E-post/lösenord är inte aktiverat i Firebase.";
+      renderLogin();
     } else {
       loginError = "Inloggning misslyckades: " + err.message;
+      renderLogin();
     }
-    renderLogin();
   });
 }
 
@@ -1220,7 +1244,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.94</h1>
+          <h1>📦 Lager v2.95</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
