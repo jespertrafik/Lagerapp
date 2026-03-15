@@ -1,4 +1,4 @@
-<!-- v2.66 -->
+<!-- v2.67 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.66</title>
+  <title>Lager v2.67</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.66</h1>
+          <h1>📦 Lager v2.67</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1688,61 +1688,47 @@ function ecSearchRender() {
   const q = (ecSearch || '').toLowerCase();
 
   if (!q) {
-    // Sökning rensad — återställ vyn normalt (ingen tangentbordsrisk)
+    // Sökning rensad — återställ vyn normalt
     render();
     return;
   }
 
-  const cards = document.querySelectorAll('.ec-card-wrap');
-  if (cards.length > 0) {
-    // Filter in-place — ingen DOM-rebuild, tangentbordet stängs inte
-    let visible = 0;
-    cards.forEach(card => {
-      const match = (card.dataset.search || '').includes(q);
-      card.style.display = match ? '' : 'none';
-      if (match) visible++;
-    });
-    const countEl = document.querySelector('.ec-count');
-    if (countEl) countEl.textContent = visible + ' felkoder';
-  } else {
-    // Inga kort ännu (första sökning utan vald flik) — injicera utan full render()
-    const wrap = document.getElementById('ec-results-wrap');
-    if (!wrap) { render(); return; }
+  const wrap = document.getElementById('ec-results-wrap');
+  if (!wrap) { render(); return; }
 
-    const filtered = ERROR_CODES.filter(e => ecMatchesSearch(e));
-    const ecQ = ecSearch.trim().toUpperCase();
-    filtered.sort((a, b) => {
-      const aExact = a.code.toUpperCase() === ecQ, bExact = b.code.toUpperCase() === ecQ;
-      if (aExact && !bExact) return -1;
-      if (!aExact && bExact) return 1;
-      const ca = a.code.toUpperCase(), cb = b.code.toUpperCase();
-      const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
-      if (ma && mb) {
-        if (ma[1] !== mb[1]) return ma[1] < mb[1] ? -1 : 1;
-        const numDiff = parseInt(ma[2]) - parseInt(mb[2]);
-        if (numDiff !== 0) return numDiff;
-        // Samma prefix+nummer — tom rest ("E20") före subkod ("E20:1")
-        const ra = ca.slice(ma[0].length), rb = cb.slice(mb[0].length);
-        return ra < rb ? -1 : ra > rb ? 1 : 0;
-      }
-      return ca < cb ? -1 : ca > cb ? 1 : 0;
-    });
-    ecFilteredCodes = filtered;
+  // Alltid ecMatchesSearch — aldrig in-place includes() som matchar beskrivning
+  const filtered = ERROR_CODES.filter(e => ecMatchesSearch(e));
+  const ecQ = ecSearch.trim().toUpperCase();
+  filtered.sort((a, b) => {
+    const aExact = a.code.toUpperCase() === ecQ, bExact = b.code.toUpperCase() === ecQ;
+    if (aExact && !bExact) return -1;
+    if (!aExact && bExact) return 1;
+    const ca = a.code.toUpperCase(), cb = b.code.toUpperCase();
+    const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
+    if (ma && mb) {
+      if (ma[1] !== mb[1]) return ma[1] < mb[1] ? -1 : 1;
+      const numDiff = parseInt(ma[2]) - parseInt(mb[2]);
+      if (numDiff !== 0) return numDiff;
+      const ra = ca.slice(ma[0].length), rb = cb.slice(mb[0].length);
+      return ra < rb ? -1 : ra > rb ? 1 : 0;
+    }
+    return ca < cb ? -1 : ca > cb ? 1 : 0;
+  });
+  ecFilteredCodes = filtered;
 
-    let html = `<div class="ec-count">${filtered.length} felkoder</div><div class="ec-section">`;
-    filtered.forEach((e, i) => {
-      html += `<div class="ec-card-wrap" data-search="${(e.code+' '+e.name+' '+e.desc+' '+e.machine).toLowerCase().replace(/"/g,'&quot;')}">
-        <div class="ec-card" onclick="openEC(${i})">
-          <div style="display:flex;align-items:center;gap:16px">
-            <div class="ec-code">${e.code}</div>
-            <div class="ec-name">${e.name} <span style="font-size:11px;color:var(--text-dim)">${e.machine}</span></div>
-          </div>
+  let html = `<div class="ec-count">${filtered.length} felkoder</div><div class="ec-section">`;
+  filtered.forEach((e, i) => {
+    html += `<div class="ec-card-wrap" data-search="${(e.code+' '+e.name+' '+e.desc+' '+e.machine).toLowerCase().replace(/"/g,'&quot;')}">
+      <div class="ec-card" onclick="openEC(${i})">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="ec-code">${e.code}</div>
+          <div class="ec-name">${e.name} <span style="font-size:11px;color:var(--text-dim)">${e.machine}</span></div>
         </div>
-      </div>`;
-    });
-    html += `</div>`;
-    wrap.innerHTML = html;
-  }
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  wrap.innerHTML = html;
 }
 // Legacy alias
 function filterEC() { ecSearchRender(); }
