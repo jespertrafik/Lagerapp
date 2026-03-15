@@ -1,4 +1,4 @@
-<!-- v3.00 -->
+<!-- v3.01 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.00</title>
+  <title>Lager v3.01</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1208,7 +1208,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.00</h1>
+          <h1>📦 Lager v3.01</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1392,7 +1392,7 @@ function render() {
     }
 
     // Search
-    html += `<div class="ec-search-wrap"><div class="ec-search-inner"><button class="search-icon clickable" type="button" ontouchend="document.activeElement.blur()" onclick="document.activeElement.blur()">🔍</button><input class="search-input" type="text" inputmode="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div></div>`;
+    html += `<div class="ec-search-wrap"><input class="search-input" type="text" inputmode="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"><button class="search-btn" type="button" onclick="ecSearch=document.getElementById('ec-search').value;ecSearchRender();document.getElementById('ec-search').blur()">Sök</button></div>`;
 
     // Reference panel buttons (not active by default)
     html += `<div style="display:flex;gap:8px;padding:10px 16px 0">
