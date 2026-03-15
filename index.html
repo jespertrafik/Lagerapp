@@ -1,4 +1,4 @@
-<!-- v2.84 -->
+<!-- v2.85 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.84</title>
+  <title>Lager v2.85</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.84</h1>
+          <h1>📦 Lager v2.85</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1495,14 +1495,14 @@ function render() {
           const p = v => (v / total * 100).toFixed(2);
           let kf = `@keyframes ${uid}{0%{opacity:0}`;
           events.forEach(ev => {
-            kf += `${p(ev.start - 0.1)}%{opacity:0}${p(ev.start)}%{opacity:1}${p(ev.end)}%{opacity:1}${p(ev.end + 0.1)}%{opacity:0}`;
+            kf += `${p(ev.start)}%{opacity:1}${p(ev.end)}%{opacity:0}`;
           });
           kf += `100%{opacity:0}}`;
           css = `<style>${kf}</style>`;
         }
         let spans = `<span style="display:inline-flex;gap:6px;align-items:center">`;
         leds.forEach(on => {
-          if (on && doAnim) spans += `<span style="${sz};animation:${uid} ${total}ms linear infinite"></span>`;
+          if (on && doAnim) spans += `<span style="${sz};animation:${uid} ${total}ms step-end infinite"></span>`;
           else if (on) spans += `<span style="${sz}"></span>`;
           else spans += `<span style="${sz};opacity:0"></span>`;
         });
@@ -1518,11 +1518,11 @@ function render() {
         let t = 0;
         for (let i = 0; i < count; i++) {
           t += onMs;
-          kf += `${p(t - 0.1)}%{opacity:1}${p(t)}%{opacity:0}`;
-          if (i < count - 1) { t += gapMs; kf += `${p(t - 0.1)}%{opacity:0}${p(t)}%{opacity:1}`; }
+          kf += `${p(t)}%{opacity:0}`;
+          if (i < count - 1) { t += gapMs; kf += `${p(t)}%{opacity:1}`; }
         }
         kf += `100%{opacity:0}}`;
-        const sp = `<span style="${sz};animation:lp${id} ${total}ms linear infinite"></span>`;
+        const sp = `<span style="${sz};animation:lp${id} ${total}ms step-end infinite"></span>`;
         return `<style>${kf}</style><span style="display:inline-flex;gap:6px">${sp}${sp}${sp}</span>`;
       };
       html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
