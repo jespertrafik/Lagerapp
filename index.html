@@ -1,4 +1,4 @@
-<!-- v2.80 -->
+<!-- v2.81 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.80</title>
+  <title>Lager v2.81</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.80</h1>
+          <h1>📦 Lager v2.81</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1545,7 +1545,7 @@ function render() {
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
                 <td style="padding:7px 10px">Ingen felfunktion, trumman står stilla</td>
-                <td style="padding:7px 10px">${ledPulse('n0',800,0,1,200)}</td>
+                <td style="padding:7px 10px">${ledPulse('n0',1600,0,1,100)}</td>
               </tr>
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
