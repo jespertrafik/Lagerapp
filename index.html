@@ -1,4 +1,4 @@
-<!-- v2.68 -->
+<!-- v2.69 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.68</title>
+  <title>Lager v2.69</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -129,9 +129,9 @@
     .brand-tab.active { color: #000; background: var(--accent); border-color: var(--accent); }
 
     .search-wrap { padding: 14px 16px 0; position: relative; }
-    .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 9px 14px 9px 38px; font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .search-input { width: 100%; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; color: var(--text); padding: 9px 38px 9px 14px; font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.2s; }
     .search-input:focus { border-color: var(--accent); }
-    .search-icon { position: absolute; left: 28px; top: 30px; font-size: 15px; pointer-events: none; opacity: 0.4; cursor: pointer; }
+    .search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; opacity: 0.4; cursor: pointer; background: none; border: none; padding: 4px; }
     .search-icon.clickable { pointer-events: auto; opacity: 0.6; z-index: 1; touch-action: manipulation; outline: none; }
     .ec-search-wrap { padding: 14px 16px 0; display: flex; gap: 8px; align-items: center; }
     .ec-search-inner { position: relative; flex: 1; }
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.68</h1>
+          <h1>📦 Lager v2.69</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
