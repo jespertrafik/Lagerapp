@@ -1,4 +1,4 @@
-<!-- v2.71 -->
+<!-- v2.72 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.71</title>
+  <title>Lager v2.72</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.71</h1>
+          <h1>📦 Lager v2.72</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1478,38 +1478,39 @@ function render() {
     // Lucklås blink panel
     if (ecRefPanel === 'lucklås') {
       const td = `style="text-align:center;padding:7px 5px;font-size:17px;width:32px;color:#000"`;
-      // Animated blink dots. groups = array of group sizes, e.g. [2,2,2] = ●● ●● ●●
-      const animBlinks = (id, groups) => {
-        if (!groups || groups.length === 0) return `<span style="color:#aaa;font-size:12px">ingen blinkning</span>`;
+      // LED circles: leds=[A,B,C] booleans, groups=blink pattern
+      const ledBlinks = (id, leds, groups) => {
         const BD = 250, BG = 150, GP = 500, CP = 1000;
-        let events = [];
-        let t = 0;
-        groups.forEach((g, gi) => {
-          for (let b = 0; b < g; b++) {
-            events.push({start: t, end: t + BD, lastInGroup: b === g - 1, gidx: gi});
-            t += BD + BG;
-          }
-          t -= BG;
-          if (gi < groups.length - 1) t += GP;
+        const sz = 'display:inline-block;width:22px;height:22px;border-radius:50%;background:#EF9F27';
+        const doAnim = groups && groups.length > 0;
+        let css = '', total = 0, uid = `led${id}`;
+        if (doAnim) {
+          let events = [], t = 0;
+          groups.forEach((g, gi) => {
+            for (let b = 0; b < g; b++) { events.push({start: t, end: t + BD}); t += BD + BG; }
+            t -= BG;
+            if (gi < groups.length - 1) t += GP;
+          });
+          t += CP; total = t;
+          let offPcts = ['0%', '100%'], onPcts = [];
+          events.forEach(ev => {
+            const s0 = Math.max(0, ev.start / total * 100 - 0.4).toFixed(2);
+            const s1 = (ev.start / total * 100).toFixed(2);
+            const e0 = (ev.end / total * 100).toFixed(2);
+            const e1 = Math.min(99.9, ev.end / total * 100 + 0.4).toFixed(2);
+            offPcts.push(`${s0}%`, `${e1}%`);
+            onPcts.push(`${s1}%`, `${e0}%`);
+          });
+          css = `<style>@keyframes ${uid}{${offPcts.join(',')}{opacity:.15}${onPcts.join(',')}{opacity:1}}</style>`;
+        }
+        let spans = `<span style="display:inline-flex;gap:6px;align-items:center">`;
+        leds.forEach(on => {
+          if (on && doAnim) spans += `<span style="${sz};animation:${uid} ${total}ms linear infinite"></span>`;
+          else if (on) spans += `<span style="${sz}"></span>`;
+          else spans += `<span style="${sz};opacity:.15"></span>`;
         });
-        t += CP;
-        const total = t;
-        let css = '';
-        let dots = `<span style="display:inline-flex;gap:3px;align-items:center">`;
-        events.forEach((ev, i) => {
-          const s0 = Math.max(0, ev.start / total * 100 - 0.4).toFixed(2);
-          const s1 = (ev.start / total * 100).toFixed(2);
-          const e0 = (ev.end / total * 100).toFixed(2);
-          const e1 = Math.min(99.9, ev.end / total * 100 + 0.4).toFixed(2);
-          const uid = `lck${id}d${i}`;
-          css += `@keyframes ${uid}{0%,${s0}%,${e1}%,100%{opacity:.1}${s1}%,${e0}%{opacity:1}}`;
-          dots += `<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#000;animation:${uid} ${total}ms linear infinite"></span>`;
-          if (ev.lastInGroup && ev.gidx < groups.length - 1) {
-            dots += `<span style="display:inline-block;width:7px"></span>`;
-          }
-        });
-        dots += `</span>`;
-        return `<style>${css}</style>${dots}`;
+        spans += `</span>`;
+        return css + spans;
       };
       html += `<div style="background:#111;margin:10px 0 0;padding:0 0 16px">
         <div style="padding:14px 16px 10px;font-size:15px;font-weight:700;color:#f5a623">🔒 Lucklåsets styrenhet — Statusindikering</div>
@@ -1521,23 +1522,23 @@ function render() {
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">B</th>
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">C</th>
               <th style="padding:7px 10px;text-align:left;color:#c97f00">Funktion</th>
-              <th style="padding:7px 10px;text-align:left;color:#c97f00;min-width:90px">Blinkmönster</th>
+              <th style="padding:7px 10px;text-align:left;color:#c97f00;min-width:90px">LED</th>
             </tr></thead>
             <tbody>
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
                 <td style="padding:7px 10px">Ingen felfunktion, trumman står stilla</td>
-                <td style="padding:7px 10px">${animBlinks('n0',[3])}</td>
+                <td style="padding:7px 10px">${ledBlinks('n0',[true,true,true],[3])}</td>
               </tr>
               <tr style="border-bottom:1px solid #ddd">
                 <td ${td}>●</td><td ${td}>●</td><td ${td}>●</td>
                 <td style="padding:7px 10px">Nivåvakt B2: vatten i trumman (stillastående)</td>
-                <td style="padding:7px 10px">${animBlinks('n1',[1,1])}</td>
+                <td style="padding:7px 10px">${ledBlinks('n1',[true,true,true],[1,1])}</td>
               </tr>
               <tr>
                 <td ${td}>○</td><td ${td}>○</td><td ${td}>○</td>
                 <td style="padding:7px 10px">Ingen felfunktion, trumman roterar</td>
-                <td style="padding:7px 10px">${animBlinks('n2',[])}</td>
+                <td style="padding:7px 10px">${ledBlinks('n2',[false,false,false],[])}</td>
               </tr>
             </tbody>
           </table>
@@ -1550,45 +1551,20 @@ function render() {
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">B</th>
               <th style="padding:7px 5px;text-align:center;width:32px;color:#c97f00">C</th>
               <th style="padding:7px 10px;text-align:left;color:#c97f00">Felfunktion</th>
-              <th style="padding:7px 10px;text-align:left;color:#c97f00;min-width:90px">Blinkmönster</th>
+              <th style="padding:7px 10px;text-align:left;color:#c97f00;min-width:90px">LED</th>
             </tr></thead>
             <tbody>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td><td style="padding:7px 10px">${animBlinks('f0',[1])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td><td style="padding:7px 10px">${animBlinks('f1',[2])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td><td style="padding:7px 10px">${animBlinks('f2',[3])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td><td style="padding:7px 10px">${animBlinks('f3',[4])}</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td><td style="padding:7px 10px">${animBlinks('f4',[5])}</td></tr>
-              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td><td style="padding:7px 10px">${animBlinks('f5',[6])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td><td style="padding:7px 10px">${ledBlinks('f0',[true,true,false],[1])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td><td style="padding:7px 10px">${ledBlinks('f1',[false,true,true],[2])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td><td style="padding:7px 10px">${ledBlinks('f2',[true,false,false],[3])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td><td style="padding:7px 10px">${ledBlinks('f3',[false,true,false],[4])}</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td><td style="padding:7px 10px">${ledBlinks('f4',[true,false,true],[5])}</td></tr>
+              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td><td style="padding:7px 10px">${ledBlinks('f5',[false,false,true],[6])}</td></tr>
             </tbody>
           </table>
           <div style="font-size:11px;color:#666;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
         </div>
-        <style>
-          @keyframes led_r1{0%,87.3%{opacity:1}90.9%,96.4%{opacity:.15}100%{opacity:1}}
-          @keyframes led_r2{0%,4.4%{opacity:1}7.4%,11.9%{opacity:.15}14.8%,22.9%{opacity:1}25.9%,97%{opacity:.15}100%{opacity:1}}
-        </style>
-        <div style="margin:12px 0 0;background:#1a1a1a;border-radius:12px;overflow:hidden">
-          <div style="padding:10px 14px 0;font-size:12px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.05em">LED-indikatorer</div>
-          <div style="padding:6px 14px 12px">
-            <div style="display:flex;align-items:center;gap:14px;padding:10px 0">
-              <div style="display:flex;gap:8px;flex-shrink:0">
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r1 2200ms linear infinite"></div>
-              </div>
-              <div style="font-size:13px;color:#ccc">Ingen felfunktion, trumman står stilla</div>
-            </div>
-            <div style="height:1px;background:#333;margin:0 0 2px"></div>
-            <div style="display:flex;align-items:center;gap:14px;padding:10px 0 0">
-              <div style="display:flex;gap:8px;flex-shrink:0">
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
-                <div style="width:28px;height:28px;border-radius:50%;background:#EF9F27;animation:led_r2 2700ms linear infinite"></div>
-              </div>
-              <div style="font-size:13px;color:#ccc">Nivåvakt B2: vatten i trumman (stillastående)</div>
-            </div>
-          </div>
-        </div>
+
       </div>`;
     }
 
