@@ -1,4 +1,4 @@
-<!-- v2.87 -->
+<!-- v2.88 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.87</title>
+  <title>Lager v2.88</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.87</h1>
+          <h1>📦 Lager v2.88</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1478,6 +1478,7 @@ function render() {
     // Lucklås blink panel
     if (ecRefPanel === 'lucklås') {
       const td  = `style="text-align:center;padding:7px 5px;font-size:17px;width:32px;color:#000"`;
+      const tdr = `style="text-align:center;padding:7px 5px;font-size:17px;width:32px;color:#e53935"`;
       // LED circles — visibility is a discrete property, cannot be interpolated/faded
       const ledBlinks = (id, leds, groups) => {
         const BD = 250, BG = 150, GP = 500, CP = 1000;
@@ -1566,12 +1567,12 @@ function render() {
               <th style="padding:7px 10px;text-align:left;color:#c97f00">Felfunktion</th>
             </tr></thead>
             <tbody>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${td}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
-              <tr style="border-bottom:1px solid #ddd"><td ${td}>●</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
-              <tr><td ${td}>○</td><td ${td}>○</td><td ${td}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${tdr}>●</td><td ${tdr}>●</td><td ${td}>○</td><td style="padding:7px 10px">Nivåvakt B2 indikerar vatten i trumman</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${tdr}>●</td><td ${tdr}>●</td><td style="padding:7px 10px">Motorstyrningen indikerar aktiverad motor då lucklåset är öppet (ingång X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${tdr}>●</td><td ${td}>○</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från rotationsgivare B3 (X95 &lt; 0,4 Hz) trots att motorstyrning indikerar aktiverad motor (X94 sluten)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${td}>○</td><td ${tdr}>●</td><td ${td}>○</td><td style="padding:7px 10px">Ingen signal från motorstyrning (X94 öppen) trots att rotationsgivare B3 indikerar att motorn går (X95 &gt; 0,4 Hz)</td></tr>
+              <tr style="border-bottom:1px solid #ddd"><td ${tdr}>●</td><td ${td}>○</td><td ${tdr}>●</td><td style="padding:7px 10px">Fel i lucklås/kablage eller fel i drivkretsarna för lucklås (utgång X96)</td></tr>
+              <tr><td ${td}>○</td><td ${td}>○</td><td ${tdr}>●</td><td style="padding:7px 10px">Internt fel på lucklåsets styrenhet</td></tr>
             </tbody>
           </table>
           <div style="font-size:11px;color:#666;padding:8px 14px 10px">● = tänd &nbsp;&nbsp; ○ = släckt &nbsp;&nbsp; (Exacta-dokumentation)</div>
