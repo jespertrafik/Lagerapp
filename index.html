@@ -1241,7 +1241,7 @@ function render() {
 
   html += `
     <div class="search-wrap">
-      <span class="search-icon clickable" ontouchstart="document.getElementById('lager-search').blur()" onclick="document.getElementById('lager-search').blur()">🔍</span>
+      <span class="search-icon clickable" ontouchstart="document.activeElement.blur();window.scrollTo(0,0)" onclick="document.activeElement.blur();window.scrollTo(0,0)">🔍</span>
       <input class="search-input" type="search" placeholder="Sök artikel..." id="lager-search" oninput="search=this.value;filterItems()" autocomplete="off">
     </div>
     <div class="stats-bar">${totalPcs} artiklar · ${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}${viewMode === "dashboard" ? ` · ${lowItems.length} lågt saldo` : ""}</div>
@@ -1416,7 +1416,7 @@ function render() {
     }
 
     // Search
-    html += `<div class="ec-search-wrap"><div class="ec-search-inner"><span class="search-icon clickable" ontouchstart="document.getElementById('ec-search').blur()" onclick="document.getElementById('ec-search').blur()">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div><button class="ec-dismiss-btn" ontouchstart="document.activeElement.blur()" onclick="document.activeElement.blur()">Klar</button></div>`;
+    html += `<div class="ec-search-wrap"><div class="ec-search-inner"><span class="search-icon clickable" ontouchstart="document.activeElement.blur();window.scrollTo(0,0)" onclick="document.activeElement.blur();window.scrollTo(0,0)">🔍</span><input class="search-input" type="search" placeholder="Sök felkod, t.ex. E20, F10, motor..." id="ec-search" value="${(ecSearch||'').replace(/"/g,'&quot;')}" oninput="ecSearch=this.value;ecSearchRender()" autocomplete="off"></div><button class="ec-dismiss-btn" ontouchstart="document.activeElement.blur()" onclick="document.activeElement.blur()">Klar</button></div>`;
 
     // Reference panel buttons (not active by default)
     html += `<div style="display:flex;gap:8px;padding:10px 16px 0">
