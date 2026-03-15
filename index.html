@@ -1,4 +1,4 @@
-<!-- v2.85 -->
+<!-- v2.86 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v2.85</title>
+  <title>Lager v2.86</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1219,7 +1219,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v2.85</h1>
+          <h1>📦 Lager v2.86</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1478,7 +1478,7 @@ function render() {
     // Lucklås blink panel
     if (ecRefPanel === 'lucklås') {
       const td  = `style="text-align:center;padding:7px 5px;font-size:17px;width:32px;color:#000"`;
-      // LED circles: leds=[A,B,C] booleans, groups=blink pattern
+      // LED circles — visibility is a discrete property, cannot be interpolated/faded
       const ledBlinks = (id, leds, groups) => {
         const BD = 250, BG = 150, GP = 500, CP = 1000;
         const sz = 'display:inline-block;width:22px;height:22px;border-radius:50%;background:#e53935';
@@ -1493,35 +1493,35 @@ function render() {
           });
           t += CP; total = t;
           const p = v => (v / total * 100).toFixed(2);
-          let kf = `@keyframes ${uid}{0%{opacity:0}`;
+          let kf = `@keyframes ${uid}{0%{visibility:hidden}`;
           events.forEach(ev => {
-            kf += `${p(ev.start)}%{opacity:1}${p(ev.end)}%{opacity:0}`;
+            kf += `${p(ev.start)}%{visibility:visible}${p(ev.end)}%{visibility:hidden}`;
           });
-          kf += `100%{opacity:0}}`;
+          kf += `100%{visibility:hidden}}`;
           css = `<style>${kf}</style>`;
         }
         let spans = `<span style="display:inline-flex;gap:6px;align-items:center">`;
         leds.forEach(on => {
           if (on && doAnim) spans += `<span style="${sz};animation:${uid} ${total}ms step-end infinite"></span>`;
           else if (on) spans += `<span style="${sz}"></span>`;
-          else spans += `<span style="${sz};opacity:0"></span>`;
+          else spans += `<span style="${sz};visibility:hidden"></span>`;
         });
         spans += `</span>`;
         return css + spans;
       };
-      // Pulse: hard snap on/off, no fade
+      // Pulse: visibility-based, no fade possible
       const ledPulse = (id, onMs, gapMs, count, endMs) => {
         const total = count * onMs + (count - 1) * gapMs + endMs;
         const sz = 'display:inline-block;width:22px;height:22px;border-radius:50%;background:#e53935';
         const p = v => (v / total * 100).toFixed(2);
-        let kf = `@keyframes lp${id}{0%{opacity:1}`;
+        let kf = `@keyframes lp${id}{0%{visibility:visible}`;
         let t = 0;
         for (let i = 0; i < count; i++) {
           t += onMs;
-          kf += `${p(t)}%{opacity:0}`;
-          if (i < count - 1) { t += gapMs; kf += `${p(t)}%{opacity:1}`; }
+          kf += `${p(t)}%{visibility:hidden}`;
+          if (i < count - 1) { t += gapMs; kf += `${p(t)}%{visibility:visible}`; }
         }
-        kf += `100%{opacity:0}}`;
+        kf += `100%{visibility:hidden}}`;
         const sp = `<span style="${sz};animation:lp${id} ${total}ms step-end infinite"></span>`;
         return `<style>${kf}</style><span style="display:inline-flex;gap:6px">${sp}${sp}${sp}</span>`;
       };
