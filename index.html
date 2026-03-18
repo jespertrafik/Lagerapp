@@ -1,4 +1,4 @@
-<!-- v3.20 -->
+<!-- v3.21 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.20</title>
+  <title>Lager v3.21</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1078,11 +1078,22 @@ function initDB() {
       isAdmin = allowedUsers[currentUser.uid]?.role === "admin"
         || currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     }
+    seedPendingUsers();
     render();
   });
 }
 
 // ====== ADMIN ======
+function seedPendingUsers() {
+  if (!isAdmin) return;
+  const existingEmails = new Set(Object.values(allowedUsers).map(u => u.email.toLowerCase()));
+  PENDING_USERS_SEED.forEach(email => {
+    if (existingEmails.has(email.toLowerCase())) return;
+    const key = "pending_" + email.replace(/[.#$\/\[\]@]/g, "_");
+    db.ref("allowedUsers/" + key).set({ email: email.toLowerCase(), name: "", role: "user", added: Date.now(), pending: true });
+  });
+}
+
 async function addAllowedUser() {
   const emailInput = document.getElementById("admin_email");
   const email = emailInput.value.trim().toLowerCase();
@@ -1158,6 +1169,15 @@ const DEFAULT_VARMEPUMPAR = [
   { address: "BRF Augustin, Augustigatan 11", model: "IVT Greenline HE E17", lastServiced: "2025-08-05", nextService: "2026-08-05", technician: "", technicianName: "Erik Lindgren" },
 ];
 const VP_SEED_VERSION = 2;
+
+const PENDING_USERS_SEED = [
+  "lars.borg@bravida.se",
+  "ulf.ekman@bravida.se",
+  "patrik.edqvist@bravida.se",
+  "erol.baysal@bravida.se",
+  "fredrik.kindstedt@bravida.se",
+  "dan.svegemo@bravida.se",
+];
 
 function listenToVP() {
   if (vpListener) vpListener.off();
@@ -1393,7 +1413,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.20</h1>
+          <h1>📦 Lager v3.21</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
