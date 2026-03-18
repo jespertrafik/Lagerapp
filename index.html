@@ -1,4 +1,4 @@
-<!-- v3.05 -->
+<!-- v3.06 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.05</title>
+  <title>Lager v3.06</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -122,6 +122,8 @@
 
     .dept-tabs { display: flex; gap: 0; margin-top: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .dept-tab { padding: 10px 16px; font-size: var(--font-tab); font-weight: 600; font-family: inherit; color: var(--text); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+    .view-tabs { overflow-x: visible !important; }
+    .view-tabs .dept-tab { flex: 1; text-align: center; }
     .dept-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
     .brand-tabs { display: flex; gap: 6px; padding: 14px 16px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1133,12 +1135,37 @@ function switchDept(dept) {
 function getItemsRef() { return db.ref("departments/" + activeDept + "/items"); }
 
 // ====== SERVICE / VÄRMEPUMPAR ======
+const DEFAULT_VARMEPUMPAR = [
+  { address: "Björkvägen 4, Lgh 1102", model: "NIBE F2120-12", lastServiced: "2025-03-01", nextService: "2026-03-01", technician: "", technicianName: "Erik Lindgren", units: 1 },
+  { address: "Storgatan 12, Lgh 0101", model: "Panasonic WH-SXF09J3E5", lastServiced: "2025-02-10", nextService: "2026-02-10", technician: "", technicianName: "Anna Karlsson", units: 1 },
+  { address: "Parkvägen 8, Lgh 1301–1308", model: "NIBE F2040-12", lastServiced: "2025-03-20", nextService: "2026-03-25", technician: "", technicianName: "Erik Lindgren", units: 8 },
+  { address: "Ekgatan 2, Lgh 0101–0212", model: "IVT Greenline HE E17", lastServiced: "2025-04-25", nextService: "2026-04-25", technician: "", technicianName: "Anna Karlsson", units: 24 },
+  { address: "Lindvägen 16, Lgh 1104", model: "Panasonic WH-SXF12J9E8", lastServiced: "2025-05-10", nextService: "2026-05-10", technician: "", technicianName: "Marcus Holm", units: 1 },
+  { address: "Almgatan 5, Lgh 0301–0318", model: "NIBE F2040-8", lastServiced: "2025-04-01", nextService: "2026-04-01", technician: "", technicianName: "Marcus Holm", units: 18 },
+  { address: "Solvägen 3, Lgh 2101–2106", model: "Mitsubishi Ecodan PUHZ-SW100", lastServiced: "2025-09-01", nextService: "2026-09-01", technician: "", technicianName: "Erik Lindgren", units: 6 },
+  { address: "Tallvägen 9, Lgh 1201–1210", model: "NIBE F2120-16", lastServiced: "2025-10-15", nextService: "2026-10-15", technician: "", technicianName: "Anna Karlsson", units: 10 },
+  { address: "Rosengatan 7, Lgh 0401–0412", model: "Mitsubishi Zuba-Central PUHZ", lastServiced: "2025-11-03", nextService: "2026-11-03", technician: "", technicianName: "Marcus Holm", units: 12 },
+  { address: "Kastanjevägen 22, Lgh 1101–1132", model: "NIBE F2040-12", lastServiced: "2026-01-20", nextService: "2027-01-20", technician: "", technicianName: "Erik Lindgren", units: 32 },
+];
+
 function listenToVP() {
   if (vpListener) vpListener.off();
   const ref = db.ref("varmepumpar");
   vpListener = ref;
   ref.on("value", (snap) => {
-    vpData = snap.val() || {};
+    const data = snap.val();
+    if (data) {
+      vpData = data;
+    } else {
+      // Seeda med testdata om databasen är tom
+      const init = {};
+      DEFAULT_VARMEPUMPAR.forEach(e => {
+        const key = db.ref("varmepumpar").push().key;
+        init[key] = { ...e, createdAt: Date.now() };
+      });
+      ref.set(init);
+      vpData = init;
+    }
     if (activeView === "service") render();
   });
 }
@@ -1327,12 +1354,12 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.05</h1>
+          <h1>📦 Lager v3.06</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
       </div>
-      <div class="dept-tabs">
+      <div class="dept-tabs view-tabs">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         <button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';showVpForm=false;render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🌡️ Service</button>
@@ -1771,7 +1798,7 @@ function render() {
         html += `
           <div class="vp-card status-${status}">
             <div class="vp-address">${e.address}</div>
-            ${e.model ? `<div class="vp-model">${e.model}</div>` : ""}
+            ${e.model ? `<div class="vp-model">${e.model}${e.units > 1 ? ` · ${e.units} enheter` : ""}</div>` : ""}
             ${e.technicianName ? `<div class="vp-tech">👤 ${e.technicianName}</div>` : ""}
             <div class="vp-badge ${status}">${badgeText}</div>
             <div class="vp-dates">
