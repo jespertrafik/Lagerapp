@@ -1,4 +1,4 @@
-<!-- v3.08 -->
+<!-- v3.09 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.08</title>
+  <title>Lager v3.09</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1158,17 +1158,6 @@ function listenToVP() {
     vpData = snap.val() || {};
     render();
   });
-  // Seed-kontroll separat — stör inte display-listenern
-  ref.once("value").then(snap => {
-    if (!snap.val()) {
-      const init = {};
-      DEFAULT_VARMEPUMPAR.forEach(e => {
-        const key = ref.push().key;
-        init[key] = { ...e, createdAt: Date.now() };
-      });
-      ref.set(init);
-    }
-  });
 }
 
 function calcVpStatus(nextService) {
@@ -1355,7 +1344,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.08</h1>
+          <h1>📦 Lager v3.09</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1744,9 +1733,17 @@ function render() {
 
   // ====== SERVICE VIEW ======
   if (activeView === "service") {
+    // Om Firebase ännu inte har data — visa DEFAULT direkt och skriv till Firebase
+    let displayData = vpData;
+    if (Object.keys(vpData).length === 0) {
+      const init = {};
+      DEFAULT_VARMEPUMPAR.forEach((e, i) => { init["vp" + i] = { ...e, createdAt: Date.now() }; });
+      displayData = init;
+      db.ref("varmepumpar").set(init); // skriv till Firebase (en gång)
+    }
     // Filter: technicians see only own entries, admins see all
-    const vpEntries = Object.entries(vpData).filter(([, e]) =>
-      isAdmin || e.technician === currentUser.uid
+    const vpEntries = Object.entries(displayData).filter(([, e]) =>
+      isAdmin || !e.technician || e.technician === currentUser.uid
     );
     // Sort: red first, then yellow, then green
     const order = { red: 0, yellow: 1, green: 2 };
