@@ -1,4 +1,4 @@
-<!-- v3.19 -->
+<!-- v3.20 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.19</title>
+  <title>Lager v3.20</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1393,7 +1393,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.19</h1>
+          <h1>📦 Lager v3.20</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1817,6 +1817,11 @@ function render() {
         <div class="vp-stat"><div class="vp-stat-val green">${counts.green}</div><div class="vp-stat-label">OK</div></div>
       </div>`;
 
+    if (isAdmin && !showVpForm) {
+      html += `<button class="vp-add-btn" onclick="showVpForm=true;render()">+ Lägg till adress</button>`;
+      html += `<button class="vp-add-btn" style="margin-top:8px;color:var(--red);border-color:var(--red)" onclick="resetVP()">↺ Återställ testdata</button>`;
+    }
+
     if (showVpForm && isAdmin) {
       const techOptions = Object.entries(allowedUsers)
         .filter(([, u]) => !u.pending)
@@ -1870,10 +1875,6 @@ function render() {
       html += `</div>`;
     }
 
-    if (isAdmin && !showVpForm) {
-      html += `<button class="vp-add-btn" onclick="showVpForm=true;render()">+ Lägg till adress</button>`;
-      html += `<button class="vp-add-btn" style="margin-top:8px;color:var(--red);border-color:var(--red)" onclick="resetVP()">↺ Återställ testdata</button>`;
-    }
   } // end service view
 
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
