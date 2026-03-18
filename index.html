@@ -1,4 +1,4 @@
-<!-- v3.17 -->
+<!-- v3.18 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.17</title>
+  <title>Lager v3.18</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1205,7 +1205,8 @@ function vpNextServiceIsSummer(nextService) {
 }
 
 function vpUpdate(key, fields) {
-  if (vpData[key]) Object.assign(vpData[key], fields);
+  if (!vpData[key]) vpData[key] = {};
+  Object.assign(vpData[key], fields);
   db.ref("varmepumpar/" + key).update(fields);
   render();
 }
@@ -1380,7 +1381,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.17</h1>
+          <h1>📦 Lager v3.18</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1777,6 +1778,7 @@ function render() {
     if (needsReseed) {
       const init = { __v: VP_SEED_VERSION };
       DEFAULT_VARMEPUMPAR.forEach((e, i) => { init["vp" + i] = { ...e, createdAt: Date.now() }; });
+      vpData = init;
       displayData = init;
       db.ref("varmepumpar").set(init);
     }
