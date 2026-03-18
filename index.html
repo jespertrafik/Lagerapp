@@ -1,4 +1,4 @@
-<!-- v3.09 -->
+<!-- v3.10 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.09</title>
+  <title>Lager v3.10</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -283,8 +283,9 @@
     .vp-date { font-size: 12px; color: var(--text-dim); }
     .vp-date span { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-top: 1px; }
     .vp-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .vp-btn-serve { flex: 1; background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; }
-    .vp-btn-serve:active { opacity: 0.7; }
+    .vp-btn-before { flex: 1; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .vp-btn-after  { flex: 1; background: var(--green);  color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .vp-btn-before:active, .vp-btn-after:active { opacity: 0.7; }
     .vp-btn-del { background: none; border: 1px solid var(--card-border); color: var(--text-dim); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit; cursor: pointer; }
     .vp-btn-del:active { opacity: 0.7; }
     .vp-add-btn { display: block; width: calc(100% - 32px); margin: 0 16px; background: var(--card); border: 1px dashed var(--card-border); border-radius: 12px; padding: 14px; color: var(--text-dim); font-size: 15px; font-family: inherit; cursor: pointer; text-align: center; }
@@ -1137,16 +1138,16 @@ function getItemsRef() { return db.ref("departments/" + activeDept + "/items"); 
 
 // ====== SERVICE / VÄRMEPUMPAR ======
 const DEFAULT_VARMEPUMPAR = [
-  { address: "Björkvägen 4, Lgh 1102", model: "NIBE F2120-12", lastServiced: "2025-03-01", nextService: "2026-03-01", technician: "", technicianName: "Erik Lindgren", units: 1 },
-  { address: "Storgatan 12, Lgh 0101", model: "Panasonic WH-SXF09J3E5", lastServiced: "2025-02-10", nextService: "2026-02-10", technician: "", technicianName: "Anna Karlsson", units: 1 },
-  { address: "Parkvägen 8, Lgh 1301–1308", model: "NIBE F2040-12", lastServiced: "2025-03-20", nextService: "2026-03-25", technician: "", technicianName: "Erik Lindgren", units: 8 },
-  { address: "Ekgatan 2, Lgh 0101–0212", model: "IVT Greenline HE E17", lastServiced: "2025-04-25", nextService: "2026-04-25", technician: "", technicianName: "Anna Karlsson", units: 24 },
-  { address: "Lindvägen 16, Lgh 1104", model: "Panasonic WH-SXF12J9E8", lastServiced: "2025-05-10", nextService: "2026-05-10", technician: "", technicianName: "Marcus Holm", units: 1 },
-  { address: "Almgatan 5, Lgh 0301–0318", model: "NIBE F2040-8", lastServiced: "2025-04-01", nextService: "2026-04-01", technician: "", technicianName: "Marcus Holm", units: 18 },
-  { address: "Solvägen 3, Lgh 2101–2106", model: "Mitsubishi Ecodan PUHZ-SW100", lastServiced: "2025-09-01", nextService: "2026-09-01", technician: "", technicianName: "Erik Lindgren", units: 6 },
-  { address: "Tallvägen 9, Lgh 1201–1210", model: "NIBE F2120-16", lastServiced: "2025-10-15", nextService: "2026-10-15", technician: "", technicianName: "Anna Karlsson", units: 10 },
-  { address: "Rosengatan 7, Lgh 0401–0412", model: "Mitsubishi Zuba-Central PUHZ", lastServiced: "2025-11-03", nextService: "2026-11-03", technician: "", technicianName: "Marcus Holm", units: 12 },
-  { address: "Kastanjevägen 22, Lgh 1101–1132", model: "NIBE F2040-12", lastServiced: "2026-01-20", nextService: "2027-01-20", technician: "", technicianName: "Erik Lindgren", units: 32 },
+  { address: "BRF Björken, Björkvägen 4", model: "NIBE F2120-12", lastServiced: "2025-03-01", nextService: "2026-03-01", technician: "", technicianName: "Erik Lindgren" },
+  { address: "BRF Stortorget, Storgatan 12", model: "Panasonic WH-SXF09J3E5", lastServiced: "2025-02-10", nextService: "2026-02-10", technician: "", technicianName: "Anna Karlsson" },
+  { address: "BRF Parken, Parkvägen 8", model: "NIBE F2040-12", lastServiced: "2025-03-20", nextService: "2026-03-25", technician: "", technicianName: "Erik Lindgren" },
+  { address: "BRF Ekbacken, Ekgatan 2", model: "IVT Greenline HE E17", lastServiced: "2025-04-25", nextService: "2026-04-25", technician: "", technicianName: "Anna Karlsson" },
+  { address: "BRF Lindarna, Lindvägen 16", model: "Panasonic WH-SXF12J9E8", lastServiced: "2025-05-10", nextService: "2026-05-10", technician: "", technicianName: "Marcus Holm" },
+  { address: "BRF Almen, Almgatan 5", model: "NIBE F2040-8", lastServiced: "2025-04-01", nextService: "2026-04-01", technician: "", technicianName: "Marcus Holm" },
+  { address: "BRF Solhöjden, Solvägen 3", model: "Mitsubishi Ecodan PUHZ-SW100", lastServiced: "2025-09-01", nextService: "2026-09-01", technician: "", technicianName: "Erik Lindgren" },
+  { address: "BRF Tallbacken, Tallvägen 9", model: "NIBE F2120-16", lastServiced: "2025-10-15", nextService: "2026-10-15", technician: "", technicianName: "Anna Karlsson" },
+  { address: "BRF Rosen, Rosengatan 7", model: "Mitsubishi Zuba-Central PUHZ", lastServiced: "2025-11-03", nextService: "2026-11-03", technician: "", technicianName: "Marcus Holm" },
+  { address: "BRF Kastanjen, Kastanjevägen 22", model: "NIBE F2040-12", lastServiced: "2026-01-20", nextService: "2027-01-20", technician: "", technicianName: "Erik Lindgren" },
 ];
 
 function listenToVP() {
@@ -1188,11 +1189,26 @@ function vpDaysLabel(nextService) {
   return `${days} dagar kvar`;
 }
 
-function doServedNow(key) {
+function nextDateBefore(month, day) {
+  // Returnerar närmaste kommande datum med given månad/dag (minst 14 dagar framåt)
+  const today = new Date(); today.setHours(0,0,0,0);
+  let d = new Date(today.getFullYear(), month - 1, day);
+  if ((d - today) / 86400000 < 14) d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function doServiceBeforeSummer(key) {
   const today = new Date().toISOString().slice(0, 10);
-  const nextService = calcNextService(today);
+  const nextService = nextDateBefore(5, 15); // 15 maj
   db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
-  showToast("Servad! Nästa: " + nextService);
+  showToast("Nästa service: " + nextService);
+}
+
+function doServiceAfterSummer(key) {
+  const today = new Date().toISOString().slice(0, 10);
+  const nextService = nextDateBefore(9, 1); // 1 september
+  db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
+  showToast("Nästa service: " + nextService);
 }
 
 function doDeleteVP(key) {
@@ -1344,7 +1360,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.09</h1>
+          <h1>📦 Lager v3.10</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1735,11 +1751,12 @@ function render() {
   if (activeView === "service") {
     // Om Firebase ännu inte har data — visa DEFAULT direkt och skriv till Firebase
     let displayData = vpData;
-    if (Object.keys(vpData).length === 0) {
+    const hasOldData = Object.values(vpData).some(e => (e.address || "").includes("Lgh"));
+    if (Object.keys(vpData).length === 0 || hasOldData) {
       const init = {};
       DEFAULT_VARMEPUMPAR.forEach((e, i) => { init["vp" + i] = { ...e, createdAt: Date.now() }; });
       displayData = init;
-      db.ref("varmepumpar").set(init); // skriv till Firebase (en gång)
+      db.ref("varmepumpar").set(init);
     }
     // Filter: technicians see only own entries, admins see all
     const vpEntries = Object.entries(displayData).filter(([, e]) =>
@@ -1804,7 +1821,8 @@ function render() {
               <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
             </div>
             <div class="vp-actions">
-              <button class="vp-btn-serve" onclick="doServedNow('${key}')">✓ Servad nu</button>
+              <button class="vp-btn-before" onclick="doServiceBeforeSummer('${key}')">☀️ Innan sommar</button>
+              <button class="vp-btn-after"  onclick="doServiceAfterSummer('${key}')">🍂 Efter sommar</button>
               ${isAdmin ? `<button class="vp-btn-del" onclick="doDeleteVP('${key}')">🗑</button>` : ""}
             </div>
           </div>`;
