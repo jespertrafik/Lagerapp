@@ -1,4 +1,4 @@
-<!-- v3.11 -->
+<!-- v3.12 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.11</title>
+  <title>Lager v3.12</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1189,26 +1189,26 @@ function vpDaysLabel(nextService) {
   return `${days} dagar kvar`;
 }
 
-function nextDateBefore(month, day) {
-  // Returnerar närmaste kommande datum med given månad/dag (minst 14 dagar framåt)
-  const today = new Date(); today.setHours(0,0,0,0);
-  let d = new Date(today.getFullYear(), month - 1, day);
-  if ((d - today) / 86400000 < 14) d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString().slice(0, 10);
+function vpNextServiceIsSummer(nextService) {
+  if (!nextService) return false;
+  const m = new Date(nextService + "T00:00:00").getMonth() + 1; // 1-indexed
+  return m >= 6 && m <= 8;
 }
 
 function doServiceBeforeSummer(key) {
-  const today = new Date().toISOString().slice(0, 10);
-  const nextService = nextDateBefore(5, 15); // 15 maj
-  db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
-  showToast("Nästa service: " + nextService);
+  const e = vpData[key] || {};
+  const year = new Date((e.nextService || new Date().toISOString().slice(0,10)) + "T00:00:00").getFullYear();
+  const nextService = year + "-05-15";
+  db.ref("varmepumpar/" + key).update({ nextService });
+  showToast("Inbokat: " + nextService);
 }
 
 function doServiceAfterSummer(key) {
-  const today = new Date().toISOString().slice(0, 10);
-  const nextService = nextDateBefore(9, 1); // 1 september
-  db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
-  showToast("Nästa service: " + nextService);
+  const e = vpData[key] || {};
+  const year = new Date((e.nextService || new Date().toISOString().slice(0,10)) + "T00:00:00").getFullYear();
+  const nextService = year + "-09-01";
+  db.ref("varmepumpar/" + key).update({ nextService });
+  showToast("Inbokat: " + nextService);
 }
 
 function doDeleteVP(key) {
@@ -1360,7 +1360,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.11</h1>
+          <h1>📦 Lager v3.12</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1820,10 +1820,11 @@ function render() {
               <div class="vp-date">Senast servad<span>${e.lastServiced || "—"}</span></div>
               <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
             </div>
+            ${vpNextServiceIsSummer(e.nextService) ? `
             <div class="vp-actions">
               <button class="vp-btn-before" onclick="doServiceBeforeSummer('${key}')">☀️ Innan sommar</button>
               <button class="vp-btn-after"  onclick="doServiceAfterSummer('${key}')">🍂 Efter sommar</button>
-            </div>
+            </div>` : ""}
           </div>`;
       });
       html += `</div>`;
