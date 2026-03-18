@@ -1,4 +1,4 @@
-<!-- v3.15 -->
+<!-- v3.16 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.15</title>
+  <title>Lager v3.16</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1376,7 +1376,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.15</h1>
+          <h1>📦 Lager v3.16</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1836,14 +1836,13 @@ function render() {
             <div class="vp-address">${e.address}</div>
             ${e.model ? `<div class="vp-model">${e.model}</div>` : ""}
             ${e.technicianName ? `<div class="vp-tech">👤 ${e.technicianName}</div>` : ""}
-            <div class="vp-serviced-label ${servicedToday ? "ja" : "nej"}">${servicedToday ? "✓ Servad" : "Ej servad"}</div>
             <div class="vp-badge ${status}">${badgeText}</div>
             <div class="vp-dates">
               <div class="vp-date">Senast servad<span>${e.lastServiced || "—"}</span></div>
               <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
             </div>
             <div class="vp-actions">
-              <button class="vp-btn-serve ${servicedToday ? "servad" : ""}" onclick="doServedNow('${key}')">${servicedToday ? "✓ Servad" : "Servad nu"}</button>
+              <button class="vp-btn-serve ${servicedToday ? "servad" : ""}" onclick="doServedNow('${key}')">${servicedToday ? "Servad" : "Ej servad"}</button>
               ${vpNextServiceIsSummer(e.nextService) ? `
               <button class="vp-btn-before" onclick="doServiceBeforeSummer('${key}')">☀️ Innan sommar</button>
               <button class="vp-btn-after"  onclick="doServiceAfterSummer('${key}')">🍂 Efter sommar</button>` : ""}
