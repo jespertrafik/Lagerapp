@@ -1,4 +1,4 @@
-<!-- v3.07 -->
+<!-- v3.08 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.07</title>
+  <title>Lager v3.08</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -919,6 +919,7 @@ auth.onAuthStateChanged((user) => {
       // Check by UID
       if (allUsers[user.uid]) {
         currentUser = user;
+        isAdmin = allUsers[user.uid].role === "admin" || user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
         loginError = "";
         loadViewMode();
         initDB();
@@ -1152,21 +1153,21 @@ function listenToVP() {
   if (vpListener) vpListener.off();
   const ref = db.ref("varmepumpar");
   vpListener = ref;
+  // Display listener — uppdaterar alltid UI när data ändras
   ref.on("value", (snap) => {
-    const data = snap.val();
-    if (data) {
-      vpData = data;
-    } else {
-      // Seeda med testdata om databasen är tom
+    vpData = snap.val() || {};
+    render();
+  });
+  // Seed-kontroll separat — stör inte display-listenern
+  ref.once("value").then(snap => {
+    if (!snap.val()) {
       const init = {};
       DEFAULT_VARMEPUMPAR.forEach(e => {
-        const key = db.ref("varmepumpar").push().key;
+        const key = ref.push().key;
         init[key] = { ...e, createdAt: Date.now() };
       });
       ref.set(init);
-      vpData = init;
     }
-    render();
   });
 }
 
@@ -1354,7 +1355,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.07</h1>
+          <h1>📦 Lager v3.08</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
