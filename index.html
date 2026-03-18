@@ -1,4 +1,4 @@
-<!-- v3.16 -->
+<!-- v3.17 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.16</title>
+  <title>Lager v3.17</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1204,27 +1204,31 @@ function vpNextServiceIsSummer(nextService) {
   return m >= 6 && m <= 8;
 }
 
+function vpUpdate(key, fields) {
+  if (vpData[key]) Object.assign(vpData[key], fields);
+  db.ref("varmepumpar/" + key).update(fields);
+  render();
+}
+
 function doServedNow(key) {
   const today = new Date().toISOString().slice(0, 10);
   const nextService = calcNextService(today);
-  db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
-  showToast("Servad! Nästa: " + nextService);
+  vpUpdate(key, { lastServiced: today, nextService });
+  showToast("Servad!");
 }
 
 function doServiceBeforeSummer(key) {
   const e = vpData[key] || {};
   const year = new Date((e.nextService || new Date().toISOString().slice(0,10)) + "T00:00:00").getFullYear();
-  const nextService = year + "-05-15";
-  db.ref("varmepumpar/" + key).update({ nextService });
-  showToast("Inbokat: " + nextService);
+  vpUpdate(key, { nextService: year + "-05-15" });
+  showToast("Inbokat: " + year + "-05-15");
 }
 
 function doServiceAfterSummer(key) {
   const e = vpData[key] || {};
   const year = new Date((e.nextService || new Date().toISOString().slice(0,10)) + "T00:00:00").getFullYear();
-  const nextService = year + "-09-01";
-  db.ref("varmepumpar/" + key).update({ nextService });
-  showToast("Inbokat: " + nextService);
+  vpUpdate(key, { nextService: year + "-09-01" });
+  showToast("Inbokat: " + year + "-09-01");
 }
 
 function doDeleteVP(key) {
@@ -1376,7 +1380,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.16</h1>
+          <h1>📦 Lager v3.17</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
