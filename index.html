@@ -1,4 +1,4 @@
-<!-- v3.14 -->
+<!-- v3.15 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.14</title>
+  <title>Lager v3.15</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -283,7 +283,11 @@
     .vp-date { font-size: 12px; color: var(--text-dim); }
     .vp-date span { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-top: 1px; }
     .vp-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .vp-btn-serve  { flex: 1; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .vp-btn-serve        { flex: 1; background: #444; color: #aaa; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .vp-btn-serve.servad { background: var(--green); color: #fff; }
+    .vp-serviced-label { font-size: 12px; font-weight: 700; margin-top: 5px; }
+    .vp-serviced-label.nej { color: var(--text-dim); }
+    .vp-serviced-label.ja  { color: var(--green); }
     .vp-btn-before { flex: 1; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
     .vp-btn-after  { flex: 1; background: var(--green);  color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
     .vp-btn-serve:active, .vp-btn-before:active, .vp-btn-after:active { opacity: 0.7; }
@@ -1372,7 +1376,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.14</h1>
+          <h1>📦 Lager v3.15</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1821,22 +1825,25 @@ function render() {
       html += `<div class="vp-empty">Inga värmepumpar registrerade ännu</div>`;
     } else {
       html += `<div class="vp-list">`;
+      const today = new Date().toISOString().slice(0, 10);
       vpEntries.forEach(([key, e]) => {
         const status = calcVpStatus(e.nextService);
         const label = vpDaysLabel(e.nextService);
         const badgeText = status === "red" ? "⛔ " + label : status === "yellow" ? "⚠️ " + label : "✅ " + label;
+        const servicedToday = e.lastServiced === today;
         html += `
           <div class="vp-card status-${status}">
             <div class="vp-address">${e.address}</div>
-            ${e.model ? `<div class="vp-model">${e.model}${e.units > 1 ? ` · ${e.units} enheter` : ""}</div>` : ""}
+            ${e.model ? `<div class="vp-model">${e.model}</div>` : ""}
             ${e.technicianName ? `<div class="vp-tech">👤 ${e.technicianName}</div>` : ""}
+            <div class="vp-serviced-label ${servicedToday ? "ja" : "nej"}">${servicedToday ? "✓ Servad" : "Ej servad"}</div>
             <div class="vp-badge ${status}">${badgeText}</div>
             <div class="vp-dates">
               <div class="vp-date">Senast servad<span>${e.lastServiced || "—"}</span></div>
               <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
             </div>
             <div class="vp-actions">
-              <button class="vp-btn-serve" onclick="doServedNow('${key}')">✓ Servad nu</button>
+              <button class="vp-btn-serve ${servicedToday ? "servad" : ""}" onclick="doServedNow('${key}')">${servicedToday ? "✓ Servad" : "Servad nu"}</button>
               ${vpNextServiceIsSummer(e.nextService) ? `
               <button class="vp-btn-before" onclick="doServiceBeforeSummer('${key}')">☀️ Innan sommar</button>
               <button class="vp-btn-after"  onclick="doServiceAfterSummer('${key}')">🍂 Efter sommar</button>` : ""}
