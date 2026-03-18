@@ -1,4 +1,4 @@
-<!-- v3.12 -->
+<!-- v3.13 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.12</title>
+  <title>Lager v3.13</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1148,7 +1148,11 @@ const DEFAULT_VARMEPUMPAR = [
   { address: "BRF Tallbacken, Tallvägen 9", model: "NIBE F2120-16", lastServiced: "2025-10-15", nextService: "2026-10-15", technician: "", technicianName: "Anna Karlsson" },
   { address: "BRF Rosen, Rosengatan 7", model: "Mitsubishi Zuba-Central PUHZ", lastServiced: "2025-11-03", nextService: "2026-11-03", technician: "", technicianName: "Marcus Holm" },
   { address: "BRF Kastanjen, Kastanjevägen 22", model: "NIBE F2040-12", lastServiced: "2026-01-20", nextService: "2027-01-20", technician: "", technicianName: "Erik Lindgren" },
+  { address: "BRF Linden, Lindevägen 3", model: "NIBE F2040-8", lastServiced: "2025-06-10", nextService: "2026-06-10", technician: "", technicianName: "Marcus Holm" },
+  { address: "BRF Sommaren, Sommarvägen 7", model: "Panasonic WH-SXF09J3E5", lastServiced: "2025-07-18", nextService: "2026-07-18", technician: "", technicianName: "Anna Karlsson" },
+  { address: "BRF Augustin, Augustigatan 11", model: "IVT Greenline HE E17", lastServiced: "2025-08-05", nextService: "2026-08-05", technician: "", technicianName: "Erik Lindgren" },
 ];
+const VP_SEED_VERSION = 2;
 
 function listenToVP() {
   if (vpListener) vpListener.off();
@@ -1360,7 +1364,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.12</h1>
+          <h1>📦 Lager v3.13</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1751,16 +1755,19 @@ function render() {
   if (activeView === "service") {
     // Om Firebase ännu inte har data — visa DEFAULT direkt och skriv till Firebase
     let displayData = vpData;
-    const hasOldData = Object.values(vpData).some(e => (e.address || "").includes("Lgh"));
-    if (Object.keys(vpData).length === 0 || hasOldData) {
-      const init = {};
+    const needsReseed = Object.keys(vpData).length === 0
+      || Object.values(vpData).some(e => typeof e === "object" && (e.address || "").includes("Lgh"))
+      || (vpData.__v || 0) < VP_SEED_VERSION;
+    if (needsReseed) {
+      const init = { __v: VP_SEED_VERSION };
       DEFAULT_VARMEPUMPAR.forEach((e, i) => { init["vp" + i] = { ...e, createdAt: Date.now() }; });
       displayData = init;
       db.ref("varmepumpar").set(init);
     }
     // Filter: technicians see only own entries, admins see all
-    const vpEntries = Object.entries(displayData).filter(([, e]) =>
-      isAdmin || !e.technician || e.technician === currentUser.uid
+    const vpEntries = Object.entries(displayData).filter(([k, e]) =>
+      k !== "__v" && typeof e === "object" && e !== null &&
+      (isAdmin || !e.technician || e.technician === currentUser.uid)
     );
     // Sort: red first, then yellow, then green
     const order = { red: 0, yellow: 1, green: 2 };
