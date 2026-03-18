@@ -1,4 +1,4 @@
-<!-- v3.04 -->
+<!-- v3.05 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.04</title>
+  <title>Lager v3.05</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -256,6 +256,42 @@
     @keyframes pulse { 0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow: 0 4px 24px rgba(212,51,51,0.6); } }
     @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+    /* ===== SERVICE / VÄRMEPUMPAR ===== */
+    .vp-stats { padding: 8px 16px 4px; display: flex; gap: 8px; }
+    .vp-stat { flex: 1; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .vp-stat-val { font-size: 22px; font-weight: 700; }
+    .vp-stat-val.red { color: var(--red); }
+    .vp-stat-val.yellow { color: var(--accent); }
+    .vp-stat-val.green { color: var(--green); }
+    .vp-stat-label { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+    .vp-list { padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .vp-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; border-left: 4px solid var(--card-border); animation: slideUp 0.3s ease; }
+    .vp-card.status-red { border-left-color: var(--red); }
+    .vp-card.status-yellow { border-left-color: var(--accent); }
+    .vp-card.status-green { border-left-color: var(--green); }
+    .vp-address { font-size: 17px; font-weight: 700; }
+    .vp-model { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .vp-tech { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .vp-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-top: 6px; }
+    .vp-badge.red { background: rgba(212,51,51,0.18); color: var(--red); }
+    .vp-badge.yellow { background: rgba(232,160,35,0.18); color: var(--accent); }
+    .vp-badge.green { background: rgba(34,180,85,0.18); color: var(--green); }
+    .vp-dates { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+    .vp-date { font-size: 12px; color: var(--text-dim); }
+    .vp-date span { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-top: 1px; }
+    .vp-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .vp-btn-serve { flex: 1; background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .vp-btn-serve:active { opacity: 0.7; }
+    .vp-btn-del { background: none; border: 1px solid var(--card-border); color: var(--text-dim); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: inherit; cursor: pointer; }
+    .vp-btn-del:active { opacity: 0.7; }
+    .vp-add-btn { display: block; width: calc(100% - 32px); margin: 0 16px; background: var(--card); border: 1px dashed var(--card-border); border-radius: 12px; padding: 14px; color: var(--text-dim); font-size: 15px; font-family: inherit; cursor: pointer; text-align: center; }
+    .vp-form { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.2s ease; margin: 0 16px; }
+    .vp-form label { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+    .vp-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
+    .vp-input:focus { border-color: var(--accent); }
+    .vp-select { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
+    .vp-empty { text-align: center; color: var(--text-dim); font-size: 15px; padding: 48px 16px; }
   </style>
 </head>
 <body>
@@ -411,7 +447,10 @@ let showAdmin = false;
 let allowedUsers = {};
 let isAdmin = false;
 let editingItem = null;
-let activeView = "lager"; // "lager" or "felkoder"
+let activeView = "lager"; // "lager" | "felkoder" | "service"
+let vpData = {};
+let vpListener = null;
+let showVpForm = false;
 let ecSearch = "";
 let ecTab = null;    // "tvätt" | "tork" | "torkskap" | null
 let ecSubTab = null; // sub-tab key | null
@@ -1015,6 +1054,7 @@ function showToast(msg) {
 // ====== DB ======
 function initDB() {
   listenToDept(activeDept);
+  listenToVP();
   autoBackup();
   db.ref("log").orderByChild("timestamp").limitToLast(50).on("value", (snap) => {
     const data = snap.val();
@@ -1091,6 +1131,81 @@ function switchDept(dept) {
 }
 
 function getItemsRef() { return db.ref("departments/" + activeDept + "/items"); }
+
+// ====== SERVICE / VÄRMEPUMPAR ======
+function listenToVP() {
+  if (vpListener) vpListener.off();
+  const ref = db.ref("varmepumpar");
+  vpListener = ref;
+  ref.on("value", (snap) => {
+    vpData = snap.val() || {};
+    if (activeView === "service") render();
+  });
+}
+
+function calcVpStatus(nextService) {
+  if (!nextService) return "red";
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const next = new Date(nextService + "T00:00:00");
+  const days = Math.round((next - now) / 86400000);
+  if (days <= 30) return "red";
+  if (days <= 90) return "yellow";
+  return "green";
+}
+
+function calcNextService(fromDateStr) {
+  const d = new Date(fromDateStr + "T00:00:00");
+  d.setFullYear(d.getFullYear() + 1);
+  const m = d.getMonth() + 1; // 1-indexed
+  if (m >= 6 && m <= 8) { d.setMonth(8); d.setDate(1); } // push to 1 sep
+  return d.toISOString().slice(0, 10);
+}
+
+function vpDaysLabel(nextService) {
+  if (!nextService) return "Inget datum";
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const next = new Date(nextService + "T00:00:00");
+  const days = Math.round((next - now) / 86400000);
+  if (days < 0) return `${Math.abs(days)} dagar försenad`;
+  if (days === 0) return "Idag";
+  return `${days} dagar kvar`;
+}
+
+function doServedNow(key) {
+  const today = new Date().toISOString().slice(0, 10);
+  const nextService = calcNextService(today);
+  db.ref("varmepumpar/" + key).update({ lastServiced: today, nextService });
+  showToast("Servad! Nästa: " + nextService);
+}
+
+function doDeleteVP(key) {
+  const e = vpData[key];
+  if (!e) return;
+  if (confirm("Ta bort " + e.address + "?")) {
+    db.ref("varmepumpar/" + key).remove();
+    showToast("Borttagen");
+  }
+}
+
+function doAddVP() {
+  const address = document.getElementById("vp_address").value.trim();
+  const model = document.getElementById("vp_model").value.trim();
+  const lastServiced = document.getElementById("vp_lastserviced").value;
+  const techUid = document.getElementById("vp_tech").value;
+  if (!address) { showToast("Ange adress"); return; }
+  const techUser = allowedUsers[techUid];
+  const nextService = lastServiced ? calcNextService(lastServiced) : "";
+  const key = db.ref("varmepumpar").push().key;
+  db.ref("varmepumpar/" + key).set({
+    address, model, lastServiced, nextService,
+    technician: techUid,
+    technicianName: techUser ? (techUser.name || techUser.email) : "",
+    createdAt: Date.now(),
+  });
+  showVpForm = false;
+  showToast(address + " tillagd!");
+  render();
+}
 
 // ====== BACKUP ======
 const MAX_BACKUPS = 7;
@@ -1212,7 +1327,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.04</h1>
+          <h1>📦 Lager v3.05</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1220,6 +1335,7 @@ function render() {
       <div class="dept-tabs">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
+        <button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';showVpForm=false;render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🌡️ Service</button>
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -1597,6 +1713,84 @@ function render() {
 
     html += `<div class="ec-overlay" id="ec-overlay" onclick="if(event.target===this)closeEC()"><div class="ec-popup" id="ec-popup"></div></div>`;
   } // end felkoder view
+
+  // ====== SERVICE VIEW ======
+  if (activeView === "service") {
+    // Filter: technicians see only own entries, admins see all
+    const vpEntries = Object.entries(vpData).filter(([, e]) =>
+      isAdmin || e.technician === currentUser.uid
+    );
+    // Sort: red first, then yellow, then green
+    const order = { red: 0, yellow: 1, green: 2 };
+    vpEntries.sort(([, a], [, b]) => {
+      const sa = order[calcVpStatus(a.nextService)] ?? 3;
+      const sb = order[calcVpStatus(b.nextService)] ?? 3;
+      return sa !== sb ? sa - sb : (a.address || "").localeCompare(b.address || "", "sv");
+    });
+
+    const counts = { red: 0, yellow: 0, green: 0 };
+    vpEntries.forEach(([, e]) => { counts[calcVpStatus(e.nextService)]++; });
+
+    html += `
+      <div class="vp-stats">
+        <div class="vp-stat"><div class="vp-stat-val red">${counts.red}</div><div class="vp-stat-label">Kritisk</div></div>
+        <div class="vp-stat"><div class="vp-stat-val yellow">${counts.yellow}</div><div class="vp-stat-label">Snart</div></div>
+        <div class="vp-stat"><div class="vp-stat-val green">${counts.green}</div><div class="vp-stat-label">OK</div></div>
+      </div>`;
+
+    if (showVpForm && isAdmin) {
+      const techOptions = Object.entries(allowedUsers)
+        .filter(([, u]) => !u.pending)
+        .map(([uid, u]) => `<option value="${uid}">${u.name || u.email}</option>`)
+        .join("");
+      html += `
+        <div class="vp-form">
+          <label>Adress</label>
+          <input class="vp-input" id="vp_address" placeholder="T.ex. Storgatan 12, Malmö" type="text">
+          <label>Modell</label>
+          <input class="vp-input" id="vp_model" placeholder="T.ex. Panasonic 9 kW" type="text">
+          <label>Senast servad</label>
+          <input class="vp-input" id="vp_lastserviced" type="date">
+          <label>Tekniker</label>
+          <select class="vp-select" id="vp_tech">${techOptions}</select>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btn btn-accent" style="flex:1" onclick="doAddVP()">Spara</button>
+            <button class="btn btn-dim" style="flex:1" onclick="showVpForm=false;render()">Avbryt</button>
+          </div>
+        </div>`;
+    }
+
+    if (vpEntries.length === 0 && !showVpForm) {
+      html += `<div class="vp-empty">Inga värmepumpar registrerade ännu</div>`;
+    } else {
+      html += `<div class="vp-list">`;
+      vpEntries.forEach(([key, e]) => {
+        const status = calcVpStatus(e.nextService);
+        const label = vpDaysLabel(e.nextService);
+        const badgeText = status === "red" ? "⛔ " + label : status === "yellow" ? "⚠️ " + label : "✅ " + label;
+        html += `
+          <div class="vp-card status-${status}">
+            <div class="vp-address">${e.address}</div>
+            ${e.model ? `<div class="vp-model">${e.model}</div>` : ""}
+            ${e.technicianName ? `<div class="vp-tech">👤 ${e.technicianName}</div>` : ""}
+            <div class="vp-badge ${status}">${badgeText}</div>
+            <div class="vp-dates">
+              <div class="vp-date">Senast servad<span>${e.lastServiced || "—"}</span></div>
+              <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
+            </div>
+            <div class="vp-actions">
+              <button class="vp-btn-serve" onclick="doServedNow('${key}')">✓ Servad nu</button>
+              ${isAdmin ? `<button class="vp-btn-del" onclick="doDeleteVP('${key}')">🗑</button>` : ""}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (isAdmin && !showVpForm) {
+      html += `<button class="vp-add-btn" onclick="showVpForm=true;render()">+ Lägg till adress</button>`;
+    }
+  } // end service view
 
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
