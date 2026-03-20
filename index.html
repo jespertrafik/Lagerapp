@@ -1,4 +1,4 @@
-<!-- v3.25 -->
+<!-- v3.26 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -1574,7 +1574,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.25</h1>
+          <h1>📦 Lager v3.26</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1988,7 +1988,7 @@ function render() {
             <div class="sa-arrow">›</div>
           </div>`;
       });
-      if (isAdmin && showAddAreaForm) {
+      if (showAddAreaForm) {
         html += `
           <div class="sa-form">
             <label>Områdesnamn</label>
@@ -1998,7 +1998,7 @@ function render() {
               <button class="btn btn-dim" style="flex:1" onclick="showAddAreaForm=false;newAreaName='';render()">Avbryt</button>
             </div>
           </div>`;
-      } else if (isAdmin) {
+      } else {
         html += `<button class="sa-add-btn" onclick="showAddAreaForm=true;render()">+ Nytt område</button>`;
       }
       html += `</div>`;
@@ -2063,7 +2063,7 @@ function render() {
         }
         html += `</div>`; // .su-card
       });
-      if (isAdmin && showAddUnitForm) {
+      if (showAddUnitForm) {
         html += `
           <div class="su-card">
             <div class="su-edit-form" style="margin-top:0;border:none;padding:0">
@@ -2083,7 +2083,7 @@ function render() {
               </div>
             </div>
           </div>`;
-      } else if (isAdmin) {
+      } else {
         html += `<button class="sa-add-btn" onclick="showAddUnitForm=true;render()">+ Lägg till adress</button>`;
       }
       html += `</div>`; // .su-list
