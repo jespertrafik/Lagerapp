@@ -1,4 +1,4 @@
-<!-- v3.24 -->
+<!-- v3.25 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -1540,7 +1540,7 @@ function render() {
   if (!currentUser) { renderLogin(); return; }
   const app = document.getElementById("app");
 
-  const canSeeService = isAdmin || (currentUser && SERVICE_EMAILS.includes(currentUser.email.toLowerCase()));
+  const canSeeService = !!currentUser;
 
   const allBrands = new Set();
   Object.values(items).forEach(i => { if (i.brand) allBrands.add(i.brand); });
@@ -1574,7 +1574,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.24</h1>
+          <h1>📦 Lager v3.25</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1972,7 +1972,9 @@ function render() {
 
     if (activeArea === null) {
       // ---- AREA LIST ----
-      const areaList = Object.entries(serviceAreas).sort(([,a],[,b]) => (a.createdAt||0)-(b.createdAt||0));
+      const areaList = Object.entries(serviceAreas)
+        .filter(([,a]) => isAdmin || a.createdBy === currentUser.uid)
+        .sort(([,a],[,b]) => (a.createdAt||0)-(b.createdAt||0));
       html += `<div class="sa-list">`;
       if (areaList.length === 0 && !showAddAreaForm) {
         html += `<div class="vp-empty">Inga områden skapade ännu</div>`;
