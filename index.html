@@ -1350,9 +1350,12 @@ function doAddArea() {
   const n = newAreaName.trim();
   if (!n) { showToast("Ange ett områdesnamn"); return; }
   const key = "area_" + Date.now();
-  db.ref("service/areas/" + key).set({ name: n, createdAt: Date.now(), createdBy: currentUser.uid });
+  db.ref("service/areas/" + key).set({ name: n, createdAt: Date.now(), createdBy: currentUser.uid })
+    .catch(err => showToast("Fel: " + err.message));
   showAddAreaForm = false;
   newAreaName = "";
+  serviceAreas[key] = { name: n, createdAt: Date.now() };
+  render();
   showToast("Område skapat: " + n);
 }
 
