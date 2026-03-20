@@ -1,4 +1,4 @@
-<!-- v3.22 -->
+<!-- v3.23 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -300,6 +300,47 @@
     .vp-input:focus { border-color: var(--accent); }
     .vp-select { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
     .vp-empty { text-align: center; color: var(--text-dim); font-size: 15px; padding: 48px 16px; }
+
+    /* ===== SERVICE AREAS (ny layout) ===== */
+    .sa-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .sa-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; animation: slideUp 0.3s ease; }
+    .sa-card:active { opacity: 0.7; }
+    .sa-name { font-size: 17px; font-weight: 700; }
+    .sa-sub { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+    .sa-arrow { font-size: 20px; color: var(--text-dim); }
+    .sa-add-btn { display: block; width: calc(100% - 32px); margin: 0 16px; background: var(--card); border: 1px dashed var(--card-border); border-radius: 12px; padding: 14px; color: var(--text-dim); font-size: 15px; font-family: inherit; cursor: pointer; text-align: center; }
+    .sa-form { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.2s ease; margin: 0 16px; }
+    .sa-form label { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+    .sa-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; }
+    .sa-input:focus { border-color: var(--accent); }
+    .sa-back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text-dim); font-size: 14px; font-family: inherit; cursor: pointer; padding: 10px 16px 4px; }
+    .sa-back-btn:active { opacity: 0.7; }
+    .su-list { padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .su-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; animation: slideUp 0.3s ease; }
+    .su-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .su-address { font-size: 17px; font-weight: 700; }
+    .su-meta { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+    .su-notes { font-size: 13px; color: var(--text); margin-top: 8px; padding: 8px 10px; background: var(--input-bg); border-radius: 8px; border: 1px solid var(--card-border); white-space: pre-wrap; word-break: break-word; }
+    .su-dates { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+    .su-date { font-size: 12px; color: var(--text-dim); }
+    .su-date span { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-top: 1px; }
+    .su-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .su-btn-serve { flex: 1; min-width: 0; background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 10px 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .su-btn-ej { flex: 1; min-width: 0; background: #444; color: #aaa; border: none; border-radius: 8px; padding: 10px 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .su-btn-book { flex: 1; min-width: 0; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 10px 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .su-btn-serve:active, .su-btn-ej:active, .su-btn-book:active { opacity: 0.7; }
+    .su-edit-btn { background: none; border: 1px solid var(--card-border); color: var(--text-dim); border-radius: 8px; padding: 8px 10px; font-size: 15px; font-family: inherit; cursor: pointer; flex-shrink: 0; }
+    .su-edit-btn:active { opacity: 0.7; }
+    .su-edit-form { margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .su-edit-form label { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+    .su-ejservad-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(212,51,51,0.18); color: var(--red); margin-top: 6px; }
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .confirm-box { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; max-width: 300px; width: 88%; text-align: center; }
+    .confirm-box h3 { font-size: 17px; font-weight: 700; margin: 0 0 8px; }
+    .confirm-box p { font-size: 14px; color: var(--text-dim); margin: 0 0 20px; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .confirm-btn-ja { flex: 1; background: var(--red); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .confirm-btn-nej { flex: 1; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -459,6 +500,15 @@ let activeView = "lager"; // "lager" | "felkoder" | "service"
 let vpData = {};
 let vpListener = null;
 let showVpForm = false;
+let serviceAreas = {};
+let serviceUnits = {};
+let activeArea = null;
+let serviceAreaListener = null;
+let serviceUnitsListener = null;
+let showAddAreaForm = false;
+let showAddUnitForm = false;
+let editingServiceUnit = null;
+let confirmEjServad = null;
 let ecSearch = "";
 let ecTab = null;    // "tvätt" | "tork" | "torkskap" | null
 let ecSubTab = null; // sub-tab key | null
@@ -905,6 +955,7 @@ function loadViewMode() {
 }
 
 const ADMIN_EMAIL = "jespertrafik@gmail.com";
+const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
 
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
@@ -1064,6 +1115,7 @@ function showToast(msg) {
 function initDB() {
   listenToDept(activeDept);
   listenToVP();
+  listenToServiceAreas();
   autoBackup();
   db.ref("log").orderByChild("timestamp").limitToLast(50).on("value", (snap) => {
     const data = snap.val();
@@ -1254,6 +1306,106 @@ function doServiceAfterSummer(key) {
   showToast("Servad! Nästa: " + year + "-09-01");
 }
 
+// ====== SERVICE AREAS ======
+function listenToServiceAreas() {
+  if (serviceAreaListener) serviceAreaListener.off();
+  const ref = db.ref("service/areas");
+  serviceAreaListener = ref;
+  ref.on("value", (snap) => {
+    serviceAreas = snap.val() || {};
+    render();
+  });
+}
+
+function listenToServiceUnits(areaKey) {
+  if (serviceUnitsListener) serviceUnitsListener.off();
+  const ref = db.ref("service/units/" + areaKey);
+  serviceUnitsListener = ref;
+  ref.on("value", (snap) => {
+    serviceUnits = snap.val() || {};
+    render();
+  });
+}
+
+function openArea(areaKey) {
+  activeArea = areaKey;
+  showAddUnitForm = false;
+  editingServiceUnit = null;
+  listenToServiceUnits(areaKey);
+}
+
+function closeArea() {
+  activeArea = null;
+  showAddUnitForm = false;
+  editingServiceUnit = null;
+  if (serviceUnitsListener) { serviceUnitsListener.off(); serviceUnitsListener = null; }
+  serviceUnits = {};
+  render();
+}
+
+function doAddArea() {
+  const nameEl = document.getElementById("sa_name");
+  const name = nameEl ? nameEl.value.trim() : "";
+  if (!name) return;
+  const key = "area_" + Date.now();
+  db.ref("service/areas/" + key).set({ name, createdAt: Date.now(), createdBy: currentUser.uid });
+  showAddAreaForm = false;
+  render();
+}
+
+function doAddUnit() {
+  if (!activeArea) return;
+  const address = (document.getElementById("su_address") || {}).value?.trim() || "";
+  if (!address) return;
+  const model = (document.getElementById("su_model") || {}).value?.trim() || "";
+  const serial = (document.getElementById("su_serial") || {}).value?.trim() || "";
+  const installDate = (document.getElementById("su_installdate") || {}).value || "";
+  const notes = (document.getElementById("su_notes") || {}).value?.trim() || "";
+  const key = "unit_" + Date.now();
+  db.ref("service/units/" + activeArea + "/" + key).set({ address, model, serial, installDate, notes, lastServiced: "", nextService: "", createdAt: Date.now() });
+  showAddUnitForm = false;
+  render();
+}
+
+function doUpdateUnit(unitKey) {
+  if (!activeArea) return;
+  const address = (document.getElementById("sue_address_" + unitKey) || {}).value?.trim() || "";
+  const model = (document.getElementById("sue_model_" + unitKey) || {}).value?.trim() || "";
+  const serial = (document.getElementById("sue_serial_" + unitKey) || {}).value?.trim() || "";
+  const installDate = (document.getElementById("sue_installdate_" + unitKey) || {}).value || "";
+  const notes = (document.getElementById("sue_notes_" + unitKey) || {}).value?.trim() || "";
+  db.ref("service/units/" + activeArea + "/" + unitKey).update({ address, model, serial, installDate, notes });
+  editingServiceUnit = null;
+  render();
+}
+
+function doServedNowService(unitKey) {
+  if (!activeArea) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const nextService = calcNextService(today);
+  db.ref("service/units/" + activeArea + "/" + unitKey).update({ lastServiced: today, nextService, ejServad: "" });
+  showToast("Servad!");
+}
+
+function doBookServiceDate(unitKey, dateStr) {
+  if (!activeArea) return;
+  db.ref("service/units/" + activeArea + "/" + unitKey).update({ nextService: dateStr });
+  showToast("Bokad: " + dateStr);
+}
+
+function doEjServadConfirm(unitKey) {
+  confirmEjServad = unitKey;
+  render();
+}
+
+function doEjServadYes() {
+  if (!confirmEjServad || !activeArea) return;
+  const today = new Date().toISOString().slice(0, 10);
+  db.ref("service/units/" + activeArea + "/" + confirmEjServad).update({ ejServad: today });
+  confirmEjServad = null;
+  showToast("Markerad som ej servad");
+}
+
 function resetVP() {
   if (!confirm("Återställ all servicedata till ursprunget?")) return;
   const init = { __v: VP_SEED_VERSION };
@@ -1381,6 +1533,8 @@ function render() {
   if (!currentUser) { renderLogin(); return; }
   const app = document.getElementById("app");
 
+  const canSeeService = isAdmin || (currentUser && SERVICE_EMAILS.includes(currentUser.email.toLowerCase()));
+
   const allBrands = new Set();
   Object.values(items).forEach(i => { if (i.brand) allBrands.add(i.brand); });
   const brands = ["Alla", ...Array.from(allBrands).sort()];
@@ -1413,7 +1567,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.21</h1>
+          <h1>📦 Lager v3.23</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1421,7 +1575,7 @@ function render() {
       <div class="dept-tabs view-tabs">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
-        <button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';showVpForm=false;render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">Service</button>
+        ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -1802,97 +1956,144 @@ function render() {
 
   // ====== SERVICE VIEW ======
   if (activeView === "service") {
-    // Om Firebase ännu inte har data — visa DEFAULT direkt och skriv till Firebase
-    let displayData = vpData;
-    const needsReseed = Object.keys(vpData).length === 0
-      || Object.values(vpData).some(e => typeof e === "object" && (e.address || "").includes("Lgh"))
-      || (vpData.__v || 0) < VP_SEED_VERSION;
-    if (needsReseed) {
-      const init = { __v: VP_SEED_VERSION };
-      DEFAULT_VARMEPUMPAR.forEach((e, i) => { init["vp" + i] = { ...e, createdAt: Date.now() }; });
-      vpData = init;
-      displayData = init;
-      db.ref("varmepumpar").set(init);
-    }
-    // Filter: technicians see only own entries, admins see all
-    const vpEntries = Object.entries(displayData).filter(([k, e]) =>
-      k !== "__v" && typeof e === "object" && e !== null &&
-      (isAdmin || !e.technician || e.technician === currentUser.uid)
-    );
-    // Sort: red first, then yellow, then green
-    const order = { red: 0, yellow: 1, green: 2 };
-    vpEntries.sort(([, a], [, b]) => {
-      const sa = order[calcVpStatus(a.nextService)] ?? 3;
-      const sb = order[calcVpStatus(b.nextService)] ?? 3;
-      return sa !== sb ? sa - sb : (a.address || "").localeCompare(b.address || "", "sv");
-    });
+    const nowMonth = new Date().getMonth() + 1;
+    const isSummer = nowMonth >= 6 && nowMonth <= 8;
+    const bookMajYear = new Date().getFullYear() + 1;
+    const bookSeptNow = new Date();
+    const bookSeptYear = (new Date(bookSeptNow.getFullYear() + "-09-01") <= bookSeptNow)
+      ? bookSeptNow.getFullYear() + 1 : bookSeptNow.getFullYear();
 
-    const counts = { red: 0, yellow: 0, green: 0 };
-    vpEntries.forEach(([, e]) => { counts[calcVpStatus(e.nextService)]++; });
-
-    html += `
-      <div class="vp-stats">
-        <div class="vp-stat"><div class="vp-stat-val red">${counts.red}</div><div class="vp-stat-label">Kritisk</div></div>
-        <div class="vp-stat"><div class="vp-stat-val yellow">${counts.yellow}</div><div class="vp-stat-label">Snart</div></div>
-        <div class="vp-stat"><div class="vp-stat-val green">${counts.green}</div><div class="vp-stat-label">OK</div></div>
-      </div>`;
-
-    if (isAdmin && !showVpForm) {
-      html += `<button class="vp-add-btn" onclick="showVpForm=true;render()">+ Lägg till adress</button>`;
-      html += `<button class="vp-add-btn" style="margin-top:8px;color:var(--red);border-color:var(--red)" onclick="resetVP()">↺ Återställ testdata</button>`;
-    }
-
-    if (showVpForm && isAdmin) {
-      const techOptions = Object.entries(allowedUsers)
-        .filter(([, u]) => !u.pending)
-        .map(([uid, u]) => `<option value="${uid}">${u.name || u.email}</option>`)
-        .join("");
-      html += `
-        <div class="vp-form">
-          <label>Adress</label>
-          <input class="vp-input" id="vp_address" placeholder="T.ex. Storgatan 12, Malmö" type="text">
-          <label>Modell</label>
-          <input class="vp-input" id="vp_model" placeholder="T.ex. Panasonic 9 kW" type="text">
-          <label>Senast servad</label>
-          <input class="vp-input" id="vp_lastserviced" type="date">
-          <label>Tekniker</label>
-          <select class="vp-select" id="vp_tech">${techOptions}</select>
-          <div style="display:flex;gap:8px;margin-top:4px">
-            <button class="btn btn-accent" style="flex:1" onclick="doAddVP()">Spara</button>
-            <button class="btn btn-dim" style="flex:1" onclick="showVpForm=false;render()">Avbryt</button>
-          </div>
-        </div>`;
-    }
-
-    if (vpEntries.length === 0 && !showVpForm) {
-      html += `<div class="vp-empty">Inga värmepumpar registrerade ännu</div>`;
-    } else {
-      html += `<div class="vp-list">`;
-      const today = new Date().toISOString().slice(0, 10);
-      vpEntries.forEach(([key, e]) => {
-        const status = calcVpStatus(e.nextService);
-        const label = vpDaysLabel(e.nextService);
-        const badgeText = status === "red" ? "⛔ " + label : status === "yellow" ? "⚠️ " + label : "✅ " + label;
-        const servicedToday = e.lastServiced === today;
+    if (activeArea === null) {
+      // ---- AREA LIST ----
+      const areaList = Object.entries(serviceAreas).sort(([,a],[,b]) => (a.createdAt||0)-(b.createdAt||0));
+      html += `<div class="sa-list">`;
+      if (areaList.length === 0 && !showAddAreaForm) {
+        html += `<div class="vp-empty">Inga områden skapade ännu</div>`;
+      }
+      areaList.forEach(([areaKey, area]) => {
         html += `
-          <div class="vp-card status-${status}">
-            <div class="vp-address">${e.address}</div>
-            ${e.model ? `<div class="vp-model">${e.model}</div>` : ""}
-            ${e.technicianName ? `<div class="vp-tech">👤 ${e.technicianName}</div>` : ""}
-            <div class="vp-badge ${status}">${badgeText}</div>
-            <div class="vp-dates">
-              <div class="vp-date">Senast servad<span>${e.lastServiced || "—"}</span></div>
-              <div class="vp-date">Nästa service<span>${e.nextService || "—"}</span></div>
+          <div class="sa-card" onclick="openArea('${areaKey}')">
+            <div>
+              <div class="sa-name">📁 ${area.name}</div>
             </div>
-            <div class="vp-actions">
-              <button class="vp-btn-serve ${servicedToday ? "servad" : ""}" onclick="doServedNow('${key}')">${servicedToday ? "Servad" : "Ej servad"}</button>
-              ${vpNextServiceIsSummer(e.nextService) ? `
-              <button class="vp-btn-before" onclick="doServiceBeforeSummer('${key}')">☀️ Innan sommar</button>
-              <button class="vp-btn-after"  onclick="doServiceAfterSummer('${key}')">🍂 Efter sommar</button>` : ""}
-            </div>
+            <div class="sa-arrow">›</div>
           </div>`;
       });
+      if (isAdmin && showAddAreaForm) {
+        html += `
+          <div class="sa-form">
+            <label>Områdesnamn</label>
+            <input class="sa-input" id="sa_name" placeholder="T.ex. Täljö">
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-accent" style="flex:1" onclick="doAddArea()">Spara</button>
+              <button class="btn btn-dim" style="flex:1" onclick="showAddAreaForm=false;render()">Avbryt</button>
+            </div>
+          </div>`;
+      } else if (isAdmin) {
+        html += `<button class="sa-add-btn" onclick="showAddAreaForm=true;render()">+ Nytt område</button>`;
+      }
       html += `</div>`;
+
+    } else {
+      // ---- UNIT LIST ----
+      const areaName = (serviceAreas[activeArea] || {}).name || "Område";
+      const unitList = Object.entries(serviceUnits).sort(([,a],[,b]) => (a.createdAt||0)-(b.createdAt||0));
+      html += `<button class="sa-back-btn" onclick="closeArea()">‹ ${areaName}</button>`;
+      html += `<div class="su-list">`;
+      if (unitList.length === 0 && !showAddUnitForm) {
+        html += `<div class="vp-empty">Inga adresser i detta område ännu</div>`;
+      }
+      unitList.forEach(([unitKey, u]) => {
+        const isEditing = editingServiceUnit === unitKey;
+        html += `<div class="su-card">
+          <div class="su-top">
+            <div style="flex:1">
+              <div class="su-address">${u.address || '—'}</div>
+              ${u.model ? `<div class="su-meta">🔧 ${u.model}</div>` : ''}
+              ${u.serial ? `<div class="su-meta">Serienr: ${u.serial}</div>` : ''}
+              ${u.installDate ? `<div class="su-meta">Installerad: ${u.installDate}</div>` : ''}
+            </div>
+            <button class="su-edit-btn" onclick="editingServiceUnit=editingServiceUnit==='${unitKey}'?null:'${unitKey}';render()">✏️</button>
+          </div>`;
+        if (u.notes) html += `<div class="su-notes">${u.notes}</div>`;
+        if (u.ejServad) html += `<div class="su-ejservad-badge">⛔ Ej servad ${u.ejServad}</div>`;
+        html += `
+          <div class="su-dates">
+            <div class="su-date">Senast servad<span>${u.lastServiced || '—'}</span></div>
+            <div class="su-date">Nästa service<span>${u.nextService || '—'}</span></div>
+          </div>
+          <div class="su-actions">`;
+        if (isSummer) {
+          html += `
+            <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj</button>
+            <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept</button>`;
+        } else {
+          html += `<button class="su-btn-serve" onclick="doServedNowService('${unitKey}')">✅ Servad nu</button>`;
+        }
+        html += `
+            <button class="su-btn-ej" onclick="doEjServadConfirm('${unitKey}')">⛔ Ej servad</button>
+          </div>`;
+        if (isEditing) {
+          html += `
+          <div class="su-edit-form">
+            <label>Adress</label>
+            <input class="sa-input" id="sue_address_${unitKey}" value="${(u.address||'').replace(/"/g,'&quot;')}" placeholder="Adress">
+            <label>Produkt/Modell</label>
+            <input class="sa-input" id="sue_model_${unitKey}" value="${(u.model||'').replace(/"/g,'&quot;')}" placeholder="T.ex. Daikin 9kW">
+            <label>Serienummer</label>
+            <input class="sa-input" id="sue_serial_${unitKey}" value="${(u.serial||'').replace(/"/g,'&quot;')}" placeholder="Serienummer">
+            <label>Installationsdatum</label>
+            <input class="sa-input" id="sue_installdate_${unitKey}" type="date" value="${u.installDate||''}">
+            <label>Anteckningar</label>
+            <textarea class="sa-input" id="sue_notes_${unitKey}" rows="3" placeholder="Fritext...">${u.notes||''}</textarea>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-accent" style="flex:1" onclick="doUpdateUnit('${unitKey}')">Spara</button>
+              <button class="btn btn-dim" style="flex:1" onclick="editingServiceUnit=null;render()">Avbryt</button>
+            </div>
+          </div>`;
+        }
+        html += `</div>`; // .su-card
+      });
+      if (isAdmin && showAddUnitForm) {
+        html += `
+          <div class="su-card">
+            <div class="su-edit-form" style="margin-top:0;border:none;padding:0">
+              <label>Adress</label>
+              <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
+              <label>Produkt/Modell</label>
+              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
+              <label>Serienummer</label>
+              <input class="sa-input" id="su_serial" placeholder="Serienummer">
+              <label>Installationsdatum</label>
+              <input class="sa-input" id="su_installdate" type="date">
+              <label>Anteckningar</label>
+              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext..."></textarea>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <button class="btn btn-accent" style="flex:1" onclick="doAddUnit()">Spara</button>
+                <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;render()">Avbryt</button>
+              </div>
+            </div>
+          </div>`;
+      } else if (isAdmin) {
+        html += `<button class="sa-add-btn" onclick="showAddUnitForm=true;render()">+ Lägg till adress</button>`;
+      }
+      html += `</div>`; // .su-list
+    }
+
+    // Confirm dialog for "Ej servad"
+    if (confirmEjServad) {
+      const cu = serviceUnits[confirmEjServad] || {};
+      html += `
+        <div class="confirm-overlay">
+          <div class="confirm-box">
+            <h3>Ej servad?</h3>
+            <p>Markera <strong>${cu.address || 'denna adress'}</strong> som ej servad?</p>
+            <div class="confirm-btns">
+              <button class="confirm-btn-ja" onclick="doEjServadYes()">Ja</button>
+              <button class="confirm-btn-nej" onclick="confirmEjServad=null;render()">Nej</button>
+            </div>
+          </div>
+        </div>`;
     }
 
   } // end service view
