@@ -1,4 +1,4 @@
-<!-- v3.21 -->
+<!-- v3.22 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -1464,7 +1464,7 @@ function render() {
     const isLow = item.min > 0 && item.qty <= item.min;
     const priceTotal = (item.qty || 0) * (item.price || 0);
     html += `
-      <div class="item-card ${isLow && viewMode === "dashboard" ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-brand="${item.brand}">
+      <div class="item-card ${isLow && viewMode === "dashboard" ? "low" : ""}" data-key="${key}" data-name="${item.name.toLowerCase()}" data-artnr="${(item.artnr || '').toLowerCase()}" data-brand="${item.brand}">
         <div class="item-top">
           <div>
             <div class="item-name">${item.name}</div>
@@ -1962,7 +1962,8 @@ function filterItems() {
   const cards = Array.from(container.querySelectorAll(".item-card"));
   cards.forEach(card => {
     const name = card.dataset.name || "";
-    const match = !words.length || words.every(w => name.includes(w));
+    const artnr = card.dataset.artnr || "";
+    const match = !words.length || words.every(w => name.includes(w) || artnr.includes(w));
     card.style.display = match ? "" : "none";
   });
 }
