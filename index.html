@@ -506,6 +506,7 @@ let activeArea = null;
 let serviceAreaListener = null;
 let serviceUnitsListener = null;
 let showAddAreaForm = false;
+let newAreaName = "";
 let showAddUnitForm = false;
 let editingServiceUnit = null;
 let confirmEjServad = null;
@@ -1329,6 +1330,8 @@ function listenToServiceUnits(areaKey) {
 
 function openArea(areaKey) {
   activeArea = areaKey;
+  showAddAreaForm = false;
+  newAreaName = "";
   showAddUnitForm = false;
   editingServiceUnit = null;
   listenToServiceUnits(areaKey);
@@ -1344,13 +1347,13 @@ function closeArea() {
 }
 
 function doAddArea() {
-  const nameEl = document.getElementById("sa_name");
-  const name = nameEl ? nameEl.value.trim() : "";
-  if (!name) return;
+  const n = newAreaName.trim();
+  if (!n) { showToast("Ange ett områdesnamn"); return; }
   const key = "area_" + Date.now();
-  db.ref("service/areas/" + key).set({ name, createdAt: Date.now(), createdBy: currentUser.uid });
+  db.ref("service/areas/" + key).set({ name: n, createdAt: Date.now(), createdBy: currentUser.uid });
   showAddAreaForm = false;
-  render();
+  newAreaName = "";
+  showToast("Område skapat: " + n);
 }
 
 function doAddUnit() {
@@ -1983,10 +1986,10 @@ function render() {
         html += `
           <div class="sa-form">
             <label>Områdesnamn</label>
-            <input class="sa-input" id="sa_name" placeholder="T.ex. Täljö">
+            <input class="sa-input" placeholder="T.ex. Täljö" value="${newAreaName}" oninput="newAreaName=this.value" autocomplete="off">
             <div style="display:flex;gap:8px;margin-top:4px">
               <button class="btn btn-accent" style="flex:1" onclick="doAddArea()">Spara</button>
-              <button class="btn btn-dim" style="flex:1" onclick="showAddAreaForm=false;render()">Avbryt</button>
+              <button class="btn btn-dim" style="flex:1" onclick="showAddAreaForm=false;newAreaName='';render()">Avbryt</button>
             </div>
           </div>`;
       } else if (isAdmin) {
