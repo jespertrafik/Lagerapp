@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lager-v2.91';
+const CACHE_NAME = 'lager-v3.31';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

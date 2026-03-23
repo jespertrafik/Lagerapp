@@ -1,4 +1,4 @@
-<!-- v3.30 -->
+<!-- v3.31 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.30</title>
+  <title>Lager v3.31</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -499,6 +499,7 @@ let showSettings = false;
 let showAdmin = false;
 let allowedUsers = {};
 let isAdmin = false;
+let isServiceManager = false;
 let editingItem = null;
 let activeView = "lager"; // "lager" | "felkoder" | "service"
 let vpData = {};
@@ -984,6 +985,7 @@ auth.onAuthStateChanged((user) => {
       if (allUsers[user.uid]) {
         currentUser = user;
         isAdmin = allUsers[user.uid].role === "admin" || user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
         loginError = "";
         loadViewMode();
         initDB();
@@ -1136,6 +1138,7 @@ function initDB() {
     if (currentUser) {
       isAdmin = allowedUsers[currentUser.uid]?.role === "admin"
         || currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      isServiceManager = allowedUsers[currentUser.uid]?.role === "service" || allowedUsers[currentUser.uid]?.serviceView === true;
     }
     seedPendingUsers();
     render();
@@ -1165,6 +1168,22 @@ async function addAllowedUser() {
   await db.ref("allowedUsers/" + placeholderKey).set({ email: email, name: "", role: "user", added: Date.now(), pending: true });
   emailInput.value = "";
   showToast(`${email} tillagd!`);
+}
+
+async function toggleServiceView(uid) {
+  const user = allowedUsers[uid];
+  if (!user) return;
+  const newVal = !user.serviceView;
+  await db.ref("allowedUsers/" + uid + "/serviceView").set(newVal);
+  showToast(newVal ? "Servicechef-vy aktiverad" : "Servicechef-vy avstängd");
+}
+
+async function toggleServiceRole(uid) {
+  const user = allowedUsers[uid];
+  if (!user || user.role === "admin") return;
+  const newRole = user.role === "service" ? "user" : "service";
+  await db.ref("allowedUsers/" + uid + "/role").set(newRole);
+  showToast(newRole === "service" ? `${user.email} är nu servicechef` : `${user.email} är nu vanlig användare`);
 }
 
 async function removeAllowedUser(uid) {
@@ -1367,7 +1386,7 @@ function doAddArea() {
 }
 
 function doDeleteArea(areaKey) {
-  if (!isAdmin) return;
+  if (!isAdmin && !isServiceManager) return;
   const areaName = (serviceAreas[areaKey] || {}).name || "detta område";
   if (!confirm("Är du säker på att du vill ta bort \"" + areaName + "\"?\n\nDetta tar även bort alla adresser i området.")) return;
   db.ref("service/areas/" + areaKey).remove();
@@ -1412,6 +1431,15 @@ function doUpdateUnit(unitKey) {
   db.ref("service/units/" + activeArea + "/" + unitKey).update({ address, model, serial, installDate, notes });
   editingServiceUnit = null;
   render();
+}
+
+function doDeleteUnit(unitKey) {
+  if (!activeArea) return;
+  if (!isAdmin && !isServiceManager) return;
+  const u = serviceUnits[unitKey] || {};
+  if (!confirm("Ta bort \"" + (u.address || "denna adress") + "\"?")) return;
+  db.ref("service/units/" + activeArea + "/" + unitKey).remove();
+  showToast("Adress borttagen");
 }
 
 function doServedNowService(unitKey) {
@@ -1602,7 +1630,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.29</h1>
+          <h1>📦 Lager v3.31</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1999,7 +2027,7 @@ function render() {
     if (activeArea === null) {
       // ---- AREA LIST ----
       const areaList = Object.entries(serviceAreas)
-        .filter(([,a]) => isAdmin || a.createdBy === currentUser.uid)
+        .filter(([,a]) => isAdmin || isServiceManager || a.createdBy === currentUser.uid)
         .sort(([,a],[,b]) => (a.createdAt||0)-(b.createdAt||0));
       html += `<div class="sa-list">`;
       if (areaList.length === 0 && !showAddAreaForm) {
@@ -2024,7 +2052,7 @@ function render() {
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               ${isAdmin ? `<button class="sa-rename-btn" onclick="event.stopPropagation();renamingArea='${areaKey}';renameAreaName='${(area.name||'').replace(/'/g,"\\'")}';render();setTimeout(()=>{const el=document.getElementById('rename_area_${areaKey}');if(el){el.focus();el.select();}},50)">✏️</button>` : ''}
-              ${isAdmin ? `<button class="sa-delete-btn" onclick="event.stopPropagation();doDeleteArea('${areaKey}')">🗑️</button>` : ''}
+              ${(isAdmin || isServiceManager) ? `<button class="sa-delete-btn" onclick="event.stopPropagation();doDeleteArea('${areaKey}')">🗑️</button>` : ''}
               <div class="sa-arrow">›</div>
             </div>
           </div>`;
@@ -2074,14 +2102,19 @@ function render() {
             <div class="su-date">Nästa service<span>${u.nextService || '—'}</span></div>
           </div>
           <div class="su-actions">`;
-        html += `<button class="su-btn-serve" onclick="doServedNowService('${unitKey}')">✅ Servad nu</button>`;
-        if (isSummer) {
-          html += `
-            <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj ${bookMajYear}</button>
-            <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept ${bookSeptYear}</button>`;
+        if (!isServiceManager) {
+          html += `<button class="su-btn-serve" onclick="doServedNowService('${unitKey}')">✅ Servad nu</button>`;
+          if (isSummer) {
+            html += `
+              <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj ${bookMajYear}</button>
+              <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept ${bookSeptYear}</button>`;
+          }
+          html += `<button class="su-btn-ej" onclick="doEjServadConfirm('${unitKey}')">⛔ Ej servad</button>`;
+        }
+        if (isAdmin || isServiceManager) {
+          html += `<button class="su-btn-ej" style="background:var(--red,#c0392b)" onclick="doDeleteUnit('${unitKey}')">🗑️ Ta bort</button>`;
         }
         html += `
-            <button class="su-btn-ej" onclick="doEjServadConfirm('${unitKey}')">⛔ Ej servad</button>
           </div>`;
         if (isEditing) {
           html += `
@@ -2161,9 +2194,13 @@ function render() {
       html += `<div class="admin-user">
         <div>
           <div class="admin-email">${u.email}</div>
-          <div class="admin-role">${u.role === "admin" ? "Admin" : "Användare"}${u.pending ? " (väntar på inloggning)" : ""}</div>
+          <div class="admin-role">${u.role === "admin" ? "Admin" : u.role === "service" ? "Servicechef" : "Användare"}${u.pending ? " (väntar på inloggning)" : ""}</div>
         </div>
-        ${u.role !== "admin" ? `<button class="admin-remove" onclick="removeAllowedUser('${uid}')">Ta bort</button>` : ""}
+        <div style="display:flex;gap:6px">
+          ${u.role === "admin" && uid === currentUser?.uid ? `<button class="admin-remove" style="background:${u.serviceView?'var(--accent)':'var(--bg2)'};color:${u.serviceView?'#fff':'var(--text)'}" onclick="toggleServiceView('${uid}')" title="${u.serviceView?'Stäng av servicechef-vy':'Aktivera servicechef-vy'}">🔧</button>` : ""}
+          ${u.role !== "admin" ? `<button class="admin-remove" style="background:${u.role==='service'?'var(--accent)':'var(--bg2)'};color:${u.role==='service'?'#fff':'var(--text)'}" onclick="toggleServiceRole('${uid}')" title="${u.role==='service'?'Gör till vanlig användare':'Gör till servicechef'}">🔧</button>` : ""}
+          ${u.role !== "admin" ? `<button class="admin-remove" onclick="removeAllowedUser('${uid}')">Ta bort</button>` : ""}
+        </div>
       </div>`;
     });
     html += `</div>
