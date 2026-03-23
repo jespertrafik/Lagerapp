@@ -1,4 +1,4 @@
-<!-- v3.28 -->
+<!-- v3.29 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.28</title>
+  <title>Lager v3.29</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -310,6 +310,8 @@
     .sa-arrow { font-size: 20px; color: var(--text); }
     .sa-delete-btn { background: none; border: none; font-size: 18px; padding: 4px 6px; cursor: pointer; opacity: 0.6; border-radius: 6px; }
     .sa-delete-btn:hover { opacity: 1; background: rgba(255,80,80,0.15); }
+    .sa-rename-btn { background: none; border: none; font-size: 16px; padding: 4px 6px; cursor: pointer; opacity: 0.6; border-radius: 6px; }
+    .sa-rename-btn:hover { opacity: 1; background: rgba(100,150,255,0.15); }
     .sa-add-btn { display: block; width: calc(100% - 32px); margin: 0 16px; background: var(--card); border: 1px dashed var(--card-border); border-radius: 12px; padding: 14px; color: var(--text-dim); font-size: 15px; font-family: inherit; cursor: pointer; text-align: center; }
     .sa-form { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; animation: fadeIn 0.2s ease; margin: 0 16px; }
     .sa-form label { font-size: 12px; color: var(--text); font-weight: 600; }
@@ -511,6 +513,8 @@ let showAddAreaForm = false;
 let newAreaName = "";
 let showAddUnitForm = false;
 let editingServiceUnit = null;
+let renamingArea = null;
+let renameAreaName = "";
 let confirmEjServad = null;
 let ecSearch = "";
 let ecTab = null;    // "tvätt" | "tork" | "torkskap" | null
@@ -1371,6 +1375,18 @@ function doDeleteArea(areaKey) {
   showToast("Område borttaget: " + areaName);
 }
 
+function doRenameArea(areaKey) {
+  if (!isAdmin) return;
+  const n = (document.getElementById("rename_area_" + areaKey) || {}).value?.trim() || renameAreaName.trim();
+  if (!n) { showToast("Ange ett namn"); return; }
+  db.ref("service/areas/" + areaKey + "/name").set(n)
+    .then(() => showToast("Namn uppdaterat: " + n))
+    .catch(err => showToast("Fel: " + err.message));
+  renamingArea = null;
+  renameAreaName = "";
+  render();
+}
+
 function doAddUnit() {
   if (!activeArea) return;
   const address = (document.getElementById("su_address") || {}).value?.trim() || "";
@@ -1991,16 +2007,29 @@ function render() {
         html += `<div class="vp-empty">Inga områden skapade ännu</div>`;
       }
       areaList.forEach(([areaKey, area]) => {
-        html += `
+        if (renamingArea === areaKey) {
+          html += `
+          <div class="sa-form">
+            <label>Byt namn på område</label>
+            <input class="sa-input" id="rename_area_${areaKey}" value="${(area.name||'').replace(/"/g,'&quot;')}" oninput="renameAreaName=this.value" autocomplete="off">
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-accent" style="flex:1" onclick="doRenameArea('${areaKey}')">Spara</button>
+              <button class="btn btn-dim" style="flex:1" onclick="renamingArea=null;renameAreaName='';render()">Avbryt</button>
+            </div>
+          </div>`;
+        } else {
+          html += `
           <div class="sa-card" onclick="openArea('${areaKey}')">
             <div>
               <div class="sa-name">📁 ${area.name}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
+              ${isAdmin ? `<button class="sa-rename-btn" onclick="event.stopPropagation();renamingArea='${areaKey}';renameAreaName='${(area.name||'').replace(/'/g,"\\'")}';render();setTimeout(()=>{const el=document.getElementById('rename_area_${areaKey}');if(el){el.focus();el.select();}},50)">✏️</button>` : ''}
               ${isAdmin ? `<button class="sa-delete-btn" onclick="event.stopPropagation();doDeleteArea('${areaKey}')">🗑️</button>` : ''}
               <div class="sa-arrow">›</div>
             </div>
           </div>`;
+        }
       });
       if (showAddAreaForm) {
         html += `
