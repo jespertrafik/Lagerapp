@@ -1,4 +1,4 @@
-<!-- v3.29 -->
+<!-- v3.30 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.29</title>
+  <title>Lager v3.30</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1404,6 +1404,7 @@ function doAddUnit() {
 function doUpdateUnit(unitKey) {
   if (!activeArea) return;
   const address = (document.getElementById("sue_address_" + unitKey) || {}).value?.trim() || "";
+  if (!address) { showToast("Ange en adress"); return; }
   const model = (document.getElementById("sue_model_" + unitKey) || {}).value?.trim() || "";
   const serial = (document.getElementById("sue_serial_" + unitKey) || {}).value?.trim() || "";
   const installDate = (document.getElementById("sue_installdate_" + unitKey) || {}).value || "";
@@ -1993,9 +1994,7 @@ function render() {
     const nowMonth = new Date().getMonth() + 1;
     const isSummer = nowMonth >= 6 && nowMonth <= 8;
     const bookMajYear = new Date().getFullYear() + 1;
-    const bookSeptNow = new Date();
-    const bookSeptYear = (new Date(bookSeptNow.getFullYear() + "-09-01") <= bookSeptNow)
-      ? bookSeptNow.getFullYear() + 1 : bookSeptNow.getFullYear();
+    const bookSeptYear = new Date().getFullYear() + 1;
 
     if (activeArea === null) {
       // ---- AREA LIST ----
@@ -2075,12 +2074,11 @@ function render() {
             <div class="su-date">Nästa service<span>${u.nextService || '—'}</span></div>
           </div>
           <div class="su-actions">`;
+        html += `<button class="su-btn-serve" onclick="doServedNowService('${unitKey}')">✅ Servad nu</button>`;
         if (isSummer) {
           html += `
-            <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj</button>
-            <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept</button>`;
-        } else {
-          html += `<button class="su-btn-serve" onclick="doServedNowService('${unitKey}')">✅ Servad nu</button>`;
+            <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj ${bookMajYear}</button>
+            <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept ${bookSeptYear}</button>`;
         }
         html += `
             <button class="su-btn-ej" onclick="doEjServadConfirm('${unitKey}')">⛔ Ej servad</button>
