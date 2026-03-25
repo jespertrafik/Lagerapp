@@ -1,4 +1,4 @@
-<!-- v3.33 -->
+<!-- v3.34 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.33</title>
+  <title>Lager v3.34</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -346,28 +346,10 @@
     .confirm-btn-ja { flex: 1; background: var(--red); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
     .confirm-btn-nej { flex: 1; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
 
-    /* ===== BOOKING VIEW ===== */
-    .boka-wrap { padding: 16px; }
-    .boka-header { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-    .boka-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; }
-    .boka-form { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; animation: fadeIn 0.2s ease; }
-    .boka-form h3 { font-size: 15px; font-weight: 700; }
-    .boka-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 13px; font-size: 14px; font-family: inherit; outline: none; width: 100%; }
-    .boka-input:focus { border-color: var(--accent); }
-    .boka-textarea { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 10px 13px; font-size: 14px; font-family: inherit; outline: none; width: 100%; resize: vertical; min-height: 76px; }
-    .boka-textarea:focus { border-color: var(--accent); }
-    .boka-card { background: var(--card); border: 1px solid var(--card-border); border-left: 4px solid var(--accent); border-radius: 12px; padding: 14px; margin-bottom: 8px; animation: slideUp 0.25s ease; }
-    .boka-card.done { border-left-color: var(--green); opacity: 0.7; }
-    .boka-card.cancelled { border-left-color: var(--red); opacity: 0.5; }
-    .boka-card-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .boka-card-meta { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; line-height: 1.5; }
-    .boka-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
-    .boka-badge.pending { background: var(--warn-bg); color: var(--accent); border: 1px solid var(--warn-border); }
-    .boka-badge.done { background: rgba(34,180,85,0.15); color: var(--green); border: 1px solid rgba(34,180,85,0.3); }
-    .boka-badge.cancelled { background: rgba(212,51,51,0.1); color: var(--red); border: 1px solid rgba(212,51,51,0.2); }
-    .boka-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-    .boka-add-btn { width: 100%; background: var(--card); border: 1px dashed var(--card-border); border-radius: 12px; padding: 16px; color: var(--text-dim); font-size: 14px; font-family: inherit; cursor: pointer; text-align: center; margin-bottom: 16px; }
-    .boka-section-label { font-size: 12px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+    /* ===== BOOKING INLINE ===== */
+    .su-date-picker { background: var(--bg); border: 1px solid var(--accent); border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .su-date-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; flex: 1; min-width: 140px; }
+    .su-date-input:focus { border-color: var(--accent); }
   </style>
 </head>
 <body>
@@ -524,10 +506,10 @@ let allowedUsers = {};
 let isAdmin = false;
 let isServiceManager = false;
 let editingItem = null;
-let activeView = "lager"; // "lager" | "felkoder" | "service" | "bokning"
-let bookingRequests = {};
-let showBokaForm = false;
+let activeView = "lager"; // "lager" | "felkoder" | "service"
 let bookingEnabledForAll = false;
+let bookingUnit = null; // which unit has date-picker open
+let bookingDate = "";
 let vpData = {};
 let vpListener = null;
 let showVpForm = false;
@@ -1169,14 +1151,9 @@ function initDB() {
     seedPendingUsers();
     render();
   });
-  // Booking feature
   db.ref("settings/bookingEnabled").on("value", (snap) => {
     bookingEnabledForAll = snap.val() || false;
     render();
-  });
-  db.ref("bookingRequests").on("value", (snap) => {
-    bookingRequests = snap.val() || {};
-    if (activeView === "bokning") render();
   });
 }
 
@@ -1223,40 +1200,26 @@ async function toggleServiceRole(uid) {
 
 function toggleBookingEnabled() {
   db.ref("settings/bookingEnabled").set(!bookingEnabledForAll);
-  showToast(bookingEnabledForAll ? "Bokning dold för användare" : "Bokning synlig för alla!");
+  showToast(bookingEnabledForAll ? "Datumbokning dold för användare" : "Datumbokning synlig för alla!");
 }
 
-async function doSubmitBokning() {
-  const name = document.getElementById("bk_name").value.trim();
-  const phone = document.getElementById("bk_phone").value.trim();
-  const machine = document.getElementById("bk_machine").value.trim();
-  const desc = document.getElementById("bk_desc").value.trim();
-  const date = document.getElementById("bk_date").value;
-  if (!machine || !date) { showToast("Fyll i maskin och datum"); return; }
-  const booking = {
-    uid: currentUser.uid,
-    email: currentUser.email,
-    name: name || currentUser.displayName || currentUser.email,
-    phone, machine, desc, date,
-    status: "pending",
-    createdAt: Date.now(),
-  };
-  await db.ref("bookingRequests").push(booking);
-  const text = `📅 Ny servicebokning!\n👤 ${booking.name}${booking.phone ? " · " + booking.phone : ""}\n🛠 ${booking.machine}\n📅 ${booking.date}${booking.desc ? "\n📝 " + booking.desc : ""}`;
+async function doSaveBookingDate(unitKey) {
+  const inp = document.getElementById("bk_date_" + unitKey);
+  const date = inp ? inp.value : bookingDate;
+  if (!date) { showToast("Välj ett datum"); return; }
+  await db.ref("service/units/" + activeArea + "/" + unitKey).update({ nextService: date });
+  const u = serviceUnits[unitKey] || {};
+  const d = new Date(date + "T00:00:00");
+  const dateStr = d.toLocaleDateString("sv-SE", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const text = `📅 Servicetid bokad!\n📍 ${u.address || unitKey}\n${u.model ? "🔧 " + u.model + "\n" : ""}📅 Nästa service: ${dateStr}\n👤 ${currentUser.displayName || currentUser.email}`;
   try {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
     });
   } catch (e) {}
-  showBokaForm = false;
-  showToast("Bokning skickad! 📅");
-}
-
-async function setBokningStatus(key, status) {
-  await db.ref("bookingRequests/" + key).update({ status });
-  const labels = { confirmed: "Bekräftad ✓", done: "Markerad som utförd ✅", cancelled: "Avbokad" };
-  showToast(labels[status] || "Uppdaterad");
+  bookingUnit = null;
+  showToast("Datum sparat! 📅 " + dateStr);
 }
 
 async function removeAllowedUser(uid) {
@@ -1670,7 +1633,7 @@ function render() {
   const app = document.getElementById("app");
 
   const canSeeService = !!currentUser;
-  const canSeeBokning = isAdmin || bookingEnabledForAll;
+  const canBook = isAdmin || bookingEnabledForAll;
 
   const allBrands = new Set();
   Object.values(items).forEach(i => { if (i.brand) allBrands.add(i.brand); });
@@ -1704,7 +1667,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.33</h1>
+          <h1>📦 Lager v3.34</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1713,7 +1676,6 @@ function render() {
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
-        ${canSeeBokning ? `<button class="dept-tab ${activeView === "bokning" ? "active" : ""}" onclick="activeView='bokning';showBokaForm=false;render()" style="border-bottom-color:${activeView === 'bokning' ? 'var(--accent)' : 'transparent'}; ${activeView === 'bokning' ? 'color:var(--accent)' : ''}">📅 Boka${isAdmin && !bookingEnabledForAll ? ' 🔒' : ''}</button>` : ''}
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -2184,6 +2146,9 @@ function render() {
               <button class="su-btn-book" onclick="doBookServiceDate('${unitKey}','${bookMajYear}-05-15')">📅 Boka maj ${bookMajYear}</button>
               <button class="su-btn-book" style="background:var(--green)" onclick="doBookServiceDate('${unitKey}','${bookSeptYear}-09-01')">📅 Boka sept ${bookSeptYear}</button>`;
           }
+          if (canBook) {
+            html += `<button class="su-btn-book" style="background:var(--accent);color:#000" onclick="bookingUnit=bookingUnit==='${unitKey}'?null:'${unitKey}';bookingDate='';render()">📅 Välj datum</button>`;
+          }
           html += `<button class="su-btn-ej" onclick="doEjServadConfirm('${unitKey}')">⛔ Ej servad</button>`;
         }
         if (isAdmin || isServiceManager) {
@@ -2191,6 +2156,15 @@ function render() {
         }
         html += `
           </div>`;
+        if (bookingUnit === unitKey) {
+          const today = new Date().toISOString().slice(0, 10);
+          html += `<div class="su-date-picker">
+            <span style="font-size:13px;font-weight:600;white-space:nowrap">📅 Nästa service:</span>
+            <input class="su-date-input" type="date" id="bk_date_${unitKey}" min="${today}" value="${bookingDate || u.nextService || ''}">
+            <button class="btn btn-accent" style="padding:8px 14px;font-size:13px" onclick="doSaveBookingDate('${unitKey}')">Spara</button>
+            <button class="btn btn-dim" style="padding:8px 14px;font-size:13px" onclick="bookingUnit=null;render()">✕</button>
+          </div>`;
+        }
         if (isEditing) {
           html += `
           <div class="su-edit-form">
@@ -2255,62 +2229,6 @@ function render() {
     }
 
   } // end service view
-
-  // ====== BOKNING VIEW ======
-  if (activeView === "bokning" && canSeeBokning) {
-    const statusLabel = { pending: "Inväntar bekräftelse", confirmed: "Bekräftad", done: "Utförd", cancelled: "Avbokad" };
-    const myBookings = Object.entries(bookingRequests)
-      .filter(([, b]) => isAdmin || b.uid === currentUser.uid)
-      .sort((a, b) => b[1].createdAt - a[1].createdAt);
-
-    html += `<div class="boka-wrap">
-      <div class="boka-header">📅 Boka servicetid</div>
-      <div class="boka-sub">${isAdmin && !bookingEnabledForAll ? '🔒 Testläge — bara du (admin) ser denna flik' : 'Välj datum och beskriv vad du behöver hjälp med'}</div>`;
-
-    if (showBokaForm) {
-      const today = new Date().toISOString().slice(0, 10);
-      html += `<div class="boka-form">
-        <h3>Ny bokning</h3>
-        <input class="boka-input" id="bk_name" placeholder="Ditt namn" value="${(currentUser.displayName || '').replace(/"/g, '&quot;')}">
-        <input class="boka-input" id="bk_phone" placeholder="Telefonnummer (valfritt)" type="tel" inputmode="tel">
-        <input class="boka-input" id="bk_machine" placeholder="Maskin / utrustning (t.ex. Miele W5000)">
-        <textarea class="boka-textarea" id="bk_desc" placeholder="Beskriv felet eller vad du behöver hjälp med..."></textarea>
-        <input class="boka-input" id="bk_date" type="date" min="${today}" value="${today}">
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-accent" style="flex:1" onclick="doSubmitBokning()">Skicka bokning</button>
-          <button class="btn btn-dim" style="flex:1" onclick="showBokaForm=false;render()">Avbryt</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<button class="boka-add-btn" onclick="showBokaForm=true;render()">+ Boka ny servicetid</button>`;
-    }
-
-    if (myBookings.length > 0) {
-      html += `<div class="boka-section-label">${isAdmin ? 'Alla bokningar' : 'Dina bokningar'}</div>`;
-      myBookings.forEach(([key, b]) => {
-        const d = new Date(b.date + 'T00:00:00');
-        const dateStr = d.toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        const created = new Date(b.createdAt).toLocaleDateString('sv-SE');
-        html += `<div class="boka-card ${b.status}">
-          <div class="boka-card-title">${b.machine || 'Ej angiven maskin'}</div>
-          <div class="boka-card-meta">📅 Önskat datum: ${dateStr}${b.phone ? ' · 📞 ' + b.phone : ''}${b.desc ? '\n' + b.desc : ''}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-            <span class="boka-badge ${b.status}">${statusLabel[b.status] || b.status}</span>
-            <span style="font-size:11px;color:var(--text-dim)">${isAdmin ? b.name + ' · ' : ''}Bokad ${created}</span>
-          </div>
-          <div class="boka-actions">
-            ${isAdmin && b.status === 'pending' ? `<button class="btn btn-green" style="font-size:12px;padding:6px 12px" onclick="setBokningStatus('${key}','confirmed')">✓ Bekräfta</button>` : ''}
-            ${isAdmin && (b.status === 'pending' || b.status === 'confirmed') ? `<button class="su-btn-serve" style="font-size:12px;padding:6px 12px" onclick="setBokningStatus('${key}','done')">✅ Utförd</button>` : ''}
-            ${b.status === 'pending' || b.status === 'confirmed' ? `<button class="btn btn-red" style="font-size:12px;padding:6px 12px" onclick="setBokningStatus('${key}','cancelled')">Avboka</button>` : ''}
-          </div>
-        </div>`;
-      });
-    } else if (!showBokaForm) {
-      html += `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:14px">Inga bokningar ännu</div>`;
-    }
-
-    html += `</div>`;
-  } // end bokning view
 
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
