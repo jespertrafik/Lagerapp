@@ -1,4 +1,4 @@
-<!-- v3.34 -->
+<!-- v3.35 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.34</title>
+  <title>Lager v3.35</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1667,7 +1667,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.34</h1>
+          <h1>📦 Lager v3.35</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2298,6 +2298,13 @@ function render() {
     if (el && search) { el.value = search; filterItems(); }
   }
   // ec-search value is set inline via value attribute, no restore needed
+  // Auto-open date picker when booking unit is selected
+  if (bookingUnit) {
+    setTimeout(() => {
+      const el = document.getElementById("bk_date_" + bookingUnit);
+      if (el) { try { el.showPicker(); } catch(e) { el.focus(); } }
+    }, 50);
+  }
 }
 
 // Filter items without re-rendering (fixes keyboard closing on mobile)
