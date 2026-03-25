@@ -1,4 +1,4 @@
-<!-- v3.36 -->
+<!-- v3.37 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.36</title>
+  <title>Lager v3.37</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1673,7 +1673,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.36</h1>
+          <h1>📦 Lager v3.37</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2166,7 +2166,7 @@ function render() {
           const today = new Date().toISOString().slice(0, 10);
           html += `<div class="su-date-picker">
             <span style="font-size:13px;font-weight:600;white-space:nowrap">📅 Nästa service:</span>
-            <input class="su-date-input" type="date" id="bk_date_${unitKey}" min="${today}" value="${bookingDate || u.nextService || ''}">
+            <input class="su-date-input" type="date" id="bk_date_${unitKey}" min="${today}" value="${bookingDate || u.nextService || ''}" onchange="if(!this.value)doClearBookingDate('${unitKey}')">
             <button class="btn btn-accent" style="padding:8px 14px;font-size:13px" onclick="doSaveBookingDate('${unitKey}')">Spara</button>
             ${u.nextService ? `<button class="btn btn-red" style="padding:8px 14px;font-size:13px" onclick="doClearBookingDate('${unitKey}')">🗑 Ta bort</button>` : ''}
             <button class="btn btn-dim" style="padding:8px 14px;font-size:13px" onclick="bookingUnit=null;render()">✕</button>
