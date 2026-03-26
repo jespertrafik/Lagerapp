@@ -1,4 +1,4 @@
-<!-- v3.50 -->
+<!-- v3.51 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.50</title>
+  <title>Lager v3.51</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -534,6 +534,13 @@ let showAddAreaForm = false;
 let newAreaName = "";
 let showAddUnitForm = false;
 let typskyltData = null;
+function buildTypskyltNotes() {
+  if (!typskyltData) return '';
+  const parts = [];
+  if (typskyltData.productNumber) parts.push('Produktnr: ' + typskyltData.productNumber);
+  if (typskyltData.manufactureDate) parts.push('Tillv.datum: ' + typskyltData.manufactureDate);
+  return parts.join('\n');
+}
 let editingServiceUnit = null;
 let renamingArea = null;
 let renameAreaName = "";
@@ -1733,7 +1740,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.50</h1>
+          <h1>📦 Lager v3.51</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2266,13 +2273,13 @@ function render() {
               <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
-              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW" value="${(typskyltData?.model||'').replace(/"/g,'&quot;')}">
+              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW" value="${typskyltData ? (typskyltData.model||'') : ''}">
               <label>Serienummer</label>
-              <input class="sa-input" id="su_serial" placeholder="Serienummer" value="${(typskyltData?.serialNumber||'').replace(/"/g,'&quot;')}">
+              <input class="sa-input" id="su_serial" placeholder="Serienummer" value="${typskyltData ? (typskyltData.serialNumber||'') : ''}">
               <label>Tillverkningsdatum</label>
               <input class="sa-input" id="su_installdate" type="date">
               <label>Anteckningar</label>
-              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext...">${typskyltData ? [typskyltData.productNumber ? 'Produktnr: '+typskyltData.productNumber : '', typskyltData.manufactureDate ? 'Tillv.datum: '+typskyltData.manufactureDate : ''].filter(Boolean).join('\n') : ''}</textarea>
+              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext...">${buildTypskyltNotes()}</textarea>
               <div style="display:flex;gap:8px;margin-top:4px">
                 <button class="btn btn-accent" style="flex:1" onclick="doAddUnit()">Spara</button>
                 <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;typskyltData=null;render()">Avbryt</button>
