@@ -1,4 +1,4 @@
-<!-- v3.56 -->
+<!-- v3.57 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.56</title>
+  <title>Lager v3.57</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1525,7 +1525,7 @@ async function handleTypeskyltPhoto(input) {
             { type: "image", source: { type: "base64", media_type: file.type || "image/jpeg", data: base64 } },
             { type: "text", text: `Du är en expert på att läsa typskyltar på industrimaskiner och vitvaror. Läs NOGGRANT av all text på typskylten och returnera ett JSON-objekt med dessa fält:
 - model: modellbeteckning (leta efter: Model, Modell, Type, Typ, Mod.)
-- serialNumber: serienummer (leta efter: Serial No, S/N, Ser.Nr, Serie, Serienr). Serienumret har ALLTID formatet XXXXX/XXXXXXX med slash, t.ex. 05300/0273236. Om du ser två siffergrupper separerade av ett mellanslag eller bindestreck, ersätt med slash. Inkludera alltid slash i svaret.
+- serialNumber: serienummer (leta efter: Serial No, S/N, Ser.Nr, Serie, Serienr). Formatet är XXXXX/XXXXXXX — exakt 5 siffror, slash, exakt 7 siffror (t.ex. 05300/0273236). Dubbelkolla noga: efter slash ska det vara EXAKT 7 siffror, inte 8. Om du räknar 8 siffror efter slash har du läst fel — titta igen. Om separatorn ser ut som mellanslag eller bindestreck, använd slash.
 - productNumber: produktnummer/artikelnummer (leta efter: Art.nr, Prod.nr, Product No, Item No, Bestell-Nr)
 - manufactureDate: tillverkningsdatum
 
@@ -1747,7 +1747,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.56</h1>
+          <h1>📦 Lager v3.57</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
