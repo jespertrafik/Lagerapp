@@ -380,6 +380,7 @@ const firebaseConfig = {
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
 function getAnthropicKey() { return localStorage.getItem("anthropic_api_key") || ""; }
+function saveAnthropicKey() { const v = document.getElementById("anthropic_key_input").value.trim(); localStorage.setItem("anthropic_api_key", v); showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad"); }
 
 const DEPARTMENTS = [
   { id: "tvattstugor", name: "Tvättstugor" },
@@ -2351,6 +2352,13 @@ function render() {
             </div>
           </div>
         `).join("")}
+        ${isAdmin ? `
+        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">🔑 Anthropic API-nyckel</div>
+          <input id="anthropic_key_input" type="password" placeholder="sk-ant-..." value="${getAnthropicKey()}"
+            style="width:100%;padding:9px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
+          <button class="btn btn-accent" style="width:100%" onclick="saveAnthropicKey()">Spara nyckel</button>
+        </div>` : ""}
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;
