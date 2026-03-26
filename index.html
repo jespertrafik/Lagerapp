@@ -1,4 +1,4 @@
-<!-- v3.44 -->
+<!-- v3.45 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.44</title>
+  <title>Lager v3.45</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -379,7 +379,18 @@ const firebaseConfig = {
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
-function saveAnthropicKey() { const v = document.getElementById("anthropic_key_input").value.trim(); db.ref("config/anthropicKey").set(v); showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad"); }
+async function saveAnthropicKey() {
+  const v = document.getElementById("anthropic_key_input").value.trim();
+  try {
+    await db.ref("config/anthropicKey").set(v);
+    const check = (await db.ref("config/anthropicKey").once("value")).val();
+    console.log("[anthropicKey] Sparat i Firebase, verifierat:", check ? "OK (längd " + check.length + ")" : "TOMT");
+    showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad");
+  } catch (e) {
+    console.error("[anthropicKey] FEL vid sparande:", e);
+    showToast("Fel: " + e.message);
+  }
+}
 
 const DEPARTMENTS = [
   { id: "tvattstugor", name: "Tvättstugor" },
@@ -1736,7 +1747,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.44</h1>
+          <h1>📦 Lager v3.45</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
