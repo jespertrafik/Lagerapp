@@ -2256,8 +2256,12 @@ function render() {
             <div class="su-edit-form" style="margin-top:0;border:none;padding:0">
               <label>Adress</label>
               <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
-              <button class="btn btn-dim" style="width:100%;margin:6px 0 2px" onclick="document.getElementById('typskylt_input').click()">📷 Fotografera typskylt</button>
-              <input type="file" id="typskylt_input" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
+              <div style="display:flex;gap:6px;margin:6px 0 2px">
+                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
+                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
+              </div>
+              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
+              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
               <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
