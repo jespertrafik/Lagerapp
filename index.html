@@ -1,4 +1,4 @@
-<!-- v3.40 -->
+<!-- v3.41 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.40</title>
+  <title>Lager v3.41</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -379,6 +379,7 @@ const firebaseConfig = {
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
+const ANTHROPIC_API_KEY = "";
 
 const DEPARTMENTS = [
   { id: "tvattstugor", name: "Tvättstugor" },
@@ -1475,6 +1476,60 @@ function doUpdateUnit(unitKey) {
   render();
 }
 
+async function handleTypeskyltPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = "";
+  if (!ANTHROPIC_API_KEY) { showToast("ANTHROPIC_API_KEY saknas"); return; }
+  showToast("Läser av typskylt...");
+  const base64 = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  });
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 256,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: file.type || "image/jpeg", data: base64 } },
+            { type: "text", text: "Läs av typskylten och returnera JSON med fälten: model, serialNumber, productNumber, manufactureDate" },
+          ],
+        }],
+      }),
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || "";
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("No JSON in response");
+    const info = JSON.parse(match[0]);
+    if (info.model) document.getElementById("su_model").value = info.model;
+    if (info.serialNumber) document.getElementById("su_serial").value = info.serialNumber;
+    if (info.manufactureDate) {
+      const el = document.getElementById("su_installdate");
+      if (el && !el.value) el.value = info.manufactureDate;
+    }
+    if (info.productNumber) {
+      const el = document.getElementById("su_notes");
+      if (el) el.value = ("Produktnr: " + info.productNumber + (el.value ? "\n" + el.value : "")).trim();
+    }
+    showToast("Typskylt avläst ✓");
+  } catch (e) {
+    console.error(e);
+    showToast("Kunde inte läsa typskylt");
+  }
+}
+
 function doDeleteUnit(unitKey) {
   if (!activeArea) return;
   if (!isAdmin && !isServiceManager) return;
@@ -2199,6 +2254,8 @@ function render() {
             <div class="su-edit-form" style="margin-top:0;border:none;padding:0">
               <label>Adress</label>
               <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
+              <button class="btn btn-dim" style="width:100%;margin:6px 0 2px" onclick="document.getElementById('typskylt_input').click()">📷 Fotografera typskylt</button>
+              <input type="file" id="typskylt_input" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
               <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
