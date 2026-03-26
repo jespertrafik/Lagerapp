@@ -1,4 +1,4 @@
-<!-- v3.43 -->
+<!-- v3.44 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.43</title>
+  <title>Lager v3.44</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1481,6 +1481,7 @@ async function handleTypeskyltPhoto(input) {
   if (!file) return;
   input.value = "";
   const ANTHROPIC_API_KEY = (await db.ref("config/anthropicKey").once("value")).val() || "";
+  console.log("[typskylt] API-nyckel hämtad:", ANTHROPIC_API_KEY ? "OK (längd " + ANTHROPIC_API_KEY.length + ")" : "SAKNAS");
   if (!ANTHROPIC_API_KEY) { showToast("API-nyckel saknas — kontakta admin"); return; }
   showToast("Läser av typskylt...");
   const base64 = await new Promise((resolve) => {
@@ -1488,6 +1489,7 @@ async function handleTypeskyltPhoto(input) {
     reader.onload = (e) => resolve(e.target.result.split(",")[1]);
     reader.readAsDataURL(file);
   });
+  console.log("[typskylt] Bild kodad, storlek:", base64.length, "mediaType:", file.type);
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -1509,11 +1511,16 @@ async function handleTypeskyltPhoto(input) {
         }],
       }),
     });
+    console.log("[typskylt] HTTP-status:", res.status);
     const data = await res.json();
+    console.log("[typskylt] Svar från API:", JSON.stringify(data));
     const raw = data.content?.[0]?.text || "";
+    console.log("[typskylt] Råtext:", raw);
     const match = raw.match(/\{[\s\S]*\}/);
+    console.log("[typskylt] JSON-match:", match ? match[0] : "INGEN MATCH");
     if (!match) throw new Error("No JSON in response");
     const info = JSON.parse(match[0]);
+    console.log("[typskylt] Parsed info:", info);
     if (info.model) document.getElementById("su_model").value = info.model;
     if (info.serialNumber) document.getElementById("su_serial").value = info.serialNumber;
     if (info.manufactureDate) {
@@ -1729,7 +1736,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.43</h1>
+          <h1>📦 Lager v3.44</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
