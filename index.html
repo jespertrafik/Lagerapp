@@ -1,4 +1,4 @@
-<!-- v3.46 -->
+<!-- v3.47 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.46</title>
+  <title>Lager v3.47</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1492,7 +1492,6 @@ async function handleTypeskyltPhoto(input) {
   if (!file) return;
   input.value = "";
   const ANTHROPIC_API_KEY = (await db.ref("config/anthropicKey").once("value")).val() || "";
-  console.log("[typskylt] API-nyckel hämtad:", ANTHROPIC_API_KEY ? "OK (längd " + ANTHROPIC_API_KEY.length + ")" : "SAKNAS");
   if (!ANTHROPIC_API_KEY) { showToast("API-nyckel saknas — kontakta admin"); return; }
   showToast("Läser av typskylt...");
   const base64 = await new Promise((resolve) => {
@@ -1500,7 +1499,6 @@ async function handleTypeskyltPhoto(input) {
     reader.onload = (e) => resolve(e.target.result.split(",")[1]);
     reader.readAsDataURL(file);
   });
-  console.log("[typskylt] Bild kodad, storlek:", base64.length, "mediaType:", file.type);
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -1522,51 +1520,24 @@ async function handleTypeskyltPhoto(input) {
         }],
       }),
     });
-    console.log("[typskylt] HTTP-status:", res.status);
     const data = await res.json();
-    console.log("[typskylt] Svar från API:", JSON.stringify(data));
     const raw = data.content?.[0]?.text || "";
-    console.log("[typskylt] Råtext:", raw);
     const match = raw.match(/\{[\s\S]*\}/);
-    console.log("[typskylt] JSON-match:", match ? match[0] : "INGEN MATCH");
     if (!match) throw new Error("No JSON in response");
     const info = JSON.parse(match[0]);
-    console.log("[typskylt] Parsed info:", info);
     if (info.model) document.getElementById("su_model").value = info.model;
     if (info.serialNumber) document.getElementById("su_serial").value = info.serialNumber;
-    if (info.manufactureDate) {
-      const el = document.getElementById("su_installdate");
-      if (el && !el.value) el.value = info.manufactureDate;
-    }
-    if (info.productNumber) {
+    const noteParts = [];
+    if (info.productNumber) noteParts.push("Produktnr: " + info.productNumber);
+    if (info.manufactureDate) noteParts.push("Tillv.datum: " + info.manufactureDate);
+    if (noteParts.length) {
       const el = document.getElementById("su_notes");
-      if (el) el.value = ("Produktnr: " + info.productNumber + (el.value ? "\n" + el.value : "")).trim();
+      if (el) el.value = (noteParts.join("\n") + (el.value ? "\n" + el.value : "")).trim();
     }
     showToast("Typskylt avläst ✓");
   } catch (e) {
     console.error(e);
     showToast("Kunde inte läsa typskylt");
-  }
-}
-
-async function testAnthropicApi() {
-  const key = (await db.ref("config/anthropicKey").once("value")).val() || "";
-  console.log("[test] Nyckel:", key ? "OK längd=" + key.length : "SAKNAS");
-  if (!key) { showToast("API-nyckel saknas"); return; }
-  showToast("Testar API...");
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 32, messages: [{ role: "user", content: "Svara bara: OK" }] }),
-    });
-    console.log("[test] HTTP-status:", res.status);
-    const data = await res.json();
-    console.log("[test] Svar:", JSON.stringify(data));
-    showToast("API-svar: " + (data.content?.[0]?.text || JSON.stringify(data)));
-  } catch (e) {
-    console.error("[test] FEL:", e);
-    showToast("API-fel: " + e.message);
   }
 }
 
@@ -1768,7 +1739,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.46</h1>
+          <h1>📦 Lager v3.47</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2295,12 +2266,11 @@ function render() {
               <label>Adress</label>
               <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
               <div style="display:flex;gap:6px;margin:6px 0 2px">
-                <button class="btn btn-dim" style="flex:1" onclick="console.log('[ts] camera-knapp klickad'); document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
-                <button class="btn btn-dim" style="flex:1" onclick="console.log('[ts] gallery-knapp klickad'); document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
+                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
+                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
               </div>
-              <button class="btn btn-dim" style="width:100%;margin-bottom:4px;font-size:11px" onclick="testAnthropicApi()">🧪 Testa API-anrop</button>
-              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="console.log('[ts] camera onChange', this.files.length); handleTypeskyltPhoto(this)">
-              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="console.log('[ts] gallery onChange', this.files.length); handleTypeskyltPhoto(this)">
+              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
+              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
               <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
