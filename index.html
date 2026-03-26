@@ -1,4 +1,4 @@
-<!-- v3.51 -->
+<!-- v3.52 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.51</title>
+  <title>Lager v3.52</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -538,7 +538,6 @@ function buildTypskyltNotes() {
   if (!typskyltData) return '';
   const parts = [];
   if (typskyltData.productNumber) parts.push('Produktnr: ' + typskyltData.productNumber);
-  if (typskyltData.manufactureDate) parts.push('Tillv.datum: ' + typskyltData.manufactureDate);
   return parts.join('\n');
 }
 let editingServiceUnit = null;
@@ -1740,7 +1739,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.51</h1>
+          <h1>📦 Lager v3.52</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2249,7 +2248,7 @@ function render() {
             <label>Serienummer</label>
             <input class="sa-input" id="sue_serial_${unitKey}" value="${(u.serial||'').replace(/"/g,'&quot;')}" placeholder="Serienummer">
             <label>Tillverkningsdatum</label>
-            <input class="sa-input" id="sue_installdate_${unitKey}" type="date" value="${u.installDate||''}">
+            <input class="sa-input" id="sue_installdate_${unitKey}" type="text" placeholder="T.ex. Oktober 2022" value="${u.installDate||''}">
             <label>Anteckningar</label>
             <textarea class="sa-input" id="sue_notes_${unitKey}" rows="3" placeholder="Fritext...">${u.notes||''}</textarea>
             <div style="display:flex;gap:8px;margin-top:4px">
@@ -2277,7 +2276,7 @@ function render() {
               <label>Serienummer</label>
               <input class="sa-input" id="su_serial" placeholder="Serienummer" value="${typskyltData ? (typskyltData.serialNumber||'') : ''}">
               <label>Tillverkningsdatum</label>
-              <input class="sa-input" id="su_installdate" type="date">
+              <input class="sa-input" id="su_installdate" type="text" placeholder="T.ex. Oktober 2022" value="${typskyltData ? (typskyltData.manufactureDate||'') : ''}">
               <label>Anteckningar</label>
               <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext...">${buildTypskyltNotes()}</textarea>
               <div style="display:flex;gap:8px;margin-top:4px">
