@@ -1,4 +1,4 @@
-<!-- v3.49 -->
+<!-- v3.50 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.49</title>
+  <title>Lager v3.50</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -533,6 +533,7 @@ let serviceUnitsListener = null;
 let showAddAreaForm = false;
 let newAreaName = "";
 let showAddUnitForm = false;
+let typskyltData = null;
 let editingServiceUnit = null;
 let renamingArea = null;
 let renameAreaName = "";
@@ -1471,6 +1472,7 @@ function doAddUnit() {
   const key = "unit_" + Date.now();
   db.ref("service/units/" + activeArea + "/" + key).set({ address, model, serial, installDate, notes, lastServiced: "", nextService: "", createdAt: Date.now() });
   showAddUnitForm = false;
+  typskyltData = null;
   render();
 }
 
@@ -1524,17 +1526,9 @@ async function handleTypeskyltPhoto(input) {
     const raw = data.content?.[0]?.text || "";
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("No JSON in response");
-    const info = JSON.parse(match[0]);
-    if (info.model) document.getElementById("su_model").value = info.model;
-    if (info.serialNumber) document.getElementById("su_serial").value = info.serialNumber;
-    const noteParts = [];
-    if (info.productNumber) noteParts.push("Produktnr: " + info.productNumber);
-    if (info.manufactureDate) noteParts.push("Tillv.datum: " + info.manufactureDate);
-    if (noteParts.length) {
-      const el = document.getElementById("su_notes");
-      if (el) el.value = (noteParts.join("\n") + (el.value ? "\n" + el.value : "")).trim();
-    }
+    typskyltData = JSON.parse(match[0]);
     showToast("Typskylt avläst ✓");
+    render();
   } catch (e) {
     console.error(e);
     showToast("Kunde inte läsa typskylt");
@@ -1739,7 +1733,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.49</h1>
+          <h1>📦 Lager v3.50</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2272,16 +2266,16 @@ function render() {
               <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
-              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
+              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW" value="${(typskyltData?.model||'').replace(/"/g,'&quot;')}">
               <label>Serienummer</label>
-              <input class="sa-input" id="su_serial" placeholder="Serienummer">
+              <input class="sa-input" id="su_serial" placeholder="Serienummer" value="${(typskyltData?.serialNumber||'').replace(/"/g,'&quot;')}">
               <label>Tillverkningsdatum</label>
               <input class="sa-input" id="su_installdate" type="date">
               <label>Anteckningar</label>
-              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext..."></textarea>
+              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext...">${typskyltData ? [typskyltData.productNumber ? 'Produktnr: '+typskyltData.productNumber : '', typskyltData.manufactureDate ? 'Tillv.datum: '+typskyltData.manufactureDate : ''].filter(Boolean).join('\n') : ''}</textarea>
               <div style="display:flex;gap:8px;margin-top:4px">
                 <button class="btn btn-accent" style="flex:1" onclick="doAddUnit()">Spara</button>
-                <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;render()">Avbryt</button>
+                <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;typskyltData=null;render()">Avbryt</button>
               </div>
             </div>
           </div>`;
