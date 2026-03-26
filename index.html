@@ -1,4 +1,4 @@
-<!-- v3.47 -->
+<!-- v3.48 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.47</title>
+  <title>Lager v3.48</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1739,7 +1739,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.47</h1>
+          <h1>📦 Lager v3.48</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2199,7 +2199,7 @@ function render() {
               <div class="su-address">${u.address || '—'}</div>
               ${u.model ? `<div class="su-meta">🔧 ${u.model}</div>` : ''}
               ${u.serial ? `<div class="su-meta">Serienr: ${u.serial}</div>` : ''}
-              ${u.installDate ? `<div class="su-meta">Installerad: ${u.installDate}</div>` : ''}
+              ${u.installDate ? `<div class="su-meta">Tillv.datum: ${u.installDate}</div>` : ''}
             </div>
             <button class="su-edit-btn" onclick="editingServiceUnit=editingServiceUnit==='${unitKey}'?null:'${unitKey}';render()">✏️</button>
           </div>`;
@@ -2247,7 +2247,7 @@ function render() {
             <input class="sa-input" id="sue_model_${unitKey}" value="${(u.model||'').replace(/"/g,'&quot;')}" placeholder="T.ex. Daikin 9kW">
             <label>Serienummer</label>
             <input class="sa-input" id="sue_serial_${unitKey}" value="${(u.serial||'').replace(/"/g,'&quot;')}" placeholder="Serienummer">
-            <label>Installationsdatum</label>
+            <label>Tillverkningsdatum</label>
             <input class="sa-input" id="sue_installdate_${unitKey}" type="date" value="${u.installDate||''}">
             <label>Anteckningar</label>
             <textarea class="sa-input" id="sue_notes_${unitKey}" rows="3" placeholder="Fritext...">${u.notes||''}</textarea>
@@ -2275,7 +2275,7 @@ function render() {
               <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
               <input class="sa-input" id="su_serial" placeholder="Serienummer">
-              <label>Installationsdatum</label>
+              <label>Tillverkningsdatum</label>
               <input class="sa-input" id="su_installdate" type="date">
               <label>Anteckningar</label>
               <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext..."></textarea>
