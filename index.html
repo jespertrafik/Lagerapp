@@ -1,4 +1,4 @@
-<!-- v3.42 -->
+<!-- v3.43 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.42</title>
+  <title>Lager v3.43</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -379,8 +379,7 @@ const firebaseConfig = {
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
-function getAnthropicKey() { return localStorage.getItem("anthropic_api_key") || ""; }
-function saveAnthropicKey() { const v = document.getElementById("anthropic_key_input").value.trim(); localStorage.setItem("anthropic_api_key", v); showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad"); }
+function saveAnthropicKey() { const v = document.getElementById("anthropic_key_input").value.trim(); db.ref("config/anthropicKey").set(v); showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad"); }
 
 const DEPARTMENTS = [
   { id: "tvattstugor", name: "Tvättstugor" },
@@ -1481,8 +1480,8 @@ async function handleTypeskyltPhoto(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = "";
-  const ANTHROPIC_API_KEY = getAnthropicKey();
-  if (!ANTHROPIC_API_KEY) { showToast("Ange Anthropic API-nyckel i inställningar"); return; }
+  const ANTHROPIC_API_KEY = (await db.ref("config/anthropicKey").once("value")).val() || "";
+  if (!ANTHROPIC_API_KEY) { showToast("API-nyckel saknas — kontakta admin"); return; }
   showToast("Läser av typskylt...");
   const base64 = await new Promise((resolve) => {
     const reader = new FileReader();
@@ -1493,7 +1492,7 @@ async function handleTypeskyltPhoto(input) {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "x-api-key": getAnthropicKey(),
+        "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
         "anthropic-dangerous-direct-browser-access": "true",
@@ -1730,7 +1729,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.42</h1>
+          <h1>📦 Lager v3.43</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2359,7 +2358,7 @@ function render() {
         ${isAdmin ? `
         <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
           <div style="font-size:13px;font-weight:600;margin-bottom:6px">🔑 Anthropic API-nyckel</div>
-          <input id="anthropic_key_input" type="password" placeholder="sk-ant-..." value="${getAnthropicKey()}"
+          <input id="anthropic_key_input" type="password" placeholder="sk-ant-..."
             style="width:100%;padding:9px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
           <button class="btn btn-accent" style="width:100%" onclick="saveAnthropicKey()">Spara nyckel</button>
         </div>` : ""}
