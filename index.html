@@ -1,4 +1,4 @@
-<!-- v3.45 -->
+<!-- v3.46 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.45</title>
+  <title>Lager v3.46</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1549,6 +1549,27 @@ async function handleTypeskyltPhoto(input) {
   }
 }
 
+async function testAnthropicApi() {
+  const key = (await db.ref("config/anthropicKey").once("value")).val() || "";
+  console.log("[test] Nyckel:", key ? "OK längd=" + key.length : "SAKNAS");
+  if (!key) { showToast("API-nyckel saknas"); return; }
+  showToast("Testar API...");
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 32, messages: [{ role: "user", content: "Svara bara: OK" }] }),
+    });
+    console.log("[test] HTTP-status:", res.status);
+    const data = await res.json();
+    console.log("[test] Svar:", JSON.stringify(data));
+    showToast("API-svar: " + (data.content?.[0]?.text || JSON.stringify(data)));
+  } catch (e) {
+    console.error("[test] FEL:", e);
+    showToast("API-fel: " + e.message);
+  }
+}
+
 function doDeleteUnit(unitKey) {
   if (!activeArea) return;
   if (!isAdmin && !isServiceManager) return;
@@ -1747,7 +1768,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.45</h1>
+          <h1>📦 Lager v3.46</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2274,11 +2295,12 @@ function render() {
               <label>Adress</label>
               <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
               <div style="display:flex;gap:6px;margin:6px 0 2px">
-                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
-                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
+                <button class="btn btn-dim" style="flex:1" onclick="console.log('[ts] camera-knapp klickad'); document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
+                <button class="btn btn-dim" style="flex:1" onclick="console.log('[ts] gallery-knapp klickad'); document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
               </div>
-              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
-              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
+              <button class="btn btn-dim" style="width:100%;margin-bottom:4px;font-size:11px" onclick="testAnthropicApi()">🧪 Testa API-anrop</button>
+              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="console.log('[ts] camera onChange', this.files.length); handleTypeskyltPhoto(this)">
+              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="console.log('[ts] gallery onChange', this.files.length); handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
               <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
