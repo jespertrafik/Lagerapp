@@ -1,4 +1,4 @@
-<!-- v3.52 -->
+<!-- v3.53 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.52</title>
+  <title>Lager v3.53</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1523,7 +1523,7 @@ async function handleTypeskyltPhoto(input) {
           role: "user",
           content: [
             { type: "image", source: { type: "base64", media_type: file.type || "image/jpeg", data: base64 } },
-            { type: "text", text: "Läs av typskylten och returnera JSON med fälten: model, serialNumber, productNumber, manufactureDate. Datumformatet på typskylten är YYMM där YY=år (20XX) och MM=månad. Exempel: 2009=September 2020, 2203=Mars 2022. Konvertera manufactureDate till läsbart format som 'September 2020'." },
+            { type: "text", text: "Läs av typskylten och returnera JSON med fälten: model, serialNumber, productNumber, manufactureDate. Datumformatet på typskylten är YYMM där YY=år (20XX) och MM=månad. Exempel: 2009=September 2020, 2203=Mars 2022. Konvertera manufactureDate till läsbart format på svenska, t.ex. 'Oktober 2022'. Svenska månader: januari, februari, mars, april, maj, juni, juli, augusti, september, oktober, november, december." },
           ],
         }],
       }),
@@ -1739,7 +1739,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.52</h1>
+          <h1>📦 Lager v3.53</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
