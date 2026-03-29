@@ -1,4 +1,4 @@
-<!-- v3.58 -->
+<!-- v3.59 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.58</title>
+  <title>Lager v3.59</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -236,6 +236,11 @@
     .add-row { display: flex; gap: 8px; }
     .add-input { flex: 1; background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: var(--pad-input); font-size: 14px; font-family: inherit; outline: none; min-width: 0; }
     .add-select { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 9px 10px; font-size: 14px; font-family: inherit; outline: none; }
+
+    .order-qty-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 16px 0; }
+    .order-qty-btn { background: var(--card); border: 2px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 12px 22px; font-size: 18px; font-weight: 700; font-family: inherit; cursor: pointer; transition: border-color 0.15s; }
+    .order-qty-btn:active { border-color: var(--accent); }
+    .order-qty-val { font-size: 36px; font-weight: 800; min-width: 60px; text-align: center; }
 
     .loading { display: flex; justify-content: center; align-items: center; height: 60vh; color: var(--text-dim); font-size: 15px; }
     .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 3px; animation: bounce 1s ease infinite; }
@@ -518,6 +523,8 @@ let allowedUsers = {};
 let isAdmin = false;
 let isServiceManager = false;
 let editingItem = null;
+let orderItem = null;
+let orderQty = 0;
 let activeView = "lager"; // "lager" | "felkoder" | "service"
 let bookingEnabledForAll = false;
 let bookingUnit = null; // which unit has date-picker open
@@ -1750,7 +1757,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.58</h1>
+          <h1>📦 Lager v3.59</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1819,6 +1826,7 @@ function render() {
           <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
           <button class="btn btn-green" onclick="doFill('${key}')">+ Lägg till</button>
           ${viewMode === "dashboard" ? `<button class="btn btn-dim" onclick="toggleEdit('${key}')" style="flex:0;padding:9px 12px">✏️</button>` : ""}
+          ${isAdmin && item.artnr ? `<button class="btn btn-accent" onclick="openOrderModal('${key}')" style="flex:0;white-space:nowrap">🛒 Beställ</button>` : ""}
         </div>
         ${editingItem === key ? `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:6px">
@@ -2388,6 +2396,26 @@ function render() {
     </div>`;
   }
 
+  // Order modal
+  if (orderItem) {
+    const it = items[orderItem];
+    html += `<div class="modal-overlay" onclick="if(event.target===this){orderItem=null;orderQty=0;render()}">
+      <div class="modal">
+        <h2>🛒 Beställ</h2>
+        <div style="font-size:15px;font-weight:700">${it ? it.name : orderItem}</div>
+        <div style="font-size:13px;color:var(--accent);margin-top:4px">Artnr: ${it ? it.artnr : orderItem}</div>
+        <div class="order-qty-row">
+          <button class="order-qty-btn" onclick="orderQty=Math.max(0,orderQty-1);render()">−1</button>
+          <span class="order-qty-val">${orderQty}</span>
+          <button class="order-qty-btn" onclick="orderQty+=1;render()">+1</button>
+          <button class="order-qty-btn" onclick="orderQty+=5;render()">+5</button>
+        </div>
+        <button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px;opacity:${orderQty===0?'0.4':'1'}" ${orderQty===0?'disabled':''} onclick="doOrder()">Beställ ${orderQty} st</button>
+        <button class="btn btn-dim" style="width:100%" onclick="orderItem=null;orderQty=0;render()">Avbryt</button>
+      </div>
+    </div>`;
+  }
+
   app.innerHTML = html;
   // Restore search values and apply filters after render
   if (activeView === "lager") {
@@ -2619,6 +2647,29 @@ async function doDeleteECNote(noteId) {
   }
 }
 
+
+// ====== ORDER ======
+function openOrderModal(key) {
+  orderItem = key;
+  orderQty = 0;
+  render();
+}
+
+function doOrder() {
+  if (!orderItem || orderQty <= 0) return;
+  const it = items[orderItem];
+  if (!it || !it.artnr) return;
+  const subject = encodeURIComponent("Beställning – 44139905001-Lagret");
+  const body = encodeURIComponent(
+    "Hej,\n\nJag önskar beställa:\n\nArtikelnummer: " + it.artnr +
+    "\nAntal: " + orderQty + " st\n\nMärkning: 44139905001-Lagret"
+  );
+  const mailto = "mailto:els.spareparts.se@electroluxprofessional.com?subject=" + subject + "&body=" + body;
+  window.location.href = mailto;
+  orderItem = null;
+  orderQty = 0;
+  render();
+}
 
 // ====== ACTIONS ======
 function doTake(key) {
