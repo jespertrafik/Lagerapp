@@ -1,4 +1,4 @@
-<!-- v3.59 -->
+<!-- v3.60 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.59</title>
+  <title>Lager v3.60</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -997,6 +997,7 @@ function loadViewMode() {
 }
 
 const ADMIN_EMAIL = "jespertrafik@gmail.com";
+const ADMIN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se"];
 const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
 
 // ====== AUTH ======
@@ -1007,7 +1008,7 @@ auth.onAuthStateChanged((user) => {
       const allUsers = allSnap.val();
       if (!allUsers) {
         // First user ever — auto-approve as admin
-        const role = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+        const role = ADMIN_EMAILS.includes(user.email.toLowerCase()) ? "admin" : "user";
         db.ref("allowedUsers/" + user.uid).set({ email: user.email, name: user.displayName || "", role: role, added: Date.now() });
         currentUser = user;
         loginError = "";
@@ -1018,7 +1019,7 @@ auth.onAuthStateChanged((user) => {
       // Check by UID
       if (allUsers[user.uid]) {
         currentUser = user;
-        isAdmin = allUsers[user.uid].role === "admin" || user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
         isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
         loginError = "";
         loadViewMode();
@@ -1171,7 +1172,7 @@ function initDB() {
     // Check if current user is admin
     if (currentUser) {
       isAdmin = allowedUsers[currentUser.uid]?.role === "admin"
-        || currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        || ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
       isServiceManager = allowedUsers[currentUser.uid]?.role === "service" || allowedUsers[currentUser.uid]?.serviceView === true;
     }
     seedPendingUsers();
@@ -1757,7 +1758,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.59</h1>
+          <h1>📦 Lager v3.60</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
