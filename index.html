@@ -1,4 +1,4 @@
-<!-- v3.60 -->
+<!-- v3.61 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.60</title>
+  <title>Lager v3.61</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1758,7 +1758,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.60</h1>
+          <h1>📦 Lager v3.61</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1827,7 +1827,7 @@ function render() {
           <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
           <button class="btn btn-green" onclick="doFill('${key}')">+ Lägg till</button>
           ${viewMode === "dashboard" ? `<button class="btn btn-dim" onclick="toggleEdit('${key}')" style="flex:0;padding:9px 12px">✏️</button>` : ""}
-          ${isAdmin && item.artnr ? `<button class="btn btn-accent" onclick="openOrderModal('${key}')" style="flex:0;white-space:nowrap">🛒 Beställ</button>` : ""}
+          ${isAdmin && item.artnr && currentUser && currentUser.email.toLowerCase() === 'jesper.franzen@bravida.se' ? `<button class="btn btn-accent" onclick="openOrderModal('${key}')" style="flex:0;white-space:nowrap">🛒 Beställ</button>` : ""}
         </div>
         ${editingItem === key ? `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:6px">
