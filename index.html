@@ -1,4 +1,4 @@
-<!-- v3.61 -->
+<!-- v3.62 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.61</title>
+  <title>Lager v3.62</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -68,6 +68,26 @@
       --radius-card: 14px; --gap-items: 8px;
       --grid-cols: 1fr;
     }
+
+    /* ===== COMPUTER LOAN ===== */
+    .computer-loan-card {
+      margin: 16px; padding: var(--pad-card); background: var(--card);
+      border: 1px solid var(--card-border); border-radius: var(--radius-card);
+    }
+    .computer-loan-card h3 { font-size: var(--font-name); font-weight: 700; margin-bottom: 10px; }
+    .computer-loan-status { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5; }
+    .computer-loan-status strong { color: var(--text); }
+    .computer-loan-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .computer-loan-btns button {
+      flex: 1; min-width: 120px; padding: var(--pad-btn); border: none; border-radius: 10px;
+      font-size: var(--font-btn); font-weight: 600; font-family: inherit; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; transition: opacity 0.15s;
+    }
+    .computer-loan-btns button:active { opacity: 0.7; }
+    .btn-borrow { background: var(--accent); color: #000; }
+    .btn-return { background: var(--green); color: #fff; }
+    .btn-borrow.disabled, .btn-return.disabled { opacity: 0.4; pointer-events: none; }
+    .computer-loan-btns button .btn-date { font-size: 11px; font-weight: 400; opacity: 0.7; }
 
     /* ===== LOGIN ===== */
     .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
@@ -996,6 +1016,8 @@ function loadViewMode() {
   });
 }
 
+let computerLoan = null; // { borrowedBy, borrowedAt, returnedBy, returnedAt, status }
+
 const ADMIN_EMAIL = "jespertrafik@gmail.com";
 const ADMIN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se"];
 const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
@@ -1182,6 +1204,45 @@ function initDB() {
     bookingEnabledForAll = snap.val() || false;
     render();
   });
+  // Computer loan listener
+  db.ref("computerLoan").on("value", (snap) => {
+    computerLoan = snap.val() || null;
+    render();
+  });
+}
+
+// ====== COMPUTER LOAN ======
+function borrowComputer() {
+  if (!currentUser) return;
+  db.ref("computerLoan").set({
+    status: "borrowed",
+    borrowedBy: currentUser.displayName || currentUser.email,
+    borrowedByEmail: currentUser.email,
+    borrowedAt: Date.now(),
+    returnedBy: computerLoan?.returnedBy || null,
+    returnedAt: computerLoan?.returnedAt || null
+  });
+  showToast("💻 Du har lånat datorn");
+}
+
+function returnComputer() {
+  if (!currentUser) return;
+  db.ref("computerLoan").set({
+    status: "returned",
+    borrowedBy: computerLoan?.borrowedBy || null,
+    borrowedByEmail: computerLoan?.borrowedByEmail || null,
+    borrowedAt: computerLoan?.borrowedAt || null,
+    returnedBy: currentUser.displayName || currentUser.email,
+    returnedByEmail: currentUser.email,
+    returnedAt: Date.now()
+  });
+  showToast("✅ Datorn är återlämnad");
+}
+
+function formatLoanDate(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleDateString("sv-SE") + " " + d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ====== ADMIN ======
@@ -1755,10 +1816,31 @@ function render() {
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
+    ${currentUser && currentUser.email.toLowerCase() === 'jesper.franzen@bravida.se' ? `
+    <div class="computer-loan-card">
+      <h3>💻 Lånedator</h3>
+      <div class="computer-loan-status">
+        ${computerLoan && computerLoan.status === "borrowed"
+          ? `<strong>${computerLoan.borrowedBy}</strong> har datorn sedan <strong>${formatLoanDate(computerLoan.borrowedAt)}</strong>`
+          : computerLoan && computerLoan.returnedAt
+            ? `Datorn är tillgänglig — senast återlämnad av <strong>${computerLoan.returnedBy}</strong> den <strong>${formatLoanDate(computerLoan.returnedAt)}</strong>`
+            : `Ingen har lånat datorn just nu`}
+      </div>
+      <div class="computer-loan-btns">
+        <button class="btn-borrow ${computerLoan?.status === 'borrowed' ? 'disabled' : ''}" onclick="borrowComputer()">
+          📤 Låna datorn
+          <span class="btn-date">${new Date().toLocaleDateString("sv-SE")}</span>
+        </button>
+        <button class="btn-return ${!computerLoan || computerLoan.status !== 'borrowed' ? 'disabled' : ''}" onclick="returnComputer()">
+          📥 Lämna tillbaka
+          <span class="btn-date">${new Date().toLocaleDateString("sv-SE")}</span>
+        </button>
+      </div>
+    </div>` : ''}
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.61</h1>
+          <h1>📦 Lager v3.62</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
