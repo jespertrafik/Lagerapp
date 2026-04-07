@@ -1040,11 +1040,12 @@ auth.onAuthStateChanged((user) => {
       }
       // Check by UID
       if (allUsers[user.uid]) {
-        // If name is missing, ask for it
+        // If name is missing, extract from email (fornamn.efternamn@...)
         if (!allUsers[user.uid].name) {
-          const namn = prompt("Ange ditt namn:");
-          if (namn && namn.trim()) {
-            db.ref("allowedUsers/" + user.uid + "/name").set(namn.trim());
+          const parts = user.email.split("@")[0].split(".");
+          if (parts.length >= 2) {
+            const namn = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
+            db.ref("allowedUsers/" + user.uid + "/name").set(namn);
           }
         }
         currentUser = user;
