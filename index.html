@@ -79,9 +79,9 @@
     .computer-loan-status strong { color: var(--text); }
     .computer-loan-btns { display: flex; gap: 8px; flex-wrap: wrap; }
     .computer-loan-btns button {
-      flex: 1; min-width: 120px; padding: var(--pad-btn); border: none; border-radius: 10px;
-      font-size: var(--font-btn); font-weight: 600; font-family: inherit; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 2px; transition: opacity 0.15s;
+      flex: 0; padding: 6px 14px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+      transition: opacity 0.15s;
     }
     .computer-loan-btns button:active { opacity: 0.7; }
     .btn-borrow { background: var(--accent); color: #000; }
@@ -1822,14 +1822,8 @@ function render() {
             : `Ingen har lånat datorn`}
       </div>
       <div class="computer-loan-btns">
-        <button class="btn-borrow ${computerLoan?.status === 'borrowed' ? 'disabled' : ''}" onclick="borrowComputer()">
-          📤 Låna datorn
-          <span class="btn-date">${new Date().toLocaleDateString("sv-SE")}</span>
-        </button>
-        <button class="btn-return ${!computerLoan || computerLoan.status !== 'borrowed' ? 'disabled' : ''}" onclick="returnComputer()">
-          📥 Lämna tillbaka
-          <span class="btn-date">${new Date().toLocaleDateString("sv-SE")}</span>
-        </button>
+        <button class="btn-borrow ${computerLoan?.status === 'borrowed' ? 'disabled' : ''}" onclick="borrowComputer()">Låna</button>
+        <button class="btn-return ${!computerLoan || computerLoan.status !== 'borrowed' ? 'disabled' : ''}" onclick="returnComputer()">Lämna</button>
       </div>
     </div>` : ''}
     <div class="header">
