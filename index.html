@@ -1042,10 +1042,16 @@ auth.onAuthStateChanged((user) => {
       if (allUsers[user.uid]) {
         // If name is missing, extract from email (fornamn.efternamn@...)
         if (!allUsers[user.uid].name) {
-          const parts = user.email.split("@")[0].split(".");
-          if (parts.length >= 2) {
-            const namn = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
-            db.ref("allowedUsers/" + user.uid + "/name").set(namn);
+          const EMAIL_NAMES = { "svenskfinsk@hotmail.com": "Jesper" };
+          const mapped = EMAIL_NAMES[user.email.toLowerCase()];
+          if (mapped) {
+            db.ref("allowedUsers/" + user.uid + "/name").set(mapped);
+          } else {
+            const parts = user.email.split("@")[0].split(".");
+            if (parts.length >= 2) {
+              const namn = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
+              db.ref("allowedUsers/" + user.uid + "/name").set(namn);
+            }
           }
         }
         currentUser = user;
