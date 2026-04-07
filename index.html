@@ -1238,7 +1238,7 @@ function borrowComputer() {
 }
 
 function returnComputer() {
-  if (!computerLoan || computerLoan.status !== "borrowed") return;
+  if (!currentUser) return;
   db.ref("computerLoan").set({
     status: "returned",
     borrowedBy: computerLoan.borrowedBy,
@@ -1836,8 +1836,8 @@ function render() {
             : `Ingen har lånat datorn`}
       </div>
       <div class="computer-loan-btns">
-        <button class="btn-borrow ${computerLoan?.status === 'borrowed' ? 'disabled' : ''}" onclick="borrowComputer()">Låna</button>
-        <button class="btn-return ${!computerLoan || computerLoan.status !== 'borrowed' ? 'disabled' : ''}" onclick="returnComputer()">Lämna</button>
+        <button class="btn-borrow" onclick="borrowComputer()">Låna</button>
+        <button class="btn-return" onclick="returnComputer()">Lämna</button>
       </div>
     </div>` : ''}
     <div class="header">
