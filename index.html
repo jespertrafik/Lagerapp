@@ -1213,36 +1213,31 @@ function initDB() {
 
 // ====== COMPUTER LOAN ======
 function borrowComputer() {
-  if (!currentUser) return;
+  const name = prompt("Vem lånar datorn?");
+  if (!name || !name.trim()) return;
   db.ref("computerLoan").set({
     status: "borrowed",
-    borrowedBy: currentUser.displayName || currentUser.email,
-    borrowedByEmail: currentUser.email,
-    borrowedAt: Date.now(),
-    returnedBy: computerLoan?.returnedBy || null,
-    returnedAt: computerLoan?.returnedAt || null
+    borrowedBy: name.trim(),
+    borrowedAt: Date.now()
   });
-  showToast("💻 Du har lånat datorn");
+  showToast("💻 " + name.trim() + " lånade datorn");
 }
 
 function returnComputer() {
-  if (!currentUser) return;
+  if (!computerLoan || computerLoan.status !== "borrowed") return;
   db.ref("computerLoan").set({
     status: "returned",
-    borrowedBy: computerLoan?.borrowedBy || null,
-    borrowedByEmail: computerLoan?.borrowedByEmail || null,
-    borrowedAt: computerLoan?.borrowedAt || null,
-    returnedBy: currentUser.displayName || currentUser.email,
-    returnedByEmail: currentUser.email,
+    borrowedBy: computerLoan.borrowedBy,
+    borrowedAt: computerLoan.borrowedAt,
     returnedAt: Date.now()
   });
-  showToast("✅ Datorn är återlämnad");
+  showToast("✅ " + computerLoan.borrowedBy + " lämnade tillbaka datorn");
 }
 
 function formatLoanDate(ts) {
   if (!ts) return "";
   const d = new Date(ts);
-  return d.toLocaleDateString("sv-SE") + " " + d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+  return d.getDate() + "/" + (d.getMonth() + 1);
 }
 
 // ====== ADMIN ======
@@ -1821,10 +1816,10 @@ function render() {
       <h3>💻 Lånedator</h3>
       <div class="computer-loan-status">
         ${computerLoan && computerLoan.status === "borrowed"
-          ? `<strong>${computerLoan.borrowedBy}</strong> har datorn sedan <strong>${formatLoanDate(computerLoan.borrowedAt)}</strong>`
+          ? `<strong>${computerLoan.borrowedBy}</strong> lånade den ${formatLoanDate(computerLoan.borrowedAt)}`
           : computerLoan && computerLoan.returnedAt
-            ? `Datorn är tillgänglig — senast återlämnad av <strong>${computerLoan.returnedBy}</strong> den <strong>${formatLoanDate(computerLoan.returnedAt)}</strong>`
-            : `Ingen har lånat datorn just nu`}
+            ? `<strong>${computerLoan.borrowedBy}</strong> lämnade tillbaka den ${formatLoanDate(computerLoan.returnedAt)}`
+            : `Ingen har lånat datorn`}
       </div>
       <div class="computer-loan-btns">
         <button class="btn-borrow ${computerLoan?.status === 'borrowed' ? 'disabled' : ''}" onclick="borrowComputer()">
