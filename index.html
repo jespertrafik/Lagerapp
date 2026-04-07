@@ -1213,14 +1213,14 @@ function initDB() {
 
 // ====== COMPUTER LOAN ======
 function borrowComputer() {
-  const name = prompt("Vem lånar datorn?");
-  if (!name || !name.trim()) return;
+  if (!currentUser) return;
+  const name = currentUser.displayName || currentUser.email;
   db.ref("computerLoan").set({
     status: "borrowed",
-    borrowedBy: name.trim(),
+    borrowedBy: name,
     borrowedAt: Date.now()
   });
-  showToast("💻 " + name.trim() + " lånade datorn");
+  showToast("💻 " + name + " lånade datorn");
 }
 
 function returnComputer() {
