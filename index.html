@@ -1040,6 +1040,13 @@ auth.onAuthStateChanged((user) => {
       }
       // Check by UID
       if (allUsers[user.uid]) {
+        // If name is missing, ask for it
+        if (!allUsers[user.uid].name) {
+          const namn = prompt("Ange ditt namn:");
+          if (namn && namn.trim()) {
+            db.ref("allowedUsers/" + user.uid + "/name").set(namn.trim());
+          }
+        }
         currentUser = user;
         isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
         isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
