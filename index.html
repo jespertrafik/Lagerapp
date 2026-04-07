@@ -1816,7 +1816,7 @@ function render() {
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
-    ${isAdmin ? `
+    ${currentUser && currentUser.email.toLowerCase() === 'jespertrafik@gmail.com' ? `
     <div class="computer-loan-card">
       <h3>💻 Lånedator</h3>
       <div class="computer-loan-status">
