@@ -1832,7 +1832,7 @@ function render() {
         ${computerLoan && computerLoan.status === "borrowed"
           ? `<strong>${computerLoan.borrowedBy}</strong> lånade den ${formatLoanDate(computerLoan.borrowedAt)}`
           : computerLoan && computerLoan.returnedAt
-            ? `<strong>${computerLoan.returnedBy}</strong> lämnade tillbaka den ${formatLoanDate(computerLoan.returnedAt)}`
+            ? `<strong>${computerLoan.returnedBy || "Okänd"}</strong> lämnade tillbaka den ${formatLoanDate(computerLoan.returnedAt)}`
             : `Ingen har lånat datorn`}
       </div>
       <div class="computer-loan-btns">
