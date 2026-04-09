@@ -2250,6 +2250,13 @@ function render() {
     const bookMajYear = new Date().getFullYear() + 1;
     const bookSeptYear = new Date().getFullYear() + 1;
 
+    html += `<div style="background:var(--card-bg);border:1px solid var(--green);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:20px">📷</span>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.5">
+        <strong style="color:var(--text)">Tips!</strong> När du lägger till en ny enhet kan du fota typskylten så fylls informationen i automatiskt.
+      </div>
+    </div>`;
+
     if (activeArea === null) {
       // ---- AREA LIST ----
       const areaList = Object.entries(serviceAreas)
