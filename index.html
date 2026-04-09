@@ -1344,6 +1344,17 @@ function listenToDept(dept) {
     const data = snap.val();
     if (data) {
       items = data;
+      // Sync missing default items into existing data
+      const defaults = dept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : dept === "vitvaror" ? DEFAULT_VITVAROR : dept === "storkok" ? DEFAULT_STORKOK : [];
+      const updates = {};
+      defaults.forEach((item) => {
+        const key = (item.artnr || item.name).replace(/[.#$/\[\]]/g, "_");
+        if (!data[key]) {
+          updates[key] = { name: item.name, unit: item.unit, qty: item.qty, min: item.min, brand: item.brand, price: item.price, artnr: item.artnr || "" };
+          items[key] = updates[key];
+        }
+      });
+      if (Object.keys(updates).length > 0) ref.update(updates);
     } else {
       // Load defaults per department
       const defaults = dept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : dept === "vitvaror" ? DEFAULT_VITVAROR : dept === "storkok" ? DEFAULT_STORKOK : [];
