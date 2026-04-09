@@ -1,4 +1,4 @@
-<!-- v3.62 -->
+<!-- v3.63 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.62</title>
+  <title>Lager v3.63</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -68,26 +68,6 @@
       --radius-card: 14px; --gap-items: 8px;
       --grid-cols: 1fr;
     }
-
-    /* ===== COMPUTER LOAN ===== */
-    .computer-loan-card {
-      margin: 16px; padding: var(--pad-card); background: var(--card);
-      border: 1px solid var(--card-border); border-radius: var(--radius-card);
-    }
-    .computer-loan-card h3 { font-size: var(--font-name); font-weight: 700; margin-bottom: 10px; }
-    .computer-loan-status { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5; }
-    .computer-loan-status strong { color: var(--text); }
-    .computer-loan-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-    .computer-loan-btns button {
-      flex: 0; padding: 6px 14px; border: none; border-radius: 8px;
-      font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .computer-loan-btns button:active { opacity: 0.7; }
-    .btn-borrow { background: var(--accent); color: #000; }
-    .btn-return { background: var(--green); color: #fff; }
-    .btn-borrow.disabled, .btn-return.disabled { opacity: 0.4; pointer-events: none; }
-    .computer-loan-btns button .btn-date { font-size: 11px; font-weight: 400; opacity: 0.7; }
 
     /* ===== LOGIN ===== */
     .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
@@ -441,12 +421,11 @@ const DEFAULT_TVATTSTUGOR = [
   { name: "Element 1000W", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 740, artnr: "471983704" },
   { name: "Kondensator 5µF Torktumlare", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "471952511" },
   { name: "Kondensator 3µF Fläkt torkskåp", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Dörrmagnet T4190/5190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 314.50, artnr: "487089303" },
+  { name: "Dörrmagnet", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 314.50, artnr: "487089303" },
   { name: "Drivrem", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 170, artnr: "487223396" },
   { name: "Stötdämpare 4pack", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 799, artnr: "472991308" },
-  { name: "Stötdämpare 4pack 4130/5130", unit: "st", qty: 1, min: 1, brand: "Electrolux", price: 0, artnr: "472991309" },
   { name: "Fläktmotor torkskåp", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
-  { name: "Mangelduk", unit: "st", qty: 25, min: 5, brand: "Electrolux", price: 255, artnr: "" },
+  { name: "Mangelduk", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 255, artnr: "" },
   { name: "Filter T4190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 547.40, artnr: "487041108" },
   { name: "Filter T5190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
   { name: "Filter T4121", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "" },
@@ -454,7 +433,6 @@ const DEFAULT_TVATTSTUGOR = [
   { name: "Filter LE T5190", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 157.25, artnr: "432731177" },
   { name: "Avloppsventil", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1606.50, artnr: "432250201" },
   { name: "Stödrullar komplett", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 1513, artnr: "490431501" },
-  { name: "Filter", unit: "st", qty: 10, min: 5, brand: "Electrolux", price: 0, artnr: "490710010" },
 ];
 
 
@@ -1018,8 +996,6 @@ function loadViewMode() {
   });
 }
 
-let computerLoan = null; // { borrowedBy, borrowedAt, returnedBy, returnedAt, status }
-
 const ADMIN_EMAIL = "jespertrafik@gmail.com";
 const ADMIN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se"];
 const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
@@ -1042,20 +1018,6 @@ auth.onAuthStateChanged((user) => {
       }
       // Check by UID
       if (allUsers[user.uid]) {
-        // If name is missing, extract from email (fornamn.efternamn@...)
-        if (!allUsers[user.uid].name) {
-          const EMAIL_NAMES = { "svenskfinsk@hotmail.com": "Jesper" };
-          const mapped = EMAIL_NAMES[user.email.toLowerCase()];
-          if (mapped) {
-            db.ref("allowedUsers/" + user.uid + "/name").set(mapped);
-          } else {
-            const parts = user.email.split("@")[0].split(".");
-            if (parts.length >= 2) {
-              const namn = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(" ");
-              db.ref("allowedUsers/" + user.uid + "/name").set(namn);
-            }
-          }
-        }
         currentUser = user;
         isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
         isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
@@ -1220,40 +1182,6 @@ function initDB() {
     bookingEnabledForAll = snap.val() || false;
     render();
   });
-  // Computer loan listener
-  db.ref("computerLoan").on("value", (snap) => {
-    computerLoan = snap.val() || null;
-    render();
-  });
-}
-
-// ====== COMPUTER LOAN ======
-function borrowComputer() {
-  if (!currentUser) return;
-  const name = (allowedUsers[currentUser.uid]?.name) || currentUser.displayName || currentUser.email;
-  db.ref("computerLoan").set({
-    status: "borrowed",
-    borrowedBy: name,
-    borrowedAt: Date.now()
-  });
-  showToast("💻 " + name + " lånade datorn");
-}
-
-function returnComputer() {
-  if (!currentUser) return;
-  const name = (allowedUsers[currentUser.uid]?.name) || currentUser.displayName || currentUser.email;
-  db.ref("computerLoan").set({
-    status: "returned",
-    returnedBy: name,
-    returnedAt: Date.now()
-  });
-  showToast("✅ " + name + " lämnade tillbaka datorn");
-}
-
-function formatLoanDate(ts) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  return d.getDate() + "/" + (d.getMonth() + 1);
 }
 
 // ====== ADMIN ======
@@ -1345,17 +1273,6 @@ function listenToDept(dept) {
     const data = snap.val();
     if (data) {
       items = data;
-      // Sync missing default items into existing data
-      const defaults = dept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : dept === "vitvaror" ? DEFAULT_VITVAROR : dept === "storkok" ? DEFAULT_STORKOK : [];
-      const updates = {};
-      defaults.forEach((item) => {
-        const key = (item.artnr || item.name).replace(/[.#$/\[\]]/g, "_");
-        if (!data[key]) {
-          updates[key] = { name: item.name, unit: item.unit, qty: item.qty, min: item.min, brand: item.brand, price: item.price, artnr: item.artnr || "" };
-          items[key] = updates[key];
-        }
-      });
-      if (Object.keys(updates).length > 0) ref.update(updates);
     } else {
       // Load defaults per department
       const defaults = dept === "tvattstugor" ? DEFAULT_TVATTSTUGOR : dept === "vitvaror" ? DEFAULT_VITVAROR : dept === "storkok" ? DEFAULT_STORKOK : [];
@@ -1752,21 +1669,22 @@ function exportData() {
   });
 }
 
-async function importData() {
-  const input = document.createElement("input");
-  input.type = "file"; input.accept = ".json";
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const data = JSON.parse(await file.text());
-      if (confirm("Vill du återställa lagret från backup? All nuvarande data ersätts.")) {
-        await db.ref("departments").set(data);
-        showToast("Lager återställt från backup!");
-      }
-    } catch (err) { showToast("Kunde inte läsa filen"); }
-  };
-  input.click();
+async function restoreFromFirebase() {
+  const snap = await db.ref("backups").once("value");
+  const backups = snap.val();
+  if (!backups) { showToast("Inga backuper hittades"); return; }
+  const dates = Object.keys(backups).sort().reverse();
+  const choice = prompt("Välj backup att återställa:\n" + dates.map((d, i) => `${i + 1}. ${d}`).join("\n") + "\n\nAnge siffra:");
+  if (!choice) return;
+  const idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= dates.length) { showToast("Ogiltigt val"); return; }
+  const date = dates[idx];
+  const data = backups[date].data;
+  if (!data) { showToast("Backupen är tom"); return; }
+  if (confirm(`Återställ alla avdelningar från backup ${date}? Nuvarande data ersätts.`)) {
+    await db.ref("departments").set(data);
+    showToast(`Återställt från ${date}!`);
+  }
 }
 
 // ====== LOG ======
@@ -1833,30 +1751,14 @@ function render() {
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
-        ${isAdmin && viewMode === "dashboard" ? '<button class="small-btn" onclick="resetDeptToDefault()">🔄 Återställ</button>' : ''}
         ${isAdmin ? '<button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>' : ''}
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
-    ${currentUser ? `
-    <div class="computer-loan-card">
-      <h3>💻 Lånedator</h3>
-      <div class="computer-loan-status">
-        ${computerLoan && computerLoan.status === "borrowed"
-          ? `<strong>${computerLoan.borrowedBy}</strong> lånade den ${formatLoanDate(computerLoan.borrowedAt)}`
-          : computerLoan && computerLoan.returnedAt
-            ? `<strong>${computerLoan.returnedBy || "Okänd"}</strong> lämnade tillbaka den ${formatLoanDate(computerLoan.returnedAt)}`
-            : `Ingen har lånat datorn`}
-      </div>
-      <div class="computer-loan-btns">
-        <button class="btn-borrow" onclick="borrowComputer()">Låna</button>
-        <button class="btn-return" onclick="returnComputer()">Lämna</button>
-      </div>
-    </div>` : ''}
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.62</h1>
+          <h1>📦 Lager v3.63</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1885,7 +1787,7 @@ function render() {
     <div class="stats-bar">${totalPcs} artiklar · ${totalValue > 0 ? Math.round(totalValue).toLocaleString("sv-SE") + " kr" : "—"}${viewMode === "dashboard" ? ` · ${lowItems.length} lågt saldo` : ""}</div>
     ${isAdmin && viewMode === "dashboard" ? `<div class="backup-bar">
       <button class="backup-btn" onclick="exportData()">📥 Exportera backup</button>
-      <button class="backup-btn" onclick="importData()">📤 Återställ från backup</button>
+      <button class="backup-btn" onclick="restoreFromFirebase()">♻️ Återställ från backup</button>
     </div>` : ""}`;
 
 
@@ -2250,13 +2152,6 @@ function render() {
     const isSummer = nowMonth >= 6 && nowMonth <= 8;
     const bookMajYear = new Date().getFullYear() + 1;
     const bookSeptYear = new Date().getFullYear() + 1;
-
-    html += `<div style="background:var(--card-bg);border:1px solid var(--green);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
-      <span style="font-size:20px">📷</span>
-      <div style="font-size:13px;color:var(--text-dim);line-height:1.5">
-        <strong style="color:var(--text)">Tips!</strong> När du lägger till en ny enhet kan du fota typskylten så fylls informationen i automatiskt.
-      </div>
-    </div>`;
 
     if (activeArea === null) {
       // ---- AREA LIST ----
