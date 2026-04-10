@@ -1,4 +1,4 @@
-<!-- v3.67 -->
+<!-- v3.68 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.67</title>
+  <title>Lager v3.68</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -87,8 +87,8 @@
     /* ===== USER BAR ===== */
     .user-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--card); border-bottom: 1px solid var(--card-border); flex-wrap: wrap; gap: 6px; }
     .user-info { font-size: 13px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
-    .user-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-    .small-btn { background: none; border: 1px solid var(--card-border); color: var(--text-dim); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap; min-height: 40px; }
+    .user-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .small-btn { background: none; border: 1px solid var(--card-border); color: var(--text-dim); padding: 6px 10px; border-radius: 8px; font-size: 12px; font-family: inherit; cursor: pointer; white-space: nowrap; min-height: 36px; }
 
     /* ===== SETTINGS MODAL ===== */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
@@ -1783,7 +1783,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.67</h1>
+          <h1>📦 Lager v3.68</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
