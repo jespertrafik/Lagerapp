@@ -1,4 +1,4 @@
-<!-- v3.71 -->
+<!-- v3.72 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.71</title>
+  <title>Lager v3.72</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -525,7 +525,10 @@ let isServiceManager = false;
 let editingItem = null;
 let orderItem = null;
 let orderQty = 0;
-let activeView = "lager"; // "lager" | "felkoder" | "service" | "datorlan"
+let activeView = "lager"; // "lager" | "felkoder" | "service" | "bilar"
+let bilarData = {};
+let activeBil = null;
+let bilarSearch = "";
 let computers = {}; // { dator1: { status, borrowedBy, borrowedAt }, dator2: { ... } }
 let showComputerLoan = false;
 let bookingEnabledForAll = false;
@@ -1194,6 +1197,10 @@ function initDB() {
     };
     render();
   });
+  db.ref("bilar").on("value", (snap) => {
+    bilarData = snap.val() || {};
+    if (activeView === "bilar") render();
+  });
 }
 
 // ====== ADMIN ======
@@ -1790,10 +1797,11 @@ function render() {
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
       </div>
-      <div class="dept-tabs view-tabs">
+      <div class="dept-tabs view-tabs" style="grid-template-columns:${isAdmin ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr'}">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
+        ${isAdmin ? `<button class="dept-tab ${activeView === "bilar" ? "active" : ""}" onclick="activeView='bilar';activeBil=null;render()" style="border-bottom-color:${activeView === 'bilar' ? '#60a5fa' : 'transparent'}; ${activeView === 'bilar' ? 'color:#60a5fa' : ''}">🚗 Bilar</button>` : ''}
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -2426,6 +2434,59 @@ function render() {
         <button class="modal-close" onclick="showAdmin=false;render()">Stäng</button>
       </div>
     </div>`;
+  }
+
+  // ====== BILAR VIEW ======
+  if (activeView === "bilar" && isAdmin) {
+    if (activeBil) {
+      const bil = bilarData[activeBil];
+      const artiklar = bil ? (Array.isArray(bil.artiklar) ? bil.artiklar : Object.values(bil.artiklar || {})) : [];
+      const q = bilarSearch.toLowerCase().trim();
+      const filtered = q ? artiklar.filter(a => (a.namn||'').toLowerCase().includes(q) || (a.artnr||'').toLowerCase().includes(q)) : artiklar;
+      const total = artiklar.reduce((s, a) => s + (a.summa || 0), 0);
+      html += `<div style="padding:16px">
+        <button class="btn btn-dim" style="margin-bottom:14px" onclick="activeBil=null;bilarSearch='';render()">← Tillbaka</button>
+        <h2 style="margin-bottom:4px">${bil ? bil.tekniker : activeBil}</h2>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:12px">${activeBil} &nbsp;•&nbsp; ${artiklar.length} artiklar &nbsp;•&nbsp; ${Math.round(total).toLocaleString('sv-SE')} kr</div>
+        <input type="search" placeholder="Sök artikel..." value="${bilarSearch}"
+          oninput="bilarSearch=this.value;render()"
+          style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">`;
+      filtered.forEach(a => {
+        html += `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:14px;font-weight:600">${a.namn || ''}</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${a.artnr ? 'Art: ' + a.artnr : ''} ${a.kommentar ? '• ' + a.kommentar : ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:12px">
+            <div style="font-size:15px;font-weight:700;color:var(--accent)">${a.antal % 1 === 0 ? a.antal : a.antal} st</div>
+            <div style="font-size:11px;color:var(--text-dim)">${a.summa ? Math.round(a.summa).toLocaleString('sv-SE') + ' kr' : ''}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    } else {
+      const bilKeys = Object.keys(bilarData).sort((a,b) => (bilarData[a].tekniker||a).localeCompare(bilarData[b].tekniker||b));
+      html += `<div style="padding:16px">
+        <h2 style="margin-bottom:16px">🚗 Bilar</h2>
+        <div style="display:flex;flex-direction:column;gap:10px">`;
+      bilKeys.forEach(key => {
+        const bil = bilarData[key];
+        const artiklar = bil ? (Array.isArray(bil.artiklar) ? bil.artiklar : Object.values(bil.artiklar || {})) : [];
+        const total = artiklar.reduce((s,a) => s + (a.summa||0), 0);
+        html += `<div onclick="activeBil='${key}';bilarSearch='';render()" style="background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:16px;font-weight:700">${bil.tekniker || key}</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:3px">${key} &nbsp;•&nbsp; ${artiklar.length} artiklar</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:15px;font-weight:700;color:var(--accent)">${Math.round(total).toLocaleString('sv-SE')} kr</div>
+            <div style="font-size:12px;color:var(--text-dim)">›</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
   }
 
   // Settings modal
