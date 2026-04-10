@@ -1,4 +1,4 @@
-<!-- v3.65 -->
+<!-- v3.66 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.65</title>
+  <title>Lager v3.66</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -528,6 +528,7 @@ let orderQty = 0;
 let activeView = "lager"; // "lager" | "felkoder" | "service" | "datorlan"
 let computerLoan = null; // { status, borrowedBy, borrowedAt }
 let loanNameInput = "";
+let showComputerLoan = false;
 let bookingEnabledForAll = false;
 let bookingUnit = null; // which unit has date-picker open
 let bookingDate = "";
@@ -1581,11 +1582,13 @@ function doLoanComputer() {
   if (!name) { showToast("Ange ditt namn"); return; }
   db.ref("computerLoan").set({ status: "borrowed", borrowedBy: name, borrowedAt: Date.now() });
   loanNameInput = "";
+  showComputerLoan = false;
   showToast("Datorn utlånad till " + name);
 }
 
 function doReturnComputer() {
   db.ref("computerLoan").set({ status: "available", borrowedBy: null, borrowedAt: null });
+  showComputerLoan = false;
   showToast("Datorn är återlämnad ✓");
 }
 
@@ -1772,13 +1775,14 @@ function render() {
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
+        <button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.65</h1>
+          <h1>📦 Lager v3.66</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -1787,7 +1791,6 @@ function render() {
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
-        <button class="dept-tab ${activeView === "datorlan" ? "active" : ""}" onclick="activeView='datorlan';render()" style="border-bottom-color:${activeView === 'datorlan' ? 'var(--accent)' : 'transparent'}; ${activeView === 'datorlan' ? 'color:var(--accent)' : ''}">💻 Datorlån</button>
       </div>
       ${activeView === "lager" ? `<div class="dept-tabs">
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
@@ -2350,45 +2353,33 @@ function render() {
 
   } // end service view
 
-  // ====== DATORLÅN VIEW ======
-  if (activeView === "datorlan") {
+  if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
+
+  // ====== DATORLÅN MODAL ======
+  if (showComputerLoan) {
     const loan = computerLoan || { status: "available" };
     const isBorrowed = loan.status === "borrowed";
     const borrowedAt = isBorrowed && loan.borrowedAt ? new Date(loan.borrowedAt) : null;
     const borrowedSince = borrowedAt ? borrowedAt.toLocaleDateString("sv-SE", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "";
-
-    html += `<div style="padding:24px 16px;max-width:480px;margin:0 auto">`;
-
-    // Status card
-    html += `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px">
-      <div style="font-size:56px;margin-bottom:12px">💻</div>
-      <div style="font-size:22px;font-weight:700;margin-bottom:6px">Datorlån</div>
-      ${isBorrowed
-        ? `<div style="display:inline-block;background:#c0392b22;color:#e74c3c;border:1px solid #c0392b44;border-radius:8px;padding:6px 14px;font-size:14px;font-weight:600;margin-bottom:12px">Utlånad</div>
-           <div style="font-size:16px;font-weight:600;margin-bottom:4px">${loan.borrowedBy}</div>
-           <div style="font-size:13px;color:var(--text-dim)">Lånade datorn ${borrowedSince}</div>`
-        : `<div style="display:inline-block;background:#27ae6022;color:#2ecc71;border:1px solid #27ae6044;border-radius:8px;padding:6px 14px;font-size:14px;font-weight:600;margin-bottom:12px">Ledig</div>
-           <div style="font-size:14px;color:var(--text-dim)">Datorn är tillgänglig för lån</div>`
-      }
+    html += `<div class="modal-overlay" onclick="if(event.target===this){showComputerLoan=false;render()}">
+      <div class="modal">
+        <h2>Datorlån</h2>
+        ${isBorrowed
+          ? `<div style="text-align:center;margin-bottom:16px">
+               <div style="font-size:15px;font-weight:600;margin-bottom:4px">Utlånad till: ${loan.borrowedBy}</div>
+               <div style="font-size:13px;color:var(--text-dim)">Sedan ${borrowedSince}</div>
+             </div>
+             <button class="btn btn-green" style="width:100%" onclick="doReturnComputer()">Lämna tillbaka</button>`
+          : `<div style="text-align:center;color:var(--text-dim);margin-bottom:16px;font-size:14px">Datorn är ledig</div>
+             <label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">Ditt namn</label>
+             <input class="add-input" id="loan_name" type="text" placeholder="Förnamn Efternamn" value="${loanNameInput.replace(/"/g,'&quot;')}"
+               oninput="loanNameInput=this.value" autocomplete="name" style="margin-bottom:12px">
+             <button class="btn btn-accent" style="width:100%" onclick="doLoanComputer()">Låna datorn</button>`
+        }
+        <button class="btn btn-dim" style="width:100%;margin-top:8px" onclick="showComputerLoan=false;render()">Stäng</button>
+      </div>
     </div>`;
-
-    // Action
-    if (isBorrowed) {
-      html += `<button class="btn btn-green" style="width:100%;font-size:16px;padding:16px" onclick="doReturnComputer()">✅ Lämna tillbaka</button>`;
-    } else {
-      html += `
-        <div style="background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:20px">
-          <label style="font-size:14px;font-weight:600;display:block;margin-bottom:10px">Ditt namn</label>
-          <input class="add-input" id="loan_name" type="text" placeholder="Förnamn Efternamn" value="${loanNameInput.replace(/"/g,'&quot;')}"
-            oninput="loanNameInput=this.value" autocomplete="name" style="margin-bottom:12px">
-          <button class="btn btn-accent" style="width:100%;font-size:16px;padding:14px" onclick="doLoanComputer()">💻 Låna datorn</button>
-        </div>`;
-    }
-
-    html += `</div>`;
-  } // end datorlan view
-
-  if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
+  }
 
   // Admin modal
   if (showAdmin && isAdmin) {
