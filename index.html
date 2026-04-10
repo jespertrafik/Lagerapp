@@ -1,4 +1,4 @@
-<!-- v3.74 -->
+<!-- v3.75 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.74</title>
+  <title>Lager v3.75</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -2546,7 +2546,7 @@ function render() {
       html += `<div style="padding:16px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
           <h2>🚗 Bilar</h2>
-          <input type="search" placeholder="Sök alla bilar..." value="${bilarSearch}"
+          <input id="bilar-global-search" type="search" placeholder="Sök alla bilar..." value="${bilarSearch}"
             oninput="bilarSearch=this.value;render()"
             style="flex:1;padding:8px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit">
         </div>`;
@@ -2652,6 +2652,10 @@ function render() {
   if (activeView === "lager") {
     const el = document.getElementById("lager-search");
     if (el && search) { el.value = search; filterItems(); }
+  }
+  if (activeView === "bilar" && !activeBil && bilarSearch) {
+    const el = document.getElementById("bilar-global-search");
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
   }
   // ec-search value is set inline via value attribute, no restore needed
   // Auto-open date picker when booking unit is selected
