@@ -1,4 +1,4 @@
-<!-- v3.70 -->
+<!-- v3.71 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.70</title>
+  <title>Lager v3.71</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1189,7 +1189,8 @@ function initDB() {
     const data = snap.val() || {};
     computers = {
       dator1: data.dator1 || { status: "available" },
-      dator2: data.dator2 || { status: "available" }
+      dator2: data.dator2 || { status: "available" },
+      dator3: data.dator3 || { status: "available" }
     };
     render();
   });
@@ -1581,7 +1582,7 @@ function doDeleteUnit(unitKey) {
 }
 
 // ====== DATORLÅN ======
-const COMPUTER_NAMES = { dator1: "4+5 serien", dator2: "5 serien" };
+const COMPUTER_NAMES = { dator1: "4+5 serien", dator2: "5 serien", dator3: "Miele" };
 
 function doLoanComputer(id) {
   const name = currentUser.displayName || currentUser.email;
@@ -1784,7 +1785,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.70</h1>
+          <h1>📦 Lager v3.71</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2381,6 +2382,7 @@ function render() {
         <h2>Datorlån</h2>
         ${renderDator("dator1", "4+5 serien")}
         ${renderDator("dator2", "5 serien")}
+        ${renderDator("dator3", "Miele")}
         <button class="btn btn-dim" style="width:100%;margin-top:4px" onclick="showComputerLoan=false;render()">Stäng</button>
       </div>
     </div>`;
