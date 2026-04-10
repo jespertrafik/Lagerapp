@@ -1,4 +1,4 @@
-<!-- v3.68 -->
+<!-- v3.69 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.68</title>
+  <title>Lager v3.69</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1001,6 +1001,7 @@ function loadViewMode() {
 const ADMIN_EMAIL = "jespertrafik@gmail.com";
 const ADMIN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se"];
 const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
+const COMPUTER_LOAN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se", "svenskfinsk@hotmail.com"];
 
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
@@ -1776,14 +1777,14 @@ function render() {
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
-        ${isAdmin ? '<button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>' : ''}
+        ${(isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase())) ? '<button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>' : ''}
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.68</h1>
+          <h1>📦 Lager v3.69</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2357,7 +2358,7 @@ function render() {
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
   // ====== DATORLÅN MODAL ======
-  if (showComputerLoan && isAdmin) {
+  if (showComputerLoan && (isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase()))) {
     const renderDator = (id, name) => {
       const d = computers[id] || { status: "available" };
       const isBorrowed = d.status === "borrowed";
