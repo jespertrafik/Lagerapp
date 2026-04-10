@@ -1,4 +1,4 @@
-<!-- v3.72 -->
+<!-- v3.73 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.72</title>
+  <title>Lager v3.73</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -529,6 +529,8 @@ let activeView = "lager"; // "lager" | "felkoder" | "service" | "bilar"
 let bilarData = {};
 let activeBil = null;
 let bilarSearch = "";
+let bilarEdit = null; // { regnr, key } — key=null means new article
+let bilarEditData = {};
 let computers = {}; // { dator1: { status, borrowedBy, borrowedAt }, dator2: { ... } }
 let showComputerLoan = false;
 let bookingEnabledForAll = false;
@@ -1602,6 +1604,40 @@ function doReturnComputer(id) {
   showToast(COMPUTER_NAMES[id] + " återlämnad ✓");
 }
 
+function openBilarEdit(regnr, key) {
+  bilarEdit = { regnr, key };
+  if (key !== null) {
+    const bil = bilarData[regnr];
+    const a = bil && bil.artiklar ? bil.artiklar[key] : {};
+    bilarEditData = { namn: a.namn || '', artnr: a.artnr || '', antal: a.antal != null ? a.antal : '' };
+  } else {
+    bilarEditData = { namn: '', artnr: '', antal: '' };
+  }
+  render();
+}
+
+function saveBilarEdit() {
+  if (!bilarEdit) return;
+  const { regnr, key } = bilarEdit;
+  const antal = parseFloat(String(bilarEditData.antal).replace(',', '.')) || 0;
+  const obj = { namn: bilarEditData.namn.trim(), artnr: bilarEditData.artnr.trim(), antal, kommentar: '', summa: 0 };
+  if (key !== null) {
+    db.ref("bilar/" + regnr + "/artiklar/" + key).update(obj);
+  } else {
+    db.ref("bilar/" + regnr + "/artiklar").push(obj);
+  }
+  bilarEdit = null;
+  bilarEditData = {};
+  render();
+}
+
+function deleteBilarItem(regnr, key) {
+  if (!confirm('Ta bort artikel?')) return;
+  db.ref("bilar/" + regnr + "/artiklar/" + key).remove();
+  bilarEdit = null;
+  bilarEditData = {};
+}
+
 function doServedNowService(unitKey) {
   if (!activeArea) return;
   const today = new Date().toISOString().slice(0, 10);
@@ -2440,31 +2476,70 @@ function render() {
   if (activeView === "bilar" && isAdmin) {
     if (activeBil) {
       const bil = bilarData[activeBil];
-      const artiklar = bil ? (Array.isArray(bil.artiklar) ? bil.artiklar : Object.values(bil.artiklar || {})) : [];
+      const artiklarObj = bil && bil.artiklar ? bil.artiklar : {};
+      const artiklarEntries = Object.entries(artiklarObj).filter(([,a]) => a && a.namn);
       const q = bilarSearch.toLowerCase().trim();
-      const filtered = q ? artiklar.filter(a => (a.namn||'').toLowerCase().includes(q) || (a.artnr||'').toLowerCase().includes(q)) : artiklar;
-      const total = artiklar.reduce((s, a) => s + (a.summa || 0), 0);
+      const filtered = q ? artiklarEntries.filter(([,a]) => (a.namn||'').toLowerCase().includes(q) || (a.artnr||'').toLowerCase().includes(q)) : artiklarEntries;
+      const total = artiklarEntries.reduce((s,[,a]) => s + (a.summa || 0), 0);
       html += `<div style="padding:16px">
-        <button class="btn btn-dim" style="margin-bottom:14px" onclick="activeBil=null;bilarSearch='';render()">← Tillbaka</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button class="btn btn-dim" onclick="activeBil=null;bilarSearch='';render()">← Tillbaka</button>
+          <button class="btn btn-green" style="margin-left:auto" onclick="openBilarEdit('${activeBil}', null)">+ Lägg till</button>
+        </div>
         <h2 style="margin-bottom:4px">${bil ? bil.tekniker : activeBil}</h2>
-        <div style="font-size:13px;color:var(--text-dim);margin-bottom:12px">${activeBil} &nbsp;•&nbsp; ${artiklar.length} artiklar &nbsp;•&nbsp; ${Math.round(total).toLocaleString('sv-SE')} kr</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:12px">${activeBil} &nbsp;•&nbsp; ${artiklarEntries.length} artiklar &nbsp;•&nbsp; ${Math.round(total).toLocaleString('sv-SE')} kr</div>
         <input type="search" placeholder="Sök artikel..." value="${bilarSearch}"
           oninput="bilarSearch=this.value;render()"
           style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px">
         <div style="display:flex;flex-direction:column;gap:6px">`;
-      filtered.forEach(a => {
+      filtered.forEach(([key, a]) => {
         html += `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
-          <div>
+          <div style="flex:1;min-width:0">
             <div style="font-size:14px;font-weight:600">${a.namn || ''}</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${a.artnr ? 'Art: ' + a.artnr : ''} ${a.kommentar ? '• ' + a.kommentar : ''}</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${a.artnr ? 'Art: ' + a.artnr : ''}${a.kommentar ? ' • ' + a.kommentar : ''}</div>
           </div>
-          <div style="text-align:right;flex-shrink:0;margin-left:12px">
-            <div style="font-size:15px;font-weight:700;color:var(--accent)">${a.antal % 1 === 0 ? a.antal : a.antal} st</div>
-            <div style="font-size:11px;color:var(--text-dim)">${a.summa ? Math.round(a.summa).toLocaleString('sv-SE') + ' kr' : ''}</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:12px">
+            <div style="text-align:right">
+              <div style="font-size:15px;font-weight:700;color:var(--accent)">${Number.isInteger(a.antal) ? a.antal : a.antal} st</div>
+            </div>
+            <button onclick="openBilarEdit('${activeBil}','${key}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--text-dim)">✏️</button>
           </div>
         </div>`;
       });
       html += `</div></div>`;
+
+      // Edit/add modal
+      if (bilarEdit && bilarEdit.regnr === activeBil) {
+        const isNew = bilarEdit.key === null;
+        html += `<div class="modal-overlay" onclick="if(event.target===this){bilarEdit=null;render()}">
+          <div class="modal">
+            <h2>${isNew ? 'Lägg till artikel' : 'Redigera artikel'}</h2>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+              <div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Artikelnamn</div>
+                <input id="bil_edit_namn" type="text" value="${bilarEditData.namn || ''}"
+                  oninput="bilarEditData.namn=this.value"
+                  style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit">
+              </div>
+              <div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Artikelnummer</div>
+                <input id="bil_edit_artnr" type="text" value="${bilarEditData.artnr || ''}"
+                  oninput="bilarEditData.artnr=this.value"
+                  style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit">
+              </div>
+              <div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Antal</div>
+                <input id="bil_edit_antal" type="number" value="${bilarEditData.antal ?? ''}"
+                  oninput="bilarEditData.antal=this.value"
+                  style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit">
+              </div>
+            </div>
+            <button class="btn btn-green" style="width:100%;margin-top:16px" onclick="saveBilarEdit()">Spara</button>
+            ${!isNew ? `<button class="btn btn-red" style="width:100%;margin-top:8px" onclick="deleteBilarItem('${bilarEdit.regnr}','${bilarEdit.key}')">Ta bort</button>` : ''}
+            <button class="btn btn-dim" style="width:100%;margin-top:8px" onclick="bilarEdit=null;render()">Avbryt</button>
+          </div>
+        </div>`;
+      }
     } else {
       const bilKeys = Object.keys(bilarData).sort((a,b) => (bilarData[a].tekniker||a).localeCompare(bilarData[b].tekniker||b));
       html += `<div style="padding:16px">
@@ -2472,12 +2547,13 @@ function render() {
         <div style="display:flex;flex-direction:column;gap:10px">`;
       bilKeys.forEach(key => {
         const bil = bilarData[key];
-        const artiklar = bil ? (Array.isArray(bil.artiklar) ? bil.artiklar : Object.values(bil.artiklar || {})) : [];
-        const total = artiklar.reduce((s,a) => s + (a.summa||0), 0);
+        const artiklarObj = bil && bil.artiklar ? bil.artiklar : {};
+        const artiklarArr = Object.values(artiklarObj).filter(a => a && a.namn);
+        const total = artiklarArr.reduce((s,a) => s + (a.summa||0), 0);
         html += `<div onclick="activeBil='${key}';bilarSearch='';render()" style="background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
           <div>
             <div style="font-size:16px;font-weight:700">${bil.tekniker || key}</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-top:3px">${key} &nbsp;•&nbsp; ${artiklar.length} artiklar</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:3px">${key} &nbsp;•&nbsp; ${artiklarArr.length} artiklar</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:15px;font-weight:700;color:var(--accent)">${Math.round(total).toLocaleString('sv-SE')} kr</div>
