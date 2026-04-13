@@ -1825,7 +1825,7 @@ function render() {
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
-        ${(isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase())) ? '<button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>' : ''}
+        <button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
@@ -2407,7 +2407,7 @@ function render() {
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
   // ====== DATORLÅN MODAL ======
-  if (showComputerLoan && (isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase()))) {
+  if (showComputerLoan) {
     const renderDator = (id, name) => {
       const d = computers[id] || { status: "available" };
       const isBorrowed = d.status === "borrowed";
