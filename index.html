@@ -1031,7 +1031,7 @@ auth.onAuthStateChanged((user) => {
         currentUser = user;
         isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
         isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
-        canViewBilar = isAdmin || BILAR_VIEW_EMAILS.includes(user.email.toLowerCase());
+        canViewBilar = true;
         loginError = "";
         loadViewMode();
         initDB();
@@ -1185,7 +1185,7 @@ function initDB() {
       isAdmin = allowedUsers[currentUser.uid]?.role === "admin"
         || ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
       isServiceManager = allowedUsers[currentUser.uid]?.role === "service" || allowedUsers[currentUser.uid]?.serviceView === true;
-      canViewBilar = isAdmin || BILAR_VIEW_EMAILS.includes(currentUser.email.toLowerCase());
+      canViewBilar = true;
     }
     seedPendingUsers();
     render();
