@@ -1841,7 +1841,7 @@ function render() {
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
       </div>
-      <div class="dept-tabs view-tabs" style="grid-template-columns:${isAdmin ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr'}">
+      <div class="dept-tabs view-tabs" style="flex-wrap:wrap">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
