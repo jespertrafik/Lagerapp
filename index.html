@@ -1,4 +1,4 @@
-<!-- v3.76 -->
+<!-- v3.77 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.76</title>
+  <title>Lager v3.77</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -241,6 +241,14 @@
     .order-qty-btn { background: var(--card); border: 2px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 12px 22px; font-size: 18px; font-weight: 700; font-family: inherit; cursor: pointer; transition: border-color 0.15s; }
     .order-qty-btn:active { border-color: var(--accent); }
     .order-qty-val { font-size: 36px; font-weight: 800; min-width: 60px; text-align: center; }
+    .cart-badge { position: relative; display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .cart-badge-count { background: #fff; color: #000; border-radius: 50%; min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+    .cart-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 14px; font-weight: 700; }
+    .cart-item-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .cart-item-qty { font-size: 16px; font-weight: 800; color: var(--accent); margin: 0 16px; white-space: nowrap; }
+    .cart-remove-btn { background: none; border: 1px solid var(--card-border); color: var(--red); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
 
     .loading { display: flex; justify-content: center; align-items: center; height: 60vh; color: var(--text-dim); font-size: 15px; }
     .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 3px; animation: bounce 1s ease infinite; }
@@ -526,6 +534,8 @@ let canViewBilar = false;
 let editingItem = null;
 let orderItem = null;
 let orderQty = 0;
+let orderCart = [];
+let showOrderCart = false;
 let activeView = "lager"; // "lager" | "felkoder" | "service" | "bilar"
 let bilarData = {};
 let activeBil = null;
@@ -1832,10 +1842,13 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.76</h1>
+          <h1>📦 Lager v3.77</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${orderCart.length > 0 ? `<button class="cart-badge" onclick="showOrderCart=true;render()">🛒 <span class="cart-badge-count">${orderCart.length}</span></button>` : ''}
+          <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
+        </div>
       </div>
       <div class="dept-tabs view-tabs" style="grid-template-columns:${isAdmin ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr'}">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
@@ -2631,12 +2644,12 @@ function render() {
     </div>`;
   }
 
-  // Order modal
+  // Order modal - add to cart
   if (orderItem) {
     const it = items[orderItem];
     html += `<div class="modal-overlay" onclick="if(event.target===this){orderItem=null;orderQty=0;render()}">
       <div class="modal">
-        <h2>🛒 Beställ</h2>
+        <h2>🛒 Lägg till i beställning</h2>
         <div style="font-size:15px;font-weight:700">${it ? it.name : orderItem}</div>
         <div style="font-size:13px;color:var(--accent);margin-top:4px">Artnr: ${it ? it.artnr : orderItem}</div>
         <div class="order-qty-row">
@@ -2645,8 +2658,30 @@ function render() {
           <button class="order-qty-btn" onclick="orderQty+=1;render()">+1</button>
           <button class="order-qty-btn" onclick="orderQty+=5;render()">+5</button>
         </div>
-        <button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px;opacity:${orderQty===0?'0.4':'1'}" ${orderQty===0?'disabled':''} onclick="doOrder()">Beställ ${orderQty} st</button>
+        <button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px;opacity:${orderQty===0?'0.4':'1'}" ${orderQty===0?'disabled':''} onclick="doOrder()">Lägg till ${orderQty} st</button>
         <button class="btn btn-dim" style="width:100%" onclick="orderItem=null;orderQty=0;render()">Avbryt</button>
+      </div>
+    </div>`;
+  }
+
+  // Order cart modal
+  if (showOrderCart) {
+    html += `<div class="modal-overlay" onclick="if(event.target===this){showOrderCart=false;render()}">
+      <div class="modal" style="max-height:80vh;display:flex;flex-direction:column">
+        <h2>🛒 Beställning (${orderCart.length} artiklar)</h2>
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:2px 0">
+          ${orderCart.length === 0 ? '<div style="text-align:center;color:var(--text-dim);padding:20px">Inga artiklar tillagda</div>' :
+            orderCart.map((c, i) => `<div class="cart-item">
+              <div class="cart-item-info">
+                <div class="cart-item-name">${c.name}</div>
+                <div class="cart-item-meta">Artnr: ${c.artnr}</div>
+              </div>
+              <div class="cart-item-qty">${c.qty} st</div>
+              <button class="cart-remove-btn" onclick="removeFromCart(${i})">✕</button>
+            </div>`).join('')}
+        </div>
+        ${orderCart.length > 0 ? `<button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px" onclick="sendOrderMail()">📧 Skicka beställning</button>` : ''}
+        <button class="btn btn-dim" style="width:100%" onclick="showOrderCart=false;render()">Stäng</button>
       </div>
     </div>`;
   }
@@ -2898,15 +2933,36 @@ function doOrder() {
   if (!orderItem || orderQty <= 0) return;
   const it = items[orderItem];
   if (!it || !it.artnr) return;
-  const subject = encodeURIComponent("Beställning – 44139905001-Lagret");
-  const body = encodeURIComponent(
-    "Hej,\n\nJag önskar beställa:\n\nArtikelnummer: " + it.artnr +
-    "\nAntal: " + orderQty + " st\n\nMärkning: 44139905001-Lagret"
-  );
-  const mailto = "mailto:els.spareparts.se@electroluxprofessional.com?subject=" + subject + "&body=" + body;
-  window.location.href = mailto;
+  const existing = orderCart.find(c => c.key === orderItem);
+  if (existing) {
+    existing.qty += orderQty;
+  } else {
+    orderCart.push({ key: orderItem, name: it.name, artnr: it.artnr, qty: orderQty });
+  }
+  showToast("✅ " + it.name + " tillagd i beställning (" + orderQty + " st)");
   orderItem = null;
   orderQty = 0;
+  render();
+}
+
+function removeFromCart(index) {
+  orderCart.splice(index, 1);
+  render();
+}
+
+function sendOrderMail() {
+  if (orderCart.length === 0) return;
+  const subject = encodeURIComponent("Beställning – 44139905001-Lagret");
+  let lines = "Hej,\n\nJag önskar beställa:\n";
+  orderCart.forEach((c, i) => {
+    lines += "\n" + (i + 1) + ". " + c.name + "\n   Artikelnummer: " + c.artnr + "\n   Antal: " + c.qty + " st\n";
+  });
+  lines += "\nMärkning: 44139905001-Lagret";
+  const body = encodeURIComponent(lines);
+  const mailto = "mailto:els.spareparts.se@electroluxprofessional.com?subject=" + subject + "&body=" + body;
+  window.location.href = mailto;
+  orderCart = [];
+  showOrderCart = false;
   render();
 }
 
