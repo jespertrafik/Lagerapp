@@ -363,6 +363,14 @@
     .su-date-picker { background: var(--bg); border: 1px solid var(--accent); border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .su-date-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; flex: 1; min-width: 140px; }
     .su-date-input:focus { border-color: var(--accent); }
+    /* ===== AI VOICE BUTTON ===== */
+    .ai-fab { position: fixed; bottom: 28px; right: 28px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: #000; border: none; font-size: 28px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .ai-fab:active, .ai-fab.recording { transform: scale(1.15); background: #e53935; }
+    .ai-fab.recording { animation: ai-pulse 1s ease-in-out infinite; }
+    @keyframes ai-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.5); } 50% { box-shadow: 0 0 0 16px rgba(229,57,53,0); } }
+    .ai-fab.thinking { background: var(--accent); animation: ai-spin 1s linear infinite; }
+    @keyframes ai-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .ai-status { position: fixed; bottom: 100px; right: 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 150; max-width: 200px; text-align: center; }
   </style>
 </head>
 <body>
@@ -2692,7 +2700,13 @@ function render() {
     </div>`;
   }
 
+  if (isAdmin) {
+    html += `<button id="ai-fab" class="ai-fab" onpointerdown="aiOnPointerDown(event)" onpointerup="aiOnPointerUp(event)" onpointerleave="aiOnPointerUp(event)" oncontextmenu="event.preventDefault()">🤖</button>`;
+    html += `<div id="ai-status" class="ai-status" style="display:none"></div>`;
+  }
+
   app.innerHTML = html;
+  if (isAdmin) aiUpdateUI();
   // Restore search values and apply filters after render
   if (activeView === "lager") {
     const el = document.getElementById("lager-search");
@@ -3094,6 +3108,118 @@ if ('serviceWorker' in navigator) {
   });
   caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
+</script>
+<script>
+// ===== AI VOICE ASSISTANT =====
+let aiState = 'idle'; // idle | recording | thinking | playing
+let aiStream = null;
+let aiProcessor = null;
+let aiCtx = null;
+let aiWs = null;
+let aiStatusMsg = '';
+
+const PI_WS_URL = 'ws://192.168.50.231:8000/ws';
+
+function aiUpdateUI() {
+  const btn = document.getElementById('ai-fab');
+  const status = document.getElementById('ai-status');
+  if (!btn) return;
+  btn.className = 'ai-fab' + (aiState === 'recording' ? ' recording' : '') + (aiState === 'thinking' ? ' thinking' : '');
+  btn.innerHTML = aiState === 'recording' ? '🎙️' : aiState === 'thinking' ? '⏳' : aiState === 'playing' ? '🔊' : '🤖';
+  if (status) {
+    status.style.display = aiStatusMsg ? 'block' : 'none';
+    status.textContent = aiStatusMsg;
+  }
+}
+
+function aiSetStatus(msg) { aiStatusMsg = msg; aiUpdateUI(); }
+
+async function aiStartRecording() {
+  if (aiState !== 'idle') return;
+  try {
+    aiStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    aiSetStatus('Ingen mikrofon');
+    setTimeout(() => aiSetStatus(''), 2000);
+    return;
+  }
+  aiState = 'recording';
+  aiSetStatus('Lyssnar...');
+
+  aiWs = new WebSocket(PI_WS_URL);
+  aiWs.binaryType = 'arraybuffer';
+
+  aiCtx = new AudioContext({ sampleRate: 16000 });
+  const source = aiCtx.createMediaStreamSource(aiStream);
+  aiProcessor = aiCtx.createScriptProcessor(4096, 1, 1);
+
+  aiProcessor.onaudioprocess = (e) => {
+    if (aiWs && aiWs.readyState === WebSocket.OPEN) {
+      const float32 = e.inputBuffer.getChannelData(0);
+      const int16 = new Int16Array(float32.length);
+      for (let i = 0; i < float32.length; i++) {
+        int16[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));
+      }
+      aiWs.send(int16.buffer);
+    }
+  };
+  source.connect(aiProcessor);
+  aiProcessor.connect(aiCtx.destination);
+
+  aiWs.onopen = () => {};
+  aiWs.onerror = () => { aiSetStatus('Kan inte nå Pi'); aiStopCleanup(); setTimeout(() => { aiState = 'idle'; aiSetStatus(''); }, 2000); };
+  aiWs.onmessage = (evt) => {
+    aiState = 'playing';
+    aiSetStatus('Spelar upp...');
+    aiUpdateUI();
+    const audioData = evt.data;
+    const playCtx = new AudioContext();
+    playCtx.decodeAudioData(audioData instanceof ArrayBuffer ? audioData : evt.data.arrayBuffer ? null : audioData, (buffer) => {
+      const src = playCtx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(playCtx.destination);
+      src.onended = () => { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); playCtx.close(); };
+      src.start();
+    }, () => {
+      if (evt.data instanceof Blob) {
+        evt.data.arrayBuffer().then(ab => {
+          const pc = new AudioContext();
+          pc.decodeAudioData(ab, (buffer) => {
+            const s = pc.createBufferSource();
+            s.buffer = buffer;
+            s.connect(pc.destination);
+            s.onended = () => { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); pc.close(); };
+            s.start();
+          }, () => { aiState = 'idle'; aiSetStatus('Kunde inte spela ljud'); aiUpdateUI(); setTimeout(() => aiSetStatus(''), 2000); });
+        });
+      } else {
+        aiState = 'idle'; aiSetStatus('Kunde inte spela ljud'); aiUpdateUI(); setTimeout(() => aiSetStatus(''), 2000);
+      }
+    });
+  };
+  aiWs.onclose = () => {
+    if (aiState === 'recording') { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); }
+  };
+}
+
+function aiStopCleanup() {
+  if (aiProcessor) { aiProcessor.disconnect(); aiProcessor = null; }
+  if (aiCtx) { aiCtx.close().catch(() => {}); aiCtx = null; }
+  if (aiStream) { aiStream.getTracks().forEach(t => t.stop()); aiStream = null; }
+}
+
+function aiStopRecording() {
+  if (aiState !== 'recording') return;
+  aiStopCleanup();
+  if (aiWs && aiWs.readyState === WebSocket.OPEN) {
+    aiWs.send(JSON.stringify({ type: 'stop' }));
+  }
+  aiState = 'thinking';
+  aiSetStatus('Tänker...');
+}
+
+function aiOnPointerDown(e) { e.preventDefault(); aiStartRecording(); }
+function aiOnPointerUp(e) { e.preventDefault(); aiStopRecording(); }
 </script>
 </body>
 </html>
