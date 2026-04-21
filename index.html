@@ -1,4 +1,4 @@
-<!-- v3.76 -->
+<!-- v3.82 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.76</title>
+  <title>Lager v3.82</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -518,6 +518,7 @@ let showLog = false;
 let logEntries = [];
 let viewMode = "large";
 let showSettings = false;
+let appLang = localStorage.getItem('lager-lang') || 'sv';
 let showAdmin = false;
 let allowedUsers = {};
 let isAdmin = false;
@@ -954,6 +955,12 @@ function toggleTheme() {
   localStorage.setItem('lager-theme', isLight ? 'light' : 'dark');
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = isLight ? '#f5f5f5' : '#0a0a0a';
+  render();
+}
+
+function setLang(lang) {
+  appLang = lang;
+  localStorage.setItem('lager-lang', lang);
   render();
 }
 
@@ -1824,6 +1831,7 @@ function render() {
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
+        ${isAdmin ? `<button class="small-btn" onclick="window.open('https://observe-great-customs-preservation.trycloudflare.com?lang='+appLang,'_blank')">🤖 Fältagent</button>` : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
         ${(isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase())) ? '<button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>' : ''}
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
@@ -1832,7 +1840,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.76</h1>
+          <h1>📦 Lager v3.82</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
@@ -2626,6 +2634,13 @@ function render() {
             style="width:100%;padding:9px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
           <button class="btn btn-accent" style="width:100%" onclick="saveAnthropicKey()">Spara nyckel</button>
         </div>` : ""}
+        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">🌐 Språk / Language</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn ${appLang==='sv'?'btn-accent':'btn-dim'}" style="flex:1" onclick="setLang('sv')">🇸🇪 Svenska</button>
+            <button class="btn ${appLang==='en'?'btn-accent':'btn-dim'}" style="flex:1" onclick="setLang('en')">🇬🇧 English</button>
+          </div>
+        </div>
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;
@@ -3026,8 +3041,12 @@ function dismissKeyboard() {
 }
 </script>
 <script>
+// Actively unregister all service workers and clear all caches
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  });
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
 </script>
 </body>
