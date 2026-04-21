@@ -15,7 +15,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Navigationsförfrågningar (HTML): alltid från nätverket
+  // Navigation requests (HTML): always network-first
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
@@ -23,17 +23,34 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // MP3-filer och övriga statiska resurser: cache-first
+  // MP3 files: cache-first (they never change)
+  if (url.pathname.endsWith('.mp3')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else: stale-while-revalidate
   event.respondWith(
     caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
+      const fetching = fetch(event.request).then(response => {
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
       });
+      return cached || fetching;
     })
   );
 });
