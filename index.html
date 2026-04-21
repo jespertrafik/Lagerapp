@@ -365,12 +365,10 @@
     .su-date-input:focus { border-color: var(--accent); }
     /* ===== AI VOICE BUTTON ===== */
     .ai-fab { position: fixed; bottom: 28px; right: 28px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: #000; border: none; font-size: 28px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; user-select: none; }
-    .ai-fab:active, .ai-fab.recording { transform: scale(1.15); background: #e53935; }
-    .ai-fab.recording { animation: ai-pulse 1s ease-in-out infinite; }
-    @keyframes ai-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.5); } 50% { box-shadow: 0 0 0 16px rgba(229,57,53,0); } }
-    .ai-fab.thinking { background: var(--accent); animation: ai-spin 1s linear infinite; }
-    @keyframes ai-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .ai-status { position: fixed; bottom: 100px; right: 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 150; max-width: 200px; text-align: center; }
+    .ai-fab:active { transform: scale(1.15); }
+    .ai-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:500; }
+    .ai-modal-overlay.open { display:flex; align-items:stretch; justify-content:center; }
+    .ai-modal-frame { width:100%; max-width:520px; border:none; flex:1; }
   </style>
 </head>
 <body>
@@ -2701,8 +2699,7 @@ function render() {
   }
 
   if (isAdmin) {
-    html += `<button id="ai-fab" class="ai-fab" onclick="window.open('https://observe-great-customs-preservation.trycloudflare.com?lang='+appLang,'_blank')">🤖</button>`;
-    html += `<div id="ai-status" class="ai-status" style="display:none"></div>`;
+    html += `<button id="ai-fab" class="ai-fab" onclick="openAiModal()">🤖</button>`;
   }
 
   app.innerHTML = html;
@@ -3220,6 +3217,21 @@ function aiStopRecording() {
 
 function aiOnPointerDown(e) { e.preventDefault(); aiStartRecording(); }
 function aiOnPointerUp(e) { e.preventDefault(); aiStopRecording(); }
+</script>
+<div id="ai-modal-overlay" class="ai-modal-overlay" onclick="if(event.target===this)closeAiModal()">
+  <iframe id="ai-modal-frame" class="ai-modal-frame" src="" allow="microphone"></iframe>
+</div>
+<script>
+const _AI_URL = 'https://observe-great-customs-preservation.trycloudflare.com';
+function openAiModal() {
+  const lang = typeof appLang !== 'undefined' ? appLang : 'sv';
+  document.getElementById('ai-modal-frame').src = _AI_URL + '?lang=' + lang;
+  document.getElementById('ai-modal-overlay').classList.add('open');
+}
+function closeAiModal() {
+  document.getElementById('ai-modal-overlay').classList.remove('open');
+  document.getElementById('ai-modal-frame').src = '';
+}
 </script>
 </body>
 </html>
