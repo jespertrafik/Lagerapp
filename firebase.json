@@ -1,5 +1,15 @@
 {
   "database": {
     "rules": "database.rules.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "database.rules.json",
+      "start_lagerapp.bat",
+      "PRISJÄMFÖRELSE_GUIDE.md",
+      "**/node_modules/**"
+    ]
   }
 }

@@ -1,4 +1,4 @@
-<!-- v3.82 -->
+<!-- v3.81 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.82</title>
+  <title>Lager v3.81</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -241,6 +241,14 @@
     .order-qty-btn { background: var(--card); border: 2px solid var(--card-border); color: var(--text); border-radius: 10px; padding: 12px 22px; font-size: 18px; font-weight: 700; font-family: inherit; cursor: pointer; transition: border-color 0.15s; }
     .order-qty-btn:active { border-color: var(--accent); }
     .order-qty-val { font-size: 36px; font-weight: 800; min-width: 60px; text-align: center; }
+    .cart-badge { position: relative; display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 6px 12px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .cart-badge-count { background: #fff; color: #000; border-radius: 50%; min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+    .cart-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 14px; font-weight: 700; }
+    .cart-item-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .cart-item-qty { font-size: 16px; font-weight: 800; color: var(--accent); margin: 0 16px; white-space: nowrap; }
+    .cart-remove-btn { background: none; border: 1px solid var(--card-border); color: var(--red); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
 
     .loading { display: flex; justify-content: center; align-items: center; height: 60vh; color: var(--text-dim); font-size: 15px; }
     .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin: 0 3px; animation: bounce 1s ease infinite; }
@@ -355,6 +363,14 @@
     .su-date-picker { background: var(--bg); border: 1px solid var(--accent); border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .su-date-input { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; flex: 1; min-width: 140px; }
     .su-date-input:focus { border-color: var(--accent); }
+    /* ===== AI VOICE BUTTON ===== */
+    .ai-fab { position: fixed; bottom: 28px; right: 28px; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: #000; border: none; font-size: 28px; cursor: pointer; z-index: 150; box-shadow: 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s, background 0.15s; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .ai-fab:active, .ai-fab.recording { transform: scale(1.15); background: #e53935; }
+    .ai-fab.recording { animation: ai-pulse 1s ease-in-out infinite; }
+    @keyframes ai-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.5); } 50% { box-shadow: 0 0 0 16px rgba(229,57,53,0); } }
+    .ai-fab.thinking { background: var(--accent); animation: ai-spin 1s linear infinite; }
+    @keyframes ai-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .ai-status { position: fixed; bottom: 100px; right: 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 150; max-width: 200px; text-align: center; }
   </style>
 </head>
 <body>
@@ -518,15 +534,17 @@ let showLog = false;
 let logEntries = [];
 let viewMode = "large";
 let showSettings = false;
-let appLang = localStorage.getItem('lager-lang') || 'sv';
 let showAdmin = false;
 let allowedUsers = {};
 let isAdmin = false;
 let isServiceManager = false;
 let canViewBilar = false;
+let canEditBilar = false;
 let editingItem = null;
 let orderItem = null;
 let orderQty = 0;
+let orderCart = [];
+let showOrderCart = false;
 let activeView = "lager"; // "lager" | "felkoder" | "service" | "bilar"
 let bilarData = {};
 let activeBil = null;
@@ -958,12 +976,6 @@ function toggleTheme() {
   render();
 }
 
-function setLang(lang) {
-  appLang = lang;
-  localStorage.setItem('lager-lang', lang);
-  render();
-}
-
 function applyTheme() {
   const saved = localStorage.getItem('lager-theme');
   if (saved === 'light') {
@@ -1016,6 +1028,7 @@ const ADMIN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se"];
 const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
 const COMPUTER_LOAN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se", "svenskfinsk@hotmail.com"];
 const BILAR_VIEW_EMAILS = ["anders.rindahl@bravida.se", "fredrik.kindstedt@bravida.se", "svenskfinsk@hotmail.com"];
+const BILAR_NO_EDIT_EMAILS = ["anders.rindahl@bravida.se", "fredrik.kindstedt@bravida.se"];
 
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
@@ -1038,7 +1051,8 @@ auth.onAuthStateChanged((user) => {
         currentUser = user;
         isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
         isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
-        canViewBilar = isAdmin || BILAR_VIEW_EMAILS.includes(user.email.toLowerCase());
+        canViewBilar = true;
+        canEditBilar = !BILAR_NO_EDIT_EMAILS.includes(user.email.toLowerCase());
         loginError = "";
         loadViewMode();
         initDB();
@@ -1192,7 +1206,8 @@ function initDB() {
       isAdmin = allowedUsers[currentUser.uid]?.role === "admin"
         || ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
       isServiceManager = allowedUsers[currentUser.uid]?.role === "service" || allowedUsers[currentUser.uid]?.serviceView === true;
-      canViewBilar = isAdmin || BILAR_VIEW_EMAILS.includes(currentUser.email.toLowerCase());
+      canViewBilar = true;
+      canEditBilar = !BILAR_NO_EDIT_EMAILS.includes(currentUser.email.toLowerCase());
     }
     seedPendingUsers();
     render();
@@ -1831,21 +1846,23 @@ function render() {
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
         ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
-        ${isAdmin ? `<button class="small-btn" onclick="window.open('https://observe-great-customs-preservation.trycloudflare.com?lang='+appLang,'_blank')">🤖 Fältagent</button>` : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
-        ${(isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase())) ? '<button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>' : ''}
+        <button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
       </div>
     </div>
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.82</h1>
+          <h1>📦 Lager v3.81</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${orderCart.length > 0 ? `<button class="cart-badge" onclick="showOrderCart=true;render()">🛒 <span class="cart-badge-count">${orderCart.length}</span></button>` : ''}
+          <button class="theme-toggle" onclick="toggleTheme()" title="Växla ljust/mörkt tema">${document.body.classList.contains('light-mode') ? '🌙' : '☀️'}</button>
+        </div>
       </div>
-      <div class="dept-tabs view-tabs" style="grid-template-columns:${isAdmin ? '1fr 1fr 1fr 1fr' : '1fr 1fr 1fr'}">
+      <div class="dept-tabs view-tabs" style="flex-wrap:wrap">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
@@ -1962,11 +1979,13 @@ function render() {
     const EC_TABS = {
       tvätt:    { label: "Tvättmaskiner", subs: [
         { key: "compasspro_w",  label: "Compass PRO",     machines: ["W555H, W575H"] },
+        { key: "miele_w",       label: "Miele",            machines: ["PW 6065", "PW 5105"] },
         { key: "compassctrl_w", label: "Compass Control", machines: ["W455H, W465H, W475H"] },
         { key: "exacta",        label: "Exacta",          machines: ["W365H (Exacta)"] },
       ]},
       tork:     { label: "Torktumlare", subs: [
         { key: "compasspro_t",  label: "Compass PRO",     machines: ["TD6-6, T5130, T5190"] },
+        { key: "miele_t",       label: "Miele",            machines: ["PT 7136 OS", "PT 7186"] },
         { key: "compassctrl_t", label: "Compass Control", machines: ["T4130, T4190"] },
         { key: "selecta",       label: "Selecta",         machines: ["Selecta I (T3190)"] },
       ]},
@@ -2415,7 +2434,7 @@ function render() {
   if (toastMsg) html += `<div class="toast">${toastMsg}</div>`;
 
   // ====== DATORLÅN MODAL ======
-  if (showComputerLoan && (isAdmin || COMPUTER_LOAN_EMAILS.includes(currentUser.email.toLowerCase()))) {
+  if (showComputerLoan) {
     const renderDator = (id, name) => {
       const d = computers[id] || { status: "available" };
       const isBorrowed = d.status === "borrowed";
@@ -2496,7 +2515,7 @@ function render() {
       html += `<div style="padding:16px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
           <button class="btn btn-dim" onclick="activeBil=null;bilarSearch='';render()">← Tillbaka</button>
-          ${isAdmin ? `<button class="btn btn-green" style="margin-left:auto" onclick="openBilarEdit('${activeBil}', null)">+ Lägg till</button>` : ''}
+          ${canEditBilar ? `<button class="btn btn-green" style="margin-left:auto" onclick="openBilarEdit('${activeBil}', null)">+ Lägg till</button>` : ''}
         </div>
         <h2 style="margin-bottom:4px">${bil ? bil.tekniker : activeBil}</h2>
         <div style="font-size:13px;color:var(--text-dim);margin-bottom:12px">${activeBil} &nbsp;•&nbsp; ${artiklarEntries.length} artiklar &nbsp;•&nbsp; ${Math.round(total).toLocaleString('sv-SE')} kr</div>
@@ -2514,7 +2533,7 @@ function render() {
             <div style="text-align:right">
               <div style="font-size:15px;font-weight:700;color:var(--accent)">${Number.isInteger(a.antal) ? a.antal : a.antal} st</div>
             </div>
-            ${isAdmin ? `<button onclick="openBilarEdit('${activeBil}','${key}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--text-dim)">✏️</button>` : ''}
+            ${canEditBilar ? `<button onclick="openBilarEdit('${activeBil}','${key}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--text-dim)">✏️</button>` : ''}
           </div>
         </div>`;
       });
@@ -2582,7 +2601,7 @@ function render() {
               </div>
               <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
                 <div style="font-size:15px;font-weight:700;color:var(--accent)">${a.antal} st</div>
-                ${isAdmin ? `<button onclick="activeBil='${key}';bilarSearch='';openBilarEdit('${key}','${k}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--text-dim)">✏️</button>` : ''}
+                ${canEditBilar ? `<button onclick="activeBil='${key}';bilarSearch='';openBilarEdit('${key}','${k}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--text-dim)">✏️</button>` : ''}
               </div>
             </div>`;
           });
@@ -2634,24 +2653,17 @@ function render() {
             style="width:100%;padding:9px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
           <button class="btn btn-accent" style="width:100%" onclick="saveAnthropicKey()">Spara nyckel</button>
         </div>` : ""}
-        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px">🌐 Språk / Language</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn ${appLang==='sv'?'btn-accent':'btn-dim'}" style="flex:1" onclick="setLang('sv')">🇸🇪 Svenska</button>
-            <button class="btn ${appLang==='en'?'btn-accent':'btn-dim'}" style="flex:1" onclick="setLang('en')">🇬🇧 English</button>
-          </div>
-        </div>
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;
   }
 
-  // Order modal
+  // Order modal - add to cart
   if (orderItem) {
     const it = items[orderItem];
     html += `<div class="modal-overlay" onclick="if(event.target===this){orderItem=null;orderQty=0;render()}">
       <div class="modal">
-        <h2>🛒 Beställ</h2>
+        <h2>🛒 Lägg till i beställning</h2>
         <div style="font-size:15px;font-weight:700">${it ? it.name : orderItem}</div>
         <div style="font-size:13px;color:var(--accent);margin-top:4px">Artnr: ${it ? it.artnr : orderItem}</div>
         <div class="order-qty-row">
@@ -2660,13 +2672,41 @@ function render() {
           <button class="order-qty-btn" onclick="orderQty+=1;render()">+1</button>
           <button class="order-qty-btn" onclick="orderQty+=5;render()">+5</button>
         </div>
-        <button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px;opacity:${orderQty===0?'0.4':'1'}" ${orderQty===0?'disabled':''} onclick="doOrder()">Beställ ${orderQty} st</button>
+        <button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px;opacity:${orderQty===0?'0.4':'1'}" ${orderQty===0?'disabled':''} onclick="doOrder()">Lägg till ${orderQty} st</button>
         <button class="btn btn-dim" style="width:100%" onclick="orderItem=null;orderQty=0;render()">Avbryt</button>
       </div>
     </div>`;
   }
 
+  // Order cart modal
+  if (showOrderCart) {
+    html += `<div class="modal-overlay" onclick="if(event.target===this){showOrderCart=false;render()}">
+      <div class="modal" style="max-height:80vh;display:flex;flex-direction:column">
+        <h2>🛒 Beställning (${orderCart.length} artiklar)</h2>
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:2px 0">
+          ${orderCart.length === 0 ? '<div style="text-align:center;color:var(--text-dim);padding:20px">Inga artiklar tillagda</div>' :
+            orderCart.map((c, i) => `<div class="cart-item">
+              <div class="cart-item-info">
+                <div class="cart-item-name">${c.name}</div>
+                <div class="cart-item-meta">Artnr: ${c.artnr}</div>
+              </div>
+              <div class="cart-item-qty">${c.qty} st</div>
+              <button class="cart-remove-btn" onclick="removeFromCart(${i})">✕</button>
+            </div>`).join('')}
+        </div>
+        ${orderCart.length > 0 ? `<button class="btn btn-accent" style="width:100%;margin-bottom:8px;font-size:16px" onclick="sendOrderMail()">📧 Skicka beställning</button>` : ''}
+        <button class="btn btn-dim" style="width:100%" onclick="showOrderCart=false;render()">Stäng</button>
+      </div>
+    </div>`;
+  }
+
+  if (isAdmin) {
+    html += `<button id="ai-fab" class="ai-fab" onclick="window.open('https://observe-great-customs-preservation.trycloudflare.com?lang='+appLang,'_blank')">🤖</button>`;
+    html += `<div id="ai-status" class="ai-status" style="display:none"></div>`;
+  }
+
   app.innerHTML = html;
+  if (isAdmin) aiUpdateUI();
   // Restore search values and apply filters after render
   if (activeView === "lager") {
     const el = document.getElementById("lager-search");
@@ -2913,15 +2953,36 @@ function doOrder() {
   if (!orderItem || orderQty <= 0) return;
   const it = items[orderItem];
   if (!it || !it.artnr) return;
-  const subject = encodeURIComponent("Beställning – 44139905001-Lagret");
-  const body = encodeURIComponent(
-    "Hej,\n\nJag önskar beställa:\n\nArtikelnummer: " + it.artnr +
-    "\nAntal: " + orderQty + " st\n\nMärkning: 44139905001-Lagret"
-  );
-  const mailto = "mailto:els.spareparts.se@electroluxprofessional.com?subject=" + subject + "&body=" + body;
-  window.location.href = mailto;
+  const existing = orderCart.find(c => c.key === orderItem);
+  if (existing) {
+    existing.qty += orderQty;
+  } else {
+    orderCart.push({ key: orderItem, name: it.name, artnr: it.artnr, qty: orderQty });
+  }
+  showToast("✅ " + it.name + " tillagd i beställning (" + orderQty + " st)");
   orderItem = null;
   orderQty = 0;
+  render();
+}
+
+function removeFromCart(index) {
+  orderCart.splice(index, 1);
+  render();
+}
+
+function sendOrderMail() {
+  if (orderCart.length === 0) return;
+  const subject = encodeURIComponent("Beställning – 44139905001-Lagret");
+  let lines = "Hej,\n\nJag önskar beställa:\n";
+  orderCart.forEach((c, i) => {
+    lines += "\n" + (i + 1) + ". " + c.name + "\n   Artikelnummer: " + c.artnr + "\n   Antal: " + c.qty + " st\n";
+  });
+  lines += "\nMärkning: 44139905001-Lagret";
+  const body = encodeURIComponent(lines);
+  const mailto = "mailto:els.spareparts.se@electroluxprofessional.com?subject=" + subject + "&body=" + body;
+  window.location.href = mailto;
+  orderCart = [];
+  showOrderCart = false;
   render();
 }
 
@@ -3041,13 +3102,124 @@ function dismissKeyboard() {
 }
 </script>
 <script>
-// Actively unregister all service workers and clear all caches
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(regs => {
     regs.forEach(r => r.unregister());
   });
   caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
+</script>
+<script>
+// ===== AI VOICE ASSISTANT =====
+let aiState = 'idle'; // idle | recording | thinking | playing
+let aiStream = null;
+let aiProcessor = null;
+let aiCtx = null;
+let aiWs = null;
+let aiStatusMsg = '';
+
+const PI_WS_URL = 'ws://192.168.50.231:8000/ws';
+
+function aiUpdateUI() {
+  const btn = document.getElementById('ai-fab');
+  const status = document.getElementById('ai-status');
+  if (!btn) return;
+  btn.className = 'ai-fab' + (aiState === 'recording' ? ' recording' : '') + (aiState === 'thinking' ? ' thinking' : '');
+  btn.innerHTML = aiState === 'recording' ? '🎙️' : aiState === 'thinking' ? '⏳' : aiState === 'playing' ? '🔊' : '🤖';
+  if (status) {
+    status.style.display = aiStatusMsg ? 'block' : 'none';
+    status.textContent = aiStatusMsg;
+  }
+}
+
+function aiSetStatus(msg) { aiStatusMsg = msg; aiUpdateUI(); }
+
+async function aiStartRecording() {
+  if (aiState !== 'idle') return;
+  try {
+    aiStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    aiSetStatus('Ingen mikrofon');
+    setTimeout(() => aiSetStatus(''), 2000);
+    return;
+  }
+  aiState = 'recording';
+  aiSetStatus('Lyssnar...');
+
+  aiWs = new WebSocket(PI_WS_URL);
+  aiWs.binaryType = 'arraybuffer';
+
+  aiCtx = new AudioContext({ sampleRate: 16000 });
+  const source = aiCtx.createMediaStreamSource(aiStream);
+  aiProcessor = aiCtx.createScriptProcessor(4096, 1, 1);
+
+  aiProcessor.onaudioprocess = (e) => {
+    if (aiWs && aiWs.readyState === WebSocket.OPEN) {
+      const float32 = e.inputBuffer.getChannelData(0);
+      const int16 = new Int16Array(float32.length);
+      for (let i = 0; i < float32.length; i++) {
+        int16[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));
+      }
+      aiWs.send(int16.buffer);
+    }
+  };
+  source.connect(aiProcessor);
+  aiProcessor.connect(aiCtx.destination);
+
+  aiWs.onopen = () => {};
+  aiWs.onerror = () => { aiSetStatus('Kan inte nå Pi'); aiStopCleanup(); setTimeout(() => { aiState = 'idle'; aiSetStatus(''); }, 2000); };
+  aiWs.onmessage = (evt) => {
+    aiState = 'playing';
+    aiSetStatus('Spelar upp...');
+    aiUpdateUI();
+    const audioData = evt.data;
+    const playCtx = new AudioContext();
+    playCtx.decodeAudioData(audioData instanceof ArrayBuffer ? audioData : evt.data.arrayBuffer ? null : audioData, (buffer) => {
+      const src = playCtx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(playCtx.destination);
+      src.onended = () => { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); playCtx.close(); };
+      src.start();
+    }, () => {
+      if (evt.data instanceof Blob) {
+        evt.data.arrayBuffer().then(ab => {
+          const pc = new AudioContext();
+          pc.decodeAudioData(ab, (buffer) => {
+            const s = pc.createBufferSource();
+            s.buffer = buffer;
+            s.connect(pc.destination);
+            s.onended = () => { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); pc.close(); };
+            s.start();
+          }, () => { aiState = 'idle'; aiSetStatus('Kunde inte spela ljud'); aiUpdateUI(); setTimeout(() => aiSetStatus(''), 2000); });
+        });
+      } else {
+        aiState = 'idle'; aiSetStatus('Kunde inte spela ljud'); aiUpdateUI(); setTimeout(() => aiSetStatus(''), 2000);
+      }
+    });
+  };
+  aiWs.onclose = () => {
+    if (aiState === 'recording') { aiState = 'idle'; aiSetStatus(''); aiUpdateUI(); }
+  };
+}
+
+function aiStopCleanup() {
+  if (aiProcessor) { aiProcessor.disconnect(); aiProcessor = null; }
+  if (aiCtx) { aiCtx.close().catch(() => {}); aiCtx = null; }
+  if (aiStream) { aiStream.getTracks().forEach(t => t.stop()); aiStream = null; }
+}
+
+function aiStopRecording() {
+  if (aiState !== 'recording') return;
+  aiStopCleanup();
+  if (aiWs && aiWs.readyState === WebSocket.OPEN) {
+    aiWs.send(JSON.stringify({ type: 'stop' }));
+  }
+  aiState = 'thinking';
+  aiSetStatus('Tänker...');
+}
+
+function aiOnPointerDown(e) { e.preventDefault(); aiStartRecording(); }
+function aiOnPointerUp(e) { e.preventDefault(); aiStopRecording(); }
 </script>
 </body>
 </html>
