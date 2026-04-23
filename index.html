@@ -1931,15 +1931,20 @@ function render() {
         </div>
         ${editingItem === key ? `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:6px">
+          <input class="add-input" id="edit_name_${key}" type="text" placeholder="Artikelnamn" value="${item.name || ''}" style="flex:1">
+          <div style="display:flex;gap:6px">
+            <input class="add-input" id="edit_artnr_${key}" type="text" placeholder="Artikelnummer" value="${item.artnr || ''}" style="flex:1">
+            <input class="add-input" id="edit_brand_${key}" type="text" placeholder="Märke" value="${item.brand || ''}" style="flex:1">
+          </div>
           <div style="display:flex;gap:6px">
             <select class="item-input" id="edit_min_${key}" style="flex:1">
               ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}" ${item.min === v ? 'selected' : ''}>Min: ${v}</option>`).join('')}
             </select>
+            <input class="add-input" id="edit_price_${key}" type="number" placeholder="Pris/st" value="${item.price || ''}" inputmode="decimal" style="flex:1">
           </div>
           <div style="display:flex;gap:6px">
-            <input class="add-input" id="edit_price_${key}" type="number" placeholder="Pris/st" value="${item.price || ''}" inputmode="decimal" style="flex:1">
-            <button class="btn btn-accent" onclick="doSaveEdit('${key}')">Spara</button>
-            <button class="btn btn-red" style="font-size:11px" onclick="doDeleteItem('${key}')">🗑️</button>
+            <button class="btn btn-accent" style="flex:1" onclick="doSaveEdit('${key}')">Spara</button>
+            <button class="btn btn-red" style="flex:0" onclick="doDeleteItem('${key}')">🗑️</button>
           </div>
         </div>` : ""}
       </div>`;
@@ -3016,9 +3021,13 @@ function toggleEdit(key) {
 }
 
 function doSaveEdit(key) {
+  const name = document.getElementById("edit_name_" + key).value.trim();
+  const artnr = document.getElementById("edit_artnr_" + key).value.trim();
+  const brand = document.getElementById("edit_brand_" + key).value.trim();
   const min = parseInt(document.getElementById("edit_min_" + key).value) || 0;
   const price = parseFloat(document.getElementById("edit_price_" + key).value) || 0;
-  getItemsRef().child(key).update({ min, price });
+  if (!name) { showToast("Namn kan inte vara tomt"); return; }
+  getItemsRef().child(key).update({ name, artnr, brand, min, price });
   editingItem = null;
   showToast("Uppdaterad!");
 }
