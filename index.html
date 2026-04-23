@@ -3235,7 +3235,15 @@ function aiOnPointerUp(e) { e.preventDefault(); aiStopRecording(); }
   <iframe id="ai-modal-frame" class="ai-modal-frame" src="" allow="microphone"></iframe>
 </div>
 <script>
-const _AI_URL = 'https://tonight-discrete-reg-windsor.trycloudflare.com';
+// Fallback om Firebase inte hunnit svara — Pi pushar aktuell URL till config/aiTunnelUrl
+let _AI_URL = localStorage.getItem('aiTunnelUrl') || 'https://trigger-voting-gains-biological.trycloudflare.com';
+firebase.database().ref('config/aiTunnelUrl').on('value', snap => {
+  const url = snap.val();
+  if (url && url !== _AI_URL) {
+    _AI_URL = url;
+    localStorage.setItem('aiTunnelUrl', url);
+  }
+});
 function openAiModal(agent) {
   const lang = typeof appLang !== 'undefined' ? appLang : 'sv';
   const agentParam = agent ? '&agent=' + encodeURIComponent(agent) : '';
