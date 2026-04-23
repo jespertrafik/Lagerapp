@@ -1,4 +1,4 @@
-<!-- v3.81 -->
+<!-- v3.84 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.81</title>
+  <title>Lager v3.84</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1854,7 +1854,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.81</h1>
+          <h1>📦 Lager v3.84</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2706,7 +2706,6 @@ function render() {
   }
 
   if (isAdmin) {
-    html += `<button id="sd-fab" class="ai-fab" onclick="openAiModal('sourdough')" style="bottom:104px;background:#d4a574" title="Surdegsexpert">🍞</button>`;
     html += `<button id="ai-fab" class="ai-fab" onclick="openAiModal()">🤖</button>`;
   }
 
