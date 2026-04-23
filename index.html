@@ -1830,7 +1830,7 @@ function render() {
     const item = items[k];
     if (activeBrand !== "Alla" && item.brand !== activeBrand) return false;
     return true;
-  });
+  }).sort((a, b) => (items[a].name || '').localeCompare(items[b].name || '', 'sv'));
 
   const lowItems = Object.keys(items).filter(k => items[k].min > 0 && items[k].qty <= items[k].min);
   const totalItems = Object.keys(items).length;
