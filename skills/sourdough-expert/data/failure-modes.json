@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "description": "Symptom-to-cause-to-fix mapping. Used by the voice agent to route a user complaint to the right diagnostic path. Order: try the top cause first before moving down.",
+  "failures": [
+    {
+      "id": "tight_crumb_dense",
+      "symptom_sv": "Tät, klibbig krumma, små jämna hål",
+      "symptom_en": "Tight, gummy crumb with small even bubbles",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Under-fermented bulk",
+          "evidence": "Rise under 50 %, no visible big bubbles in dough",
+          "fix": "Push bulk 60–90 min longer next time, or raise DDT by 2 °C"
+        },
+        {
+          "rank": 2,
+          "cause": "Degassing during shape",
+          "evidence": "Surface was tight at shape, dough felt deflated",
+          "fix": "Preshape gentler, final shape with less aggressive tension"
+        },
+        {
+          "rank": 3,
+          "cause": "Weak starter vigor",
+          "evidence": "Starter took >8 h to peak at 1:5:5",
+          "fix": "Double-feed starter same temperature for 2 builds before bake"
+        }
+      ]
+    },
+    {
+      "id": "gummy_center",
+      "symptom_sv": "Blöt, seg mittenbit även när brödet är kallt",
+      "symptom_en": "Wet, shiny, gummy center after cooling",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Under-baked",
+          "evidence": "Internal temp under 96 °C, loaf still warm inside when sliced",
+          "fix": "Bake 5–10 min longer or +10 °C on phase 2. Always cool 45 min before cutting."
+        },
+        {
+          "rank": 2,
+          "cause": "Under-fermented and under-baked",
+          "evidence": "Tight crumb AND wet center",
+          "fix": "Longer bulk AND longer bake"
+        }
+      ]
+    },
+    {
+      "id": "flat_loaf",
+      "symptom_sv": "Platt bröd, spred ut sig på plåten",
+      "symptom_en": "Flat, spread loaf",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Overproofed",
+          "evidence": "Final proof poke test stayed indented, dough felt slack",
+          "fix": "Shorten final proof, or reduce bulk by 10 % next time"
+        },
+        {
+          "rank": 2,
+          "cause": "Weak shape tension",
+          "evidence": "Loaf looked slack on the couche/banneton before bake",
+          "fix": "Tighter final shape with more surface tension"
+        },
+        {
+          "rank": 3,
+          "cause": "Under-developed gluten",
+          "evidence": "Dough tore when stretched during folds",
+          "fix": "One extra early fold, or longer mixer time speed 2"
+        }
+      ]
+    },
+    {
+      "id": "pale_crust",
+      "symptom_sv": "Ljus, matt skorpa",
+      "symptom_en": "Pale, dull crust",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Insufficient phase 2",
+          "evidence": "Loaf pulled at 30 min total, phase 2 under 10 min",
+          "fix": "Extend phase 2 by 5–10 min or +10 °C"
+        },
+        {
+          "rank": 2,
+          "cause": "Over-fermentation consumed sugars",
+          "evidence": "Also very open/wild crumb, sour taste",
+          "fix": "Shorter bulk next time"
+        },
+        {
+          "rank": 3,
+          "cause": "Steam lingered into phase 2",
+          "evidence": "Loaf leathery and damp surface at end of bake",
+          "fix": "Dual-oven transfer or vent steam oven before phase 2"
+        }
+      ]
+    },
+    {
+      "id": "no_ear_baguette",
+      "symptom_sv": "Baguetten har inga ordentliga öron, bara ytliga snitt",
+      "symptom_en": "Baguette scored but no ear, just shallow cuts",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Wrong score angle",
+          "evidence": "Cuts were perpendicular to surface (90°) or axis (90°)",
+          "fix": "30° blade angle, cuts near-parallel to loaf axis (10–20°)"
+        },
+        {
+          "rank": 2,
+          "cause": "Surface too warm at scoring",
+          "evidence": "Loaf had been out of fridge >10 min before scoring",
+          "fix": "Score straight from fridge"
+        },
+        {
+          "rank": 3,
+          "cause": "Insufficient phase 1 steam",
+          "evidence": "Crust set fast, no pliability window",
+          "fix": "Use cold-start medium steam 180 °C for phase 1"
+        },
+        {
+          "rank": 4,
+          "cause": "Overproofed",
+          "evidence": "Loaf slumped during transfer",
+          "fix": "Shorter bulk or shorter retard"
+        }
+      ]
+    },
+    {
+      "id": "blowout",
+      "symptom_sv": "Spricker upp på sidan i stället för på snittet",
+      "symptom_en": "Side blowout instead of clean score opening",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Score too shallow",
+          "evidence": "Score less than 5 mm deep",
+          "fix": "Score 10 mm deep at 30°"
+        },
+        {
+          "rank": 2,
+          "cause": "Seam facing up or loose",
+          "evidence": "Loaf was shaped with weak seam sealing",
+          "fix": "Seam DOWN at load, press seam firmly during shape"
+        },
+        {
+          "rank": 3,
+          "cause": "Underproofed",
+          "evidence": "Tight crumb and blowout together",
+          "fix": "Longer bulk, longer final proof"
+        }
+      ]
+    },
+    {
+      "id": "crust_too_thick",
+      "symptom_sv": "Tjock, hård skorpa",
+      "symptom_en": "Thick, tough crust",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Phase 2 too long or too hot",
+          "evidence": "Phase 2 >20 min at 230+ °C",
+          "fix": "Drop phase 2 by 5 min or 10 °C"
+        },
+        {
+          "rank": 2,
+          "cause": "Low hydration crust effect",
+          "evidence": "Dough hydration under 75 %",
+          "fix": "Higher hydration gives thinner, crispier crust"
+        }
+      ]
+    },
+    {
+      "id": "closed_crumb_boule",
+      "symptom_sv": "Boule med tät, jämn krumma",
+      "symptom_en": "Boule with tight, even crumb (wanted open)",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Bulk too short",
+          "evidence": "Rise under 60 %",
+          "fix": "Push bulk to 75–85 % rise"
+        },
+        {
+          "rank": 2,
+          "cause": "Late folds degassed dough",
+          "evidence": "Folded in the last 90 min of bulk",
+          "fix": "No folds in final third of bulk"
+        },
+        {
+          "rank": 3,
+          "cause": "Over-tight shape",
+          "evidence": "Tall loaf, fine crumb",
+          "fix": "Shape with less aggressive tension"
+        },
+        {
+          "rank": 4,
+          "cause": "Low hydration",
+          "evidence": "Under 78 %",
+          "fix": "Raise hydration to 82 %"
+        }
+      ]
+    },
+    {
+      "id": "stuck_banneton",
+      "symptom_sv": "Degen fastnar i jäskorgen",
+      "symptom_en": "Dough sticks to banneton",
+      "stage": "post_proof",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Wrong flour for dusting",
+          "evidence": "Used wheat flour",
+          "fix": "Use rice flour — doesn't absorb water"
+        },
+        {
+          "rank": 2,
+          "cause": "Proof too long",
+          "evidence": ">14 h at 3 °C",
+          "fix": "Shorter cold retard"
+        }
+      ]
+    },
+    {
+      "id": "sluggish_starter",
+      "symptom_sv": "Surdegen är slö, peakar sent, tripplar inte",
+      "symptom_en": "Starter sluggish, peaks late or low",
+      "stage": "pre_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Too cold",
+          "evidence": "Room temp under 21 °C",
+          "fix": "Warm spot — 24–26 °C for builds"
+        },
+        {
+          "rank": 2,
+          "cause": "Too acidic",
+          "evidence": "Strong vinegar smell, dark hooch",
+          "fix": "Reset: 1:10:10 twice daily for 2 days, warm"
+        },
+        {
+          "rank": 3,
+          "cause": "Old/weak flour",
+          "evidence": "Same behavior on fresh flour is better",
+          "fix": "New bag of flour, preferably freshly milled"
+        }
+      ]
+    },
+    {
+      "id": "dense_bottom",
+      "symptom_sv": "Tät, tung botten men luftig topp",
+      "symptom_en": "Dense bottom, open top",
+      "stage": "post_bake",
+      "causes_ranked": [
+        {
+          "rank": 1,
+          "cause": "Insufficient bottom heat",
+          "evidence": "Pale, soft bottom crust",
+          "fix": "Preheat stone/tray longer, pull parchment at phase 2"
+        },
+        {
+          "rank": 2,
+          "cause": "Cooled on tray not rack",
+          "evidence": "Bottom damp after cooling",
+          "fix": "Always cool on wire rack"
+        }
+      ]
+    }
+  ]
+}

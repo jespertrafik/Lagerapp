@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "description": "Decision matrix comparing baguettes vs boules across every technique dimension. Use to answer 'should I do X or Y' questions.",
+  "matrix": [
+    {
+      "dimension": "target_hydration_pct",
+      "baguette": { "default": 82, "range": [78, 85], "rationale": "Balance shape retention with open crumb" },
+      "boule":    { "default": 82, "range": [80, 90], "rationale": "Can push higher — banneton supports shape" }
+    },
+    {
+      "dimension": "levain_pct",
+      "baguette": { "default": 20, "range": [18, 25] },
+      "boule":    { "default": 20, "range": [15, 22] }
+    },
+    {
+      "dimension": "bulk_rise_target_pct",
+      "baguette": { "default": 60, "range": [55, 65], "rationale": "Shape retention on couche and during transfer" },
+      "boule":    { "default": 80, "range": [70, 90], "rationale": "Banneton supports; push for open crumb" }
+    },
+    {
+      "dimension": "mixer_time_speed2_min",
+      "baguette": { "default": 6, "range": [5, 8], "rationale": "Needs more structure for slender shape" },
+      "boule":    { "default": 5, "range": [4, 7], "rationale": "Less structure needed; too much loses extensibility" }
+    },
+    {
+      "dimension": "fold_count",
+      "baguette": { "default": 3, "range": [3, 4] },
+      "boule":    { "default": 3, "range": [2, 4], "note": "Consider lamination in place of fold 1 for very open crumb" }
+    },
+    {
+      "dimension": "shape_tension",
+      "baguette": { "default": "high", "rationale": "Loose seam = blowout, loose tension = spread" },
+      "boule":    { "default": "moderate", "rationale": "Over-tight = tall but tight crumb" }
+    },
+    {
+      "dimension": "cold_retard_hours_at_3c",
+      "baguette": { "default": 10, "range": [8, 14] },
+      "boule":    { "default": 12, "range": [8, 18] }
+    },
+    {
+      "dimension": "proof_location",
+      "baguette": { "default": "couche_pleated", "alternatives": ["parchment_flat"] },
+      "boule":    { "default": "banneton_rice_floured", "alternatives": ["linen_lined_banneton"] }
+    },
+    {
+      "dimension": "bake_vessel",
+      "baguette": { "default": "open_tray_or_stone", "rationale": "Long thin shape not compatible with Dutch oven" },
+      "boule":    { "default": "cast_iron_dutch_oven", "rationale": "Traps steam for maximum oven spring" }
+    },
+    {
+      "dimension": "phase1_method",
+      "baguette": {
+        "default": "cold_start_medium_steam_180c",
+        "duration_min": [20, 25],
+        "rationale": "Long pliability window for oven spring and ear"
+      },
+      "boule": {
+        "default": "dutch_oven_lid_on_230c_preheated_250c",
+        "duration_min": 20,
+        "rationale": "Dough self-generates trapped steam under lid"
+      }
+    },
+    {
+      "dimension": "phase2_method",
+      "baguette": {
+        "default": "convection_230_to_250c",
+        "duration_min": [12, 18],
+        "rationale": "Dry heat for Maillard + dehydration, dual-oven ideal"
+      },
+      "boule": {
+        "default": "convection_230c_lid_off",
+        "duration_min": [15, 20],
+        "rationale": "Uncovered finish dries and browns crust"
+      }
+    },
+    {
+      "dimension": "scoring_pattern",
+      "baguette": {
+        "default": "3_cuts_along_axis_30deg_10mm",
+        "rationale": "Axial cuts create ears; overlap ~1/3"
+      },
+      "boule": {
+        "default": "single_arc_10_to_15mm",
+        "alternatives": ["cross_5mm", "square_5mm", "wheat_stalk_5mm"],
+        "rationale": "Single arc maximizes spring; pattern scores are mostly decorative"
+      }
+    },
+    {
+      "dimension": "transfer_method",
+      "baguette": {
+        "default": "flip_board_from_couche_to_parchment",
+        "rationale": "Avoid lifting wet dough"
+      },
+      "boule": {
+        "default": "invert_banneton_onto_parchment",
+        "rationale": "One-step, low-risk"
+      }
+    },
+    {
+      "dimension": "internal_temp_done_c",
+      "baguette": { "default": 97, "range": [96, 99] },
+      "boule":    { "default": 98, "range": [96, 99] }
+    },
+    {
+      "dimension": "cool_time_before_cut_min",
+      "baguette": { "default": 20, "min": 15 },
+      "boule":    { "default": 60, "min": 45 }
+    }
+  ],
+  "mode_selection_rules": [
+    {
+      "if_user_goal": "maximum_open_crumb",
+      "recommend": {
+        "shape": "boule",
+        "hydration_pct": 85,
+        "bulk_rise_pct": 85,
+        "method": "boule_primary_with_lamination"
+      }
+    },
+    {
+      "if_user_goal": "maximum_crust_crunch",
+      "recommend": {
+        "shape": "baguette",
+        "hydration_pct": 80,
+        "method": "baguette_primary_dual_oven",
+        "cold_retard_hours": 14
+      }
+    },
+    {
+      "if_user_goal": "beginner_reliable",
+      "recommend": {
+        "shape": "boule",
+        "hydration_pct": 78,
+        "bulk_rise_pct": 65,
+        "method": "boule_primary_dutch_oven"
+      }
+    }
+  ]
+}

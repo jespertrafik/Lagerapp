@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "description": "Oven profile reference for Jesper's setup. Two ovens: steam oven and convection oven. Temperatures in Celsius.",
+  "ovens": [
+    {
+      "id": "steam_oven",
+      "name_sv": "Ångugn",
+      "name_en": "Steam oven",
+      "max_temp_c": 230,
+      "steam_tiers": [
+        {
+          "id": "full_steam",
+          "name_sv": "Full ånga",
+          "name_en": "Full steam",
+          "max_temp_c": 100,
+          "steam_level": "saturated",
+          "bread_use": "proofing_only",
+          "notes": "Too cold to bake. Use for proofing at 28–30 °C if kitchen is cold. Do not exceed 32 °C for sourdough."
+        },
+        {
+          "id": "high_steam",
+          "name_sv": "Hög ånga",
+          "name_en": "High steam",
+          "max_temp_c": 130,
+          "steam_level": "very_high",
+          "bread_use": "not_useful",
+          "notes": "Surface stays too wet, crust never sets. Skip for bread."
+        },
+        {
+          "id": "medium_steam",
+          "name_sv": "Medium ånga",
+          "name_en": "Medium steam",
+          "max_temp_c": 180,
+          "steam_level": "moderate",
+          "bread_use": "baguette_phase1_cold_start",
+          "notes": "Primary phase 1 for baguettes. Cold-start the oven with loaves inside; ramp to 180 °C generates ideal steam window."
+        },
+        {
+          "id": "low_steam",
+          "name_sv": "Låg ånga",
+          "name_en": "Low steam",
+          "max_temp_c": 230,
+          "steam_level": "low",
+          "bread_use": "alternative_phase1",
+          "notes": "Higher heat, less steam. Test unit's actual output — can be minimal. Use preheated for single-oven workflows."
+        },
+        {
+          "id": "convection_mode",
+          "name_sv": "Konvektion",
+          "name_en": "Convection (no steam)",
+          "max_temp_c": 230,
+          "steam_level": "none",
+          "bread_use": "phase2_finish",
+          "notes": "Phase 2 dry heat. Ceiling at 230 °C is why the dual-oven transfer to 250 °C convection gives better crust."
+        }
+      ]
+    },
+    {
+      "id": "convection_oven",
+      "name_sv": "Konvektionsugn",
+      "name_en": "Convection oven",
+      "max_temp_c": 260,
+      "steam_tiers": [],
+      "bread_use": ["boule_dutch_oven", "baguette_phase2"],
+      "notes": "Primary oven for Dutch-oven boule bakes. Also the phase 2 destination for dual-oven baguette protocol."
+    }
+  ],
+  "recommended_protocols": {
+    "baguette_primary": {
+      "description": "Cold-start dual-oven method",
+      "stages": [
+        {
+          "stage": 1,
+          "oven": "steam_oven",
+          "mode": "medium_steam",
+          "temp_c": 180,
+          "duration_min": [20, 25],
+          "action": "Load into cold oven, turn on, bake"
+        },
+        {
+          "stage": 2,
+          "oven": "convection_oven",
+          "mode": "convection",
+          "temp_c": [230, 250],
+          "duration_min": [12, 18],
+          "action": "Transfer loaves on parchment to preheated convection oven"
+        }
+      ],
+      "total_min": [32, 43]
+    },
+    "baguette_single_oven_fallback": {
+      "description": "Steam oven only, no transfer",
+      "stages": [
+        {
+          "stage": 1,
+          "oven": "steam_oven",
+          "mode": "medium_steam",
+          "temp_c": 180,
+          "duration_min": [22, 25]
+        },
+        {
+          "stage": 2,
+          "oven": "steam_oven",
+          "mode": "convection_mode",
+          "temp_c": 230,
+          "duration_min": [15, 20]
+        }
+      ],
+      "total_min": [37, 45],
+      "compromise": "Crust less aggressive than dual-oven; still very good."
+    },
+    "boule_primary": {
+      "description": "Dutch oven in convection oven",
+      "preheat_min": 45,
+      "preheat_temp_c": 250,
+      "stages": [
+        {
+          "stage": 1,
+          "oven": "convection_oven",
+          "mode": "dutch_oven_lid_on",
+          "temp_c": 230,
+          "duration_min": 20,
+          "action": "Load, lid on, drop from 250 °C to 230 °C immediately"
+        },
+        {
+          "stage": 2,
+          "oven": "convection_oven",
+          "mode": "dutch_oven_lid_off",
+          "temp_c": 230,
+          "duration_min": [15, 20]
+        }
+      ],
+      "total_min": [35, 40]
+    },
+    "boule_steam_oven_fallback": {
+      "description": "Boule in steam oven on baking stone",
+      "preheat_min": 45,
+      "preheat_mode": "low_steam",
+      "preheat_temp_c": 230,
+      "stages": [
+        {
+          "stage": 1,
+          "oven": "steam_oven",
+          "mode": "low_steam",
+          "temp_c": 230,
+          "duration_min": 15
+        },
+        {
+          "stage": 2,
+          "oven": "steam_oven",
+          "mode": "convection_mode",
+          "temp_c": 230,
+          "duration_min": [15, 20]
+        }
+      ]
+    }
+  },
+  "dough_temperature_targets": {
+    "DDT_target_c": 25,
+    "DDT_min_c": 23,
+    "DDT_max_c": 26,
+    "friction_factor_spiral_mixer_c": 4,
+    "friction_factor_hand_c": 1,
+    "final_internal_c": [96, 99]
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "description": "Flour type reference. Hydration ranges assume a Swedish home baker with a pro mixer. Typical protein ranges refer to the label 'protein' value (dry basis).",
+  "flours": [
+    {
+      "id": "bread_flour_strong",
+      "name_sv": "Vetemjöl special / stenmalet starkt vetemjöl",
+      "name_en": "Strong bread flour",
+      "typical_protein_pct": [12.0, 13.5],
+      "typical_ash_pct": [0.55, 0.70],
+      "hydration_range_pct": [75, 88],
+      "best_for": ["baguette", "boule", "batard"],
+      "notes": "Go-to flour for open crumb. Holds 82–85 % without drama on a pro mixer."
+    },
+    {
+      "id": "bread_flour_standard",
+      "name_sv": "Vanligt vetemjöl",
+      "name_en": "Standard all-purpose flour",
+      "typical_protein_pct": [10.5, 12.0],
+      "typical_ash_pct": [0.50, 0.65],
+      "hydration_range_pct": [65, 78],
+      "best_for": ["sandwich_boule", "pan_loaf"],
+      "notes": "Struggles above 78 %. Use blends (80/20 with strong) for higher hydration."
+    },
+    {
+      "id": "sifted_wheat_siktat",
+      "name_sv": "Siktat vetemjöl / T65",
+      "name_en": "Sifted wheat / T65",
+      "typical_protein_pct": [11.5, 12.5],
+      "typical_ash_pct": [0.62, 0.75],
+      "hydration_range_pct": [75, 82],
+      "best_for": ["baguette", "country_loaf"],
+      "notes": "Classic baguette flour profile. Slightly higher ash adds flavor and enzymatic activity."
+    },
+    {
+      "id": "whole_wheat_fullkorn",
+      "name_sv": "Fullkornsvetemjöl",
+      "name_en": "Whole wheat flour",
+      "typical_protein_pct": [12.0, 14.0],
+      "typical_ash_pct": [1.5, 1.9],
+      "hydration_range_pct": [80, 95],
+      "best_for": ["whole_grain_loaves"],
+      "notes": "Absorbs more water. Weakens gluten at >30 % share. Usually used as 10–20 % of blend."
+    },
+    {
+      "id": "rye_light",
+      "name_sv": "Rågsikt",
+      "name_en": "Light rye",
+      "typical_protein_pct": [7.0, 9.0],
+      "typical_ash_pct": [0.85, 1.20],
+      "hydration_range_pct": [80, 100],
+      "best_for": ["mixed_rye_wheat"],
+      "notes": "Low gluten; use up to 20 % in wheat blend for flavor without sacrificing crumb. Pure rye needs a different approach."
+    },
+    {
+      "id": "rye_whole",
+      "name_sv": "Fullkornsråg",
+      "name_en": "Whole rye",
+      "typical_protein_pct": [8.0, 11.0],
+      "typical_ash_pct": [1.5, 2.0],
+      "hydration_range_pct": [85, 110],
+      "best_for": ["pure_rye", "danish_rye"],
+      "notes": "Mucilage-dominant structure, not gluten. For wheat-dominant bakes, cap at 15 % share."
+    },
+    {
+      "id": "spelt_dinkel",
+      "name_sv": "Dinkelmjöl",
+      "name_en": "Spelt flour",
+      "typical_protein_pct": [11.0, 13.0],
+      "typical_ash_pct": [0.70, 1.10],
+      "hydration_range_pct": [70, 80],
+      "best_for": ["spelt_boule", "flavored_blends"],
+      "notes": "Gluten is fragile — over-mixes easily. Short speed-2 mix, more folds."
+    },
+    {
+      "id": "durum_semolina",
+      "name_sv": "Durum / mannagryn",
+      "name_en": "Durum / semolina",
+      "typical_protein_pct": [12.0, 14.0],
+      "typical_ash_pct": [0.85, 1.10],
+      "hydration_range_pct": [72, 82],
+      "best_for": ["italian_boule", "pane_di_altamura_style"],
+      "notes": "Yellow color, nutty flavor. Gluten short and strong. Blend 20–50 % with bread flour."
+    }
+  ],
+  "blending_notes": {
+    "open_crumb_boule": "80 % strong bread + 10 % whole wheat + 10 % sifted. Hydration 82 %.",
+    "baguette_classic": "100 % T65 or strong bread flour. Hydration 78–82 %.",
+    "flavor_push": "Add 10–15 % whole wheat or 15 % light rye to any wheat base to deepen flavor without closing crumb."
+  }
+}
