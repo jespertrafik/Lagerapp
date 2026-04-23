@@ -2706,6 +2706,7 @@ function render() {
   }
 
   if (isAdmin) {
+    html += `<button id="sd-fab" class="ai-fab" onclick="openAiModal('sourdough')" style="bottom:104px;background:#d4a574" title="Surdegsexpert">🍞</button>`;
     html += `<button id="ai-fab" class="ai-fab" onclick="openAiModal()">🤖</button>`;
   }
 
@@ -3235,9 +3236,10 @@ function aiOnPointerUp(e) { e.preventDefault(); aiStopRecording(); }
 </div>
 <script>
 const _AI_URL = 'https://ipod-draws-olympus-excluding.trycloudflare.com';
-function openAiModal() {
+function openAiModal(agent) {
   const lang = typeof appLang !== 'undefined' ? appLang : 'sv';
-  document.getElementById('ai-modal-frame').src = _AI_URL + '?lang=' + lang;
+  const agentParam = agent ? '&agent=' + encodeURIComponent(agent) : '';
+  document.getElementById('ai-modal-frame').src = _AI_URL + '?lang=' + lang + agentParam;
   document.getElementById('ai-modal-overlay').classList.add('open');
 }
 function closeAiModal() {
