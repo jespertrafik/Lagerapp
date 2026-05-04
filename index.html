@@ -1927,7 +1927,7 @@ function render() {
           <button class="btn btn-red" onclick="doTake('${key}')">− Ta</button>
           <button class="btn btn-green" onclick="doFill('${key}')">+ Lägg till</button>
           ${isAdmin || viewMode === "dashboard" ? `<button class="btn btn-dim" onclick="toggleEdit('${key}')" style="flex:0;padding:9px 12px">✏️</button>` : ""}
-          ${isAdmin && item.artnr && currentUser && currentUser.email.toLowerCase() === 'jesper.franzen@bravida.se' ? `<button class="btn btn-accent" onclick="openOrderModal('${key}')" style="flex:0;white-space:nowrap">🛒 Beställ</button>` : ""}
+          ${isAdmin && item.artnr ? `<button class="btn btn-accent" onclick="openOrderModal('${key}')" style="flex:0;white-space:nowrap">🛒 Beställ</button>` : ""}
         </div>
         ${editingItem === key ? `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--card-border);display:flex;flex-direction:column;gap:6px">
