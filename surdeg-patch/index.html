@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surdegskalkylator</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede0;
+    --bg-card: #faf6ec;
+    --ink: #2b1f15;
+    --ink-soft: #6b5a48;
+    --accent: #a8421f;
+    --line: #d9cdb8;
+    --crust: #c8975a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(168,66,31,0.06) 0, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(200,151,90,0.08) 0, transparent 50%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 60px;
+    line-height: 1.4;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+  .hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #2b1f15;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .hero-img.active { opacity: 1; }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(43,31,21,0) 30%,
+      rgba(43,31,21,0.7) 70%,
+      rgba(244,237,224,0.95) 100%
+    );
+    pointer-events: none;
+  }
+  .hero-title {
+    position: absolute;
+    bottom: 26px;
+    left: 22px;
+    right: 22px;
+    color: #faf6ec;
+    z-index: 1;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5);
+  }
+  header {
+    margin-bottom: 20px;
+  }
+  .hero-title h1 {
+    font-weight: 500;
+    font-size: 56px;
+    letter-spacing: -0.02em;
+    font-style: italic;
+    line-height: 0.98;
+  }
+  header h1 {
+    font-weight: 300;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    font-style: italic;
+    line-height: 1.05;
+  }
+  .hero-title .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    margin-top: 10px;
+    color: var(--crust);
+    font-weight: 600;
+  }
+  header .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-top: 6px;
+    opacity: 0.85;
+  }
+  @media (max-width: 380px) {
+    .hero-title h1 { font-size: 46px; }
+    .hero-title .sub { font-size: 12px; }
+  }
+  header { display: none; }
+  .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+  .mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-bottom: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mode button {
+    padding: 14px;
+    background: transparent;
+    border: none;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-style: italic;
+  }
+  .mode button.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 18px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(43,31,21,0.04);
+  }
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  label { font-size: 15px; font-weight: 500; }
+  .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--ink);
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  .vol-stepper {
+    display: grid;
+    grid-template-columns: 52px 1fr 52px;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 12px;
+  }
+  .step-btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s, background 0.15s;
+    box-shadow: 0 2px 6px rgba(43,31,21,0.15);
+  }
+  .step-btn:active { transform: scale(0.94); background: var(--accent); }
+  .vol-display {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+  }
+  .vol-display input[type="number"] {
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 600;
+    padding: 14px 0;
+    width: 100%;
+    min-width: 0;
+    color: var(--ink);
+    -moz-appearance: textfield;
+  }
+  .vol-display input[type="number"]::-webkit-outer-spin-button,
+  .vol-display input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .vol-display input[type="number"]:focus { outline: none; }
+  .vol-unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-left: 6px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .vol-presets {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .preset-btn {
+    padding: 10px 0;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .preset-btn:active { transform: scale(0.96); }
+  .preset-btn.active {
+    background: var(--accent);
+    color: var(--bg-card);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .dinkel-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dinkel-btn {
+    padding: 14px 0;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .dinkel-btn:active { transform: scale(0.97); }
+  .dinkel-btn.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid var(--bg-card);
+  }
+  .recipe {
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 6px;
+    padding: 24px 20px;
+    box-shadow: 0 4px 16px rgba(43,31,21,0.18);
+    background-image:
+      radial-gradient(circle at 90% 0%, rgba(200,151,90,0.08) 0, transparent 50%);
+  }
+  .recipe-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .recipe-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--crust);
+  }
+  .round-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card);
+    color: var(--ink);
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border-radius: 999px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .round-btn:active { transform: scale(0.96); }
+  .round-btn.active {
+    background: var(--crust);
+    color: var(--ink);
+    border-color: var(--crust);
+  }
+  .ingr {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px dashed rgba(244,237,224,0.15);
+  }
+  .ingr:last-of-type { border-bottom: none; }
+  .ingr-name { font-size: 16px; font-weight: 500; }
+  .ingr-amt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .ingr-amt span {
+    font-size: 12px;
+    color: var(--crust);
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  .total {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(244,237,224,0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--crust);
+  }
+  .total-amt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .meta {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(244,237,224,0.15);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(244,237,224,0.55);
+    text-align: center;
+    letter-spacing: 0.08em;
+    line-height: 1.9;
+  }
+  .meta span { color: var(--crust); font-weight: 600; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <img class="hero-img active" id="heroBag" src="baguette.png" alt="Baguetter">
+  <img class="hero-img" id="heroBrod" src="boule.png" alt="Bröd">
+  <div class="hero-title">
+    <h1>Surdegskalkylator</h1>
+    <div class="sub">Volym → recept</div>
+  </div>
+</div>
+<div class="wrap">
+  <header>
+    <h1>Surdegskalkylator</h1>
+    <div class="sub">Volym → recept</div>
+  </header>
+
+  <div class="mode">
+    <button id="modeBag" class="active" data-mode="baguette">Baguette</button>
+    <button id="modeBrod" data-mode="brod">Bröd</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="volTitle">Önskad volym efter bulk</div>
+    <div class="dinkel-toggle" style="margin-bottom:14px;">
+      <button class="dinkel-btn active" data-imode="ml" type="button">Volym (ml)</button>
+      <button class="dinkel-btn" data-imode="g" type="button">Mjöl (g)</button>
+    </div>
+    <div class="vol-stepper">
+      <button class="step-btn" id="volMinus" aria-label="Minska" type="button">−</button>
+      <div class="vol-display">
+        <input type="number" id="volume" value="2000" min="100" step="50" inputmode="numeric">
+        <span class="vol-unit" id="volUnit">ml</span>
+      </div>
+      <button class="step-btn" id="volPlus" aria-label="Öka" type="button">+</button>
+    </div>
+    <div class="vol-presets" id="volPresets">
+      <button class="preset-btn" data-vol="1000" type="button">1000</button>
+      <button class="preset-btn" data-vol="1500" type="button">1500</button>
+      <button class="preset-btn" data-vol="2000" type="button">2000</button>
+      <button class="preset-btn" data-vol="2500" type="button">2500</button>
+      <button class="preset-btn" data-vol="3000" type="button">3000</button>
+    </div>
+    <div class="note" id="volNote">Baguette: full degvolym. Rakt i kyl efter bulk.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recept</div>
+    <div class="field">
+      <div class="field-head">
+        <label>Hydrering</label>
+        <span class="val" id="hVal">80%</span>
+      </div>
+      <input type="range" id="h" min="70" max="85" step="1" value="80">
+    </div>
+    <div class="field">
+      <div class="field-head">
+        <label>Bulkmål (volymökning)</label>
+        <span class="val" id="bulkVal">100%</span>
+      </div>
+      <input type="range" id="bulk" min="50" max="100" step="5" value="100">
+    </div>
+    <div class="field">
+      <div class="field-head">
+        <label>Dinkel fullkorn</label>
+      </div>
+      <div class="dinkel-toggle">
+        <button class="dinkel-btn" data-dinkel="10" type="button">10%</button>
+        <button class="dinkel-btn active" data-dinkel="20" type="button">20%</button>
+      </div>
+    </div>
+    <div class="note">Surdeg 20% · Salt 3% · surdeg hydrering 100%</div>
+  </div>
+
+  <div class="recipe">
+    <div class="recipe-head">
+      <div class="recipe-title">Recept</div>
+      <button class="round-btn" id="roundBtn" type="button" aria-pressed="false">Avrunda</button>
+    </div>
+    <div class="ingr">
+      <div class="ingr-name">Manitoba Cream</div>
+      <div class="ingr-amt" id="manAmt">— <span>g</span></div>
+    </div>
+    <div class="ingr">
+      <div class="ingr-name">Dinkel fullkorn</div>
+      <div class="ingr-amt" id="speltAmt">— <span>g</span></div>
+    </div>
+    <div class="ingr">
+      <div class="ingr-name">Vatten</div>
+      <div class="ingr-amt" id="watAmt">— <span>g</span></div>
+    </div>
+    <div class="ingr">
+      <div class="ingr-name">Surdeg</div>
+      <div class="ingr-amt" id="lvAmt">— <span>g</span></div>
+    </div>
+    <div class="ingr">
+      <div class="ingr-name">Salt</div>
+      <div class="ingr-amt" id="sAmt">— <span>g</span></div>
+    </div>
+    <div class="total">
+      <div class="total-label">Degvikt</div>
+      <div class="total-amt" id="total">— g</div>
+    </div>
+    <div class="meta">
+      <div>Bulkmål <span id="factor">—</span>×</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let mode = 'baguette';
+let dinkelPct = 20;
+let roundMode = false;
+let inputMode = 'ml';
+
+const SURDEG_PCT = 20;          // konstant — inte längre temperaturberoende
+const SALT_PCT = 3;
+const DOUGH_DENSITY = 1.1;      // g/ml — typisk högvätskedeg före jäsning
+
+// Källa till sanning beror på inputMode:
+//   ml-läge: state.ml låst, mainFlour härleds från ml + nuvarande H/bulkmål
+//   g-läge:  state.g (mainFlour) låst, ml härleds
+let state = { ml: 2000, g: 500 };
+
+function getParams() {
+  const H = +$('h').value;
+  const bulkmal = +$('bulk').value;
+  const doughPerX = 1 + SALT_PCT/100 + H/100 + (SURDEG_PCT/100) * (1 + H/100) / 2;
+  const factor = 1 + bulkmal/100;
+  return { H, bulkmal, factor, doughPerX, D: dinkelPct };
+}
+
+function mlFromMainFlour(mainFlour) {
+  const { doughPerX, factor } = getParams();
+  return mainFlour * doughPerX / DOUGH_DENSITY * factor;
+}
+
+function mainFlourFromMl(ml) {
+  const { doughPerX, factor } = getParams();
+  return ml * DOUGH_DENSITY / factor / doughPerX;
+}
+
+function calc() {
+  const { H, bulkmal, factor, doughPerX, D } = getParams();
+
+  $('hVal').textContent = H + '%';
+  $('bulkVal').textContent = bulkmal + '%';
+
+  const mainFlour = inputMode === 'ml' ? mainFlourFromMl(state.ml) : state.g;
+
+  const surdegG      = (SURDEG_PCT/100) * mainFlour;
+  const refFlourInLv = surdegG / 2;
+  const refWaterInLv = surdegG / 2;
+  const F_total      = mainFlour + refFlourInLv;
+  const W_total      = (H/100) * F_total;
+  const saltG        = (SALT_PCT/100) * mainFlour;
+
+  const dinkelG    = (D/100) * mainFlour;
+  const manitobaG  = mainFlour - dinkelG;
+  const waterAdded = W_total - refWaterInLv;
+
+  const r1 = n => Math.round(n);
+  const r5 = n => Math.round(n / 5) * 5;
+
+  const manD = roundMode ? r5(manitobaG)  : r1(manitobaG);
+  const dinD = roundMode ? r5(dinkelG)    : r1(dinkelG);
+  const watD = roundMode ? r5(waterAdded) : r1(waterAdded);
+  const lvD  = roundMode ? r5(surdegG)    : r1(surdegG);
+  const salD = roundMode ? r1(saltG)      : +saltG.toFixed(1);
+  const dough = manD + dinD + watD + lvD + salD;
+
+  $('manAmt').innerHTML   = manD + ' <span>g</span>';
+  $('speltAmt').innerHTML = dinD + ' <span>g</span>';
+  $('watAmt').innerHTML   = watD + ' <span>g</span>';
+  $('lvAmt').innerHTML    = lvD  + ' <span>g</span>';
+  $('sAmt').innerHTML     = (roundMode ? salD : salD.toFixed(1)) + ' <span>g</span>';
+  $('total').textContent  = r1(dough) + ' g';
+  $('factor').textContent = factor.toFixed(2);
+
+  if (document.activeElement !== $('volume')) {
+    if (inputMode === 'ml') {
+      $('volume').value = state.ml;
+    } else {
+      $('volume').value = r1(state.g);
+    }
+  }
+}
+
+document.querySelectorAll('.mode button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    $('volNote').textContent = mode === 'baguette'
+      ? 'Baguette: full degvolym. Rakt i kyl efter bulk.'
+      : 'Bröd: bulkvolym i bunke. Preshape + final proof gör resten.';
+    $('heroBag').classList.toggle('active', mode === 'baguette');
+    $('heroBrod').classList.toggle('active', mode === 'brod');
+    calc();
+  });
+});
+
+['h','bulk'].forEach(id => $(id).addEventListener('input', calc));
+
+// Slidrar ska bara reagera när man drar i den röda knappen — inte vid klick på spåret.
+function thumbOnlyPointer(e) {
+  const r = e.currentTarget;
+  const rect = r.getBoundingClientRect();
+  const min = +r.min, max = +r.max, val = +r.value;
+  const ratio = (max > min) ? (val - min) / (max - min) : 0;
+  const thumbW = 22;
+  const thumbX = rect.left + thumbW / 2 + ratio * (rect.width - thumbW);
+  if (Math.abs(e.clientX - thumbX) > thumbW / 2) {
+    e.preventDefault();
+    e.stopPropagation();
+    r.blur();
+  }
+}
+['h','bulk'].forEach(id => {
+  $(id).addEventListener('pointerdown', thumbOnlyPointer);
+  $(id).addEventListener('mousedown', thumbOnlyPointer);
+  $(id).addEventListener('touchstart', e => {
+    if (!e.touches[0]) return;
+    const r = e.currentTarget;
+    const rect = r.getBoundingClientRect();
+    const min = +r.min, max = +r.max, val = +r.value;
+    const ratio = (max > min) ? (val - min) / (max - min) : 0;
+    const thumbW = 22;
+    const thumbX = rect.left + thumbW / 2 + ratio * (rect.width - thumbW);
+    if (Math.abs(e.touches[0].clientX - thumbX) > thumbW / 2) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { passive: false });
+});
+
+$('roundBtn').addEventListener('click', () => {
+  roundMode = !roundMode;
+  $('roundBtn').classList.toggle('active', roundMode);
+  $('roundBtn').setAttribute('aria-pressed', roundMode);
+  calc();
+});
+
+document.querySelectorAll('.dinkel-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dinkel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    dinkelPct = +btn.dataset.dinkel;
+    calc();
+  });
+});
+
+const MODES = {
+  ml: { step: 50,  min: 100, max: 10000, presets: [1000,1500,2000,2500,3000], def: 2000, unit: 'ml', title: 'Slutvolym efter full bulk' },
+  g:  { step: 25,  min: 50,  max: 3000,  presets: [250,500,750,1000,1500],    def: 500,  unit: 'g',  title: 'Huvudmjöl (manitoba + dinkel)' }
+};
+let lastVal = { ml: 2000, g: 500 };
+
+function renderPresets() {
+  const cfg = MODES[inputMode];
+  $('volPresets').innerHTML = cfg.presets
+    .map(v => `<button class="preset-btn" data-vol="${v}" type="button">${v}</button>`).join('');
+  document.querySelectorAll('#volPresets .preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => setVolume(+btn.dataset.vol));
+  });
+}
+
+function setVolume(v) {
+  const cfg = MODES[inputMode];
+  v = Math.max(cfg.min, Math.min(cfg.max, Math.round(v / cfg.step) * cfg.step));
+  $('volume').value = v;
+  lastVal[inputMode] = v;
+  state[inputMode] = v;
+  document.querySelectorAll('#volPresets .preset-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.vol === v);
+  });
+  calc();
+}
+
+function applyInputMode() {
+  const cfg = MODES[inputMode];
+  $('volUnit').textContent = cfg.unit;
+  $('volTitle').textContent = cfg.title;
+  $('volume').step = cfg.step;
+  $('volume').min = cfg.min;
+  renderPresets();
+  setVolume(lastVal[inputMode]);
+}
+
+document.querySelectorAll('[data-imode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-imode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    inputMode = btn.dataset.imode;
+    applyInputMode();
+  });
+});
+
+$('volMinus').addEventListener('click', () => setVolume((+$('volume').value || 0) - MODES[inputMode].step));
+$('volPlus').addEventListener('click',  () => setVolume((+$('volume').value || 0) + MODES[inputMode].step));
+$('volume').addEventListener('input', () => {
+  const v = +$('volume').value;
+  lastVal[inputMode] = v;
+  state[inputMode] = v;
+  document.querySelectorAll('#volPresets .preset-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.vol === v);
+  });
+  calc();
+});
+
+applyInputMode();
+</script>
+</body>
+</html>
