@@ -1,4 +1,4 @@
-<!-- v3.86 -->
+<!-- v3.87 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.86</title>
+  <title>Lager v3.87</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -524,6 +524,7 @@ let viewMode = "large";
 let showSettings = false;
 let showAdmin = false;
 let allowedUsers = {};
+let accessRequests = {};
 let isAdmin = false;
 let isServiceManager = false;
 let canViewBilar = false;
@@ -1014,47 +1015,22 @@ const BILAR_NO_EDIT_EMAILS = ["anders.rindahl@bravida.se", "fredrik.kindstedt@br
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
   if (user) {
-    // Check allowlist
-    db.ref("allowedUsers").once("value").then(allSnap => {
-      const allUsers = allSnap.val();
-      if (!allUsers) {
-        // First user ever — auto-approve as admin
-        const role = ADMIN_EMAILS.includes(user.email.toLowerCase()) ? "admin" : "user";
-        db.ref("allowedUsers/" + user.uid).set({ email: user.email, name: user.displayName || "", role: role, added: Date.now() });
+    // Membership enforced by database rules — read only own entry.
+    db.ref("allowedUsers/" + user.uid).once("value").then(snap => {
+      if (snap.exists()) {
+        const u = snap.val() || {};
         currentUser = user;
-        loginError = "";
-        loadViewMode();
-        initDB();
-        return;
-      }
-      // Check by UID
-      if (allUsers[user.uid]) {
-        currentUser = user;
-        isAdmin = allUsers[user.uid].role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
-        isServiceManager = allUsers[user.uid].role === "service" || allUsers[user.uid].serviceView === true;
+        isAdmin = u.role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
+        isServiceManager = u.role === "service" || u.serviceView === true;
         canViewBilar = true;
         canEditBilar = !BILAR_NO_EDIT_EMAILS.includes(user.email.toLowerCase());
         loginError = "";
         loadViewMode();
         initDB();
-        return;
+      } else {
+        requestAccess(user);
       }
-      // Check by email (pending users)
-      const pendingKey = Object.keys(allUsers).find(k => allUsers[k].email.toLowerCase() === user.email.toLowerCase() && allUsers[k].pending);
-      if (pendingKey) {
-        // Activate: remove pending, add with real UID
-        db.ref("allowedUsers/" + pendingKey).remove();
-        db.ref("allowedUsers/" + user.uid).set({ email: user.email, name: user.displayName || "", role: "user", added: Date.now() });
-        currentUser = user;
-        loginError = "";
-        loadViewMode();
-        initDB();
-        return;
-      }
-      // Not allowed
-      loginError = "⛔ Du har inte tillgång. Kontot kan ha tagits bort — kontakta admin.";
-      auth.signOut();
-    });
+    }).catch(() => requestAccess(user));
   } else {
     currentUser = null;
     items = {};
@@ -1063,6 +1039,31 @@ auth.onAuthStateChanged((user) => {
     renderLogin();
   }
 });
+
+function requestAccess(user) {
+  db.ref("accessRequests/" + user.uid).set({
+    email: user.email || "",
+    name: user.displayName || "",
+    ts: Date.now()
+  }).catch(() => {});
+  loginError = "⛔ Du har inte tillgång ännu. Din förfrågan har skickats till admin.";
+  auth.signOut();
+}
+
+function approveAccessRequest(uid) {
+  const r = accessRequests[uid];
+  if (!r) return;
+  db.ref("allowedUsers/" + uid).set({ email: r.email, name: r.name || "", role: "user", added: Date.now() });
+  db.ref("accessRequests/" + uid).remove();
+  showToast("Åtkomst beviljad: " + (r.email || uid));
+  render();
+}
+
+function denyAccessRequest(uid) {
+  db.ref("accessRequests/" + uid).remove();
+  showToast("Förfrågan avvisad");
+  render();
+}
 
 function doLogin() {
   loginError = "";
@@ -1192,6 +1193,10 @@ function initDB() {
     }
     seedPendingUsers();
     render();
+  });
+  db.ref("accessRequests").on("value", (snap) => {
+    accessRequests = snap.val() || {};
+    if (showSettings) render();
   });
   db.ref("settings/bookingEnabled").on("value", (snap) => {
     bookingEnabledForAll = snap.val() || false;
@@ -1777,7 +1782,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.86</h1>
+          <h1>📦 Lager v3.87</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2568,6 +2573,20 @@ function render() {
             </div>
           </div>
         `).join("")}
+        ${isAdmin ? `
+        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔐 Åtkomstförfrågningar</div>
+          ${Object.keys(accessRequests).length === 0
+            ? `<div style="font-size:13px;color:var(--text-dim)">Inga väntande förfrågningar</div>`
+            : Object.keys(accessRequests).map(uid => {
+                const r = accessRequests[uid] || {};
+                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis">${r.email || uid}</div>
+                  <button class="btn btn-accent" style="flex:0;white-space:nowrap" onclick="approveAccessRequest('${uid}')">Godkänn</button>
+                  <button class="btn btn-dim" style="flex:0;white-space:nowrap" onclick="denyAccessRequest('${uid}')">Avvisa</button>
+                </div>`;
+              }).join("")}
+        </div>` : ""}
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;

@@ -1,6 +1,35 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
+    ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists()",
+    ".write": false,
+
+    "allowedUsers": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('allowedUsers').child(auth.uid).exists())",
+        ".write": "auth != null && (root.child('allowedUsers').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'jespertrafik@gmail.com' || auth.token.email === 'jesper.franzen@bravida.se')"
+      }
+    },
+
+    "config": {
+      ".write": "auth != null && (root.child('allowedUsers').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'jespertrafik@gmail.com' || auth.token.email === 'jesper.franzen@bravida.se')"
+    },
+
+    "accessRequests": {
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || root.child('allowedUsers').child(auth.uid).child('role').val() === 'admin' || auth.token.email === 'jespertrafik@gmail.com' || auth.token.email === 'jesper.franzen@bravida.se')"
+      }
+    },
+
+    "departments":  { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "varmepumpar":  { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "service":      { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "bilar":        { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "ecNotes":      { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "computerLoan": { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "faultcodes":   { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "users":        { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "log":          { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "backups":      { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" },
+    "settings":     { ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()" }
   }
 }
