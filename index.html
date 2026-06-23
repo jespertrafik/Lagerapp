@@ -1,4 +1,4 @@
-<!-- v3.87 -->
+<!-- v3.88 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.87</title>
+  <title>Lager v3.88</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1350,14 +1350,8 @@ const DEFAULT_VARMEPUMPAR = [
 ];
 const VP_SEED_VERSION = 2;
 
-const PENDING_USERS_SEED = [
-  "lars.borg@bravida.se",
-  "ulf.ekman@bravida.se",
-  "patrik.edqvist@bravida.se",
-  "erol.baysal@bravida.se",
-  "fredrik.kindstedt@bravida.se",
-  "dan.svegemo@bravida.se",
-];
+// Obsolete: onboarding now goes via accessRequests + admin approval (Inställningar → Åtkomstförfrågningar).
+const PENDING_USERS_SEED = [];
 
 function listenToVP() {
   if (vpListener) vpListener.off();
@@ -1782,7 +1776,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.87</h1>
+          <h1>📦 Lager v3.88</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2411,9 +2405,18 @@ function render() {
       </div>`;
     });
     html += `</div>
-        <div class="admin-add-row">
-          <input class="admin-input" id="admin_email" placeholder="Mejladress att lägga till" type="email">
-          <button class="btn btn-accent" onclick="addAllowedUser()">Lägg till</button>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--card-border)">
+          <div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">🔐 Åtkomstförfrågningar</div>
+          ${Object.keys(accessRequests).length === 0
+            ? `<div style="font-size:13px;color:var(--text-dim)">Inga väntande förfrågningar. Nya användare loggar in och dyker upp här.</div>`
+            : Object.keys(accessRequests).map(uid => {
+                const r = accessRequests[uid] || {};
+                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis">${r.email || uid}</div>
+                  <button class="btn btn-accent" style="flex:0;white-space:nowrap" onclick="approveAccessRequest('${uid}')">Godkänn</button>
+                  <button class="btn btn-dim" style="flex:0;white-space:nowrap" onclick="denyAccessRequest('${uid}')">Avvisa</button>
+                </div>`;
+              }).join("")}
         </div>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--card-border)">
           <div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">📅 Servicebokning</div>
@@ -2573,20 +2576,6 @@ function render() {
             </div>
           </div>
         `).join("")}
-        ${isAdmin ? `
-        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔐 Åtkomstförfrågningar</div>
-          ${Object.keys(accessRequests).length === 0
-            ? `<div style="font-size:13px;color:var(--text-dim)">Inga väntande förfrågningar</div>`
-            : Object.keys(accessRequests).map(uid => {
-                const r = accessRequests[uid] || {};
-                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                  <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis">${r.email || uid}</div>
-                  <button class="btn btn-accent" style="flex:0;white-space:nowrap" onclick="approveAccessRequest('${uid}')">Godkänn</button>
-                  <button class="btn btn-dim" style="flex:0;white-space:nowrap" onclick="denyAccessRequest('${uid}')">Avvisa</button>
-                </div>`;
-              }).join("")}
-        </div>` : ""}
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;
