@@ -1,4 +1,4 @@
-<!-- v3.84 -->
+<!-- v3.85 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.84</title>
+  <title>Lager v3.85</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -400,18 +400,6 @@ const firebaseConfig = {
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
-async function saveAnthropicKey() {
-  const v = document.getElementById("anthropic_key_input").value.trim();
-  try {
-    await db.ref("config/anthropicKey").set(v);
-    const check = (await db.ref("config/anthropicKey").once("value")).val();
-    console.log("[anthropicKey] Sparat i Firebase, verifierat:", check ? "OK (längd " + check.length + ")" : "TOMT");
-    showToast(v ? "API-nyckel sparad ✓" : "API-nyckel raderad");
-  } catch (e) {
-    console.error("[anthropicKey] FEL vid sparande:", e);
-    showToast("Fel: " + e.message);
-  }
-}
 
 const DEPARTMENTS = [
   { id: "tvattstugor", name: "Tvättstugor" },
@@ -567,13 +555,6 @@ let serviceUnitsListener = null;
 let showAddAreaForm = false;
 let newAreaName = "";
 let showAddUnitForm = false;
-let typskyltData = null;
-function buildTypskyltNotes() {
-  if (!typskyltData) return '';
-  const parts = [];
-  if (typskyltData.productNumber) parts.push('Produktnr: ' + typskyltData.productNumber);
-  return parts.join('\n');
-}
 let editingServiceUnit = null;
 let renamingArea = null;
 let renameAreaName = "";
@@ -1533,7 +1514,6 @@ function doAddUnit() {
   const key = "unit_" + Date.now();
   db.ref("service/units/" + activeArea + "/" + key).set({ address, model, serial, installDate, notes, lastServiced: "", nextService: "", createdAt: Date.now() });
   showAddUnitForm = false;
-  typskyltData = null;
   render();
 }
 
@@ -1548,63 +1528,6 @@ function doUpdateUnit(unitKey) {
   db.ref("service/units/" + activeArea + "/" + unitKey).update({ address, model, serial, installDate, notes });
   editingServiceUnit = null;
   render();
-}
-
-async function handleTypeskyltPhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  input.value = "";
-  const ANTHROPIC_API_KEY = (await db.ref("config/anthropicKey").once("value")).val() || "";
-  if (!ANTHROPIC_API_KEY) { showToast("API-nyckel saknas — kontakta admin"); return; }
-  showToast("Läser av typskylt...");
-  const base64 = await new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result.split(",")[1]);
-    reader.readAsDataURL(file);
-  });
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 512,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: file.type || "image/jpeg", data: base64 } },
-            { type: "text", text: `Du är en expert på att läsa typskyltar på industrimaskiner och vitvaror. Läs NOGGRANT av all text på typskylten och returnera ett JSON-objekt med dessa fält:
-- model: modellbeteckning (leta efter: Model, Modell, Type, Typ, Mod.)
-- serialNumber: serienummer (leta efter: Serial No, S/N, Ser.Nr, Serie, Serienr). Formatet är XXXXX/XXXXXXX — exakt 5 siffror, slash, exakt 7 siffror (t.ex. 05300/0273236). Dubbelkolla noga: efter slash ska det vara EXAKT 7 siffror, inte 8. Om du räknar 8 siffror efter slash har du läst fel — titta igen. Om separatorn ser ut som mellanslag eller bindestreck, använd slash.
-- productNumber: produktnummer/artikelnummer (leta efter: Art.nr, Prod.nr, Product No, Item No, Bestell-Nr)
-- manufactureDate: tillverkningsdatum
-
-Datumformat YYMM: YY=år (20XX), MM=månad. Exempel: 2009=September 2020, 2210=Oktober 2022. Returnera på svenska, t.ex. "Oktober 2022".
-
-Om ett fält inte finns på skylten, sätt null. Returnera ENDAST JSON, ingen annan text.` },
-          ],
-        }],
-      }),
-    });
-    const data = await res.json();
-    const raw = data.content?.[0]?.text || "";
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error("No JSON in response");
-    typskyltData = JSON.parse(match[0]);
-    if (typskyltData.serialNumber) {
-      typskyltData.serialNumber = typskyltData.serialNumber.replace(/(\d+)\/(\d{8,})/, (_, pre, post) => pre + "/" + post.slice(0, 7));
-    }
-    showToast("Typskylt avläst ✓");
-    render();
-  } catch (e) {
-    console.error(e);
-    showToast("Kunde inte läsa typskylt");
-  }
 }
 
 function doDeleteUnit(unitKey) {
@@ -1854,7 +1777,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.84</h1>
+          <h1>📦 Lager v3.85</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2392,23 +2315,17 @@ function render() {
             <div class="su-edit-form" style="margin-top:0;border:none;padding:0">
               <label>Adress</label>
               <input class="sa-input" id="su_address" placeholder="T.ex. Storgatan 12">
-              <div style="display:flex;gap:6px;margin:6px 0 2px">
-                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_camera').click()">📷 Ta foto</button>
-                <button class="btn btn-dim" style="flex:1" onclick="document.getElementById('typskylt_gallery').click()">🖼️ Välj från galleri</button>
-              </div>
-              <input type="file" id="typskylt_camera" accept="image/*" capture="environment" style="display:none" onchange="handleTypeskyltPhoto(this)">
-              <input type="file" id="typskylt_gallery" accept="image/*" style="display:none" onchange="handleTypeskyltPhoto(this)">
               <label>Produkt/Modell</label>
-              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW" value="${typskyltData ? (typskyltData.model||'') : ''}">
+              <input class="sa-input" id="su_model" placeholder="T.ex. Daikin 9kW">
               <label>Serienummer</label>
-              <input class="sa-input" id="su_serial" placeholder="Serienummer" value="${typskyltData ? (typskyltData.serialNumber||'') : ''}">
+              <input class="sa-input" id="su_serial" placeholder="Serienummer">
               <label>Tillverkningsdatum</label>
-              <input class="sa-input" id="su_installdate" type="text" placeholder="T.ex. Oktober 2022" value="${typskyltData ? (typskyltData.manufactureDate||'') : ''}">
+              <input class="sa-input" id="su_installdate" type="text" placeholder="T.ex. Oktober 2022">
               <label>Anteckningar</label>
-              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext...">${buildTypskyltNotes()}</textarea>
+              <textarea class="sa-input" id="su_notes" rows="3" placeholder="Fritext..."></textarea>
               <div style="display:flex;gap:8px;margin-top:4px">
                 <button class="btn btn-accent" style="flex:1" onclick="doAddUnit()">Spara</button>
-                <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;typskyltData=null;render()">Avbryt</button>
+                <button class="btn btn-dim" style="flex:1" onclick="showAddUnitForm=false;render()">Avbryt</button>
               </div>
             </div>
           </div>`;
@@ -2651,13 +2568,6 @@ function render() {
             </div>
           </div>
         `).join("")}
-        ${isAdmin ? `
-        <div style="margin-top:16px;border-top:1px solid var(--card-border);padding-top:16px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:6px">🔑 Anthropic API-nyckel</div>
-          <input id="anthropic_key_input" type="password" placeholder="sk-ant-..."
-            style="width:100%;padding:9px 12px;background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
-          <button class="btn btn-accent" style="width:100%" onclick="saveAnthropicKey()">Spara nyckel</button>
-        </div>` : ""}
         <button class="modal-close" onclick="showSettings=false;render()">Stäng</button>
       </div>
     </div>`;
