@@ -1,4 +1,4 @@
-<!-- v3.88 -->
+<!-- v3.89 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.88</title>
+  <title>Lager v3.89</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1196,7 +1196,7 @@ function initDB() {
   });
   db.ref("accessRequests").on("value", (snap) => {
     accessRequests = snap.val() || {};
-    if (showSettings) render();
+    render();
   });
   db.ref("settings/bookingEnabled").on("value", (snap) => {
     bookingEnabledForAll = snap.val() || false;
@@ -1767,7 +1767,7 @@ function render() {
     <div class="user-bar">
       <span class="user-info">👤 ${currentUser.displayName || currentUser.email}</span>
       <div class="user-actions">
-        ${isAdmin ? '<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare</button>' : ''}
+        ${isAdmin ? `<button class="small-btn" onclick="showAdmin=true;render()">👥 Användare${Object.keys(accessRequests).length ? ` <span style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px">${Object.keys(accessRequests).length}</span>` : ''}</button>` : ''}
         <button class="small-btn" onclick="showSettings=true;render()">⚙️ Byt utseende</button>
         <button class="small-btn" onclick="showComputerLoan=true;render()">Datorlån</button>
         <button class="small-btn" onclick="doLogout()">Logga ut</button>
@@ -1776,7 +1776,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.88</h1>
+          <h1>📦 Lager v3.89</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2390,6 +2390,18 @@ function render() {
     html += `<div class="modal-overlay" onclick="if(event.target===this){showAdmin=false;render()}">
       <div class="modal">
         <h2>👥 Godkända användare</h2>
+        ${Object.keys(accessRequests).length ? `
+        <div style="margin-bottom:14px;padding:12px;background:rgba(231,76,60,0.12);border:1px solid #e74c3c;border-radius:10px">
+          <div style="font-size:13px;font-weight:700;color:#e74c3c;margin-bottom:8px">🔔 ${Object.keys(accessRequests).length} väntande åtkomstförfrågning${Object.keys(accessRequests).length > 1 ? 'ar' : ''}</div>
+          ${Object.keys(accessRequests).map(uid => {
+            const r = accessRequests[uid] || {};
+            return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis">${r.email || uid}</div>
+              <button class="btn btn-accent" style="flex:0;white-space:nowrap" onclick="approveAccessRequest('${uid}')">Godkänn</button>
+              <button class="btn btn-dim" style="flex:0;white-space:nowrap" onclick="denyAccessRequest('${uid}')">Avvisa</button>
+            </div>`;
+          }).join("")}
+        </div>` : ``}
         <div class="admin-list">`;
     users.forEach(([uid, u]) => {
       html += `<div class="admin-user">
@@ -2405,19 +2417,6 @@ function render() {
       </div>`;
     });
     html += `</div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--card-border)">
-          <div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">🔐 Åtkomstförfrågningar</div>
-          ${Object.keys(accessRequests).length === 0
-            ? `<div style="font-size:13px;color:var(--text-dim)">Inga väntande förfrågningar. Nya användare loggar in och dyker upp här.</div>`
-            : Object.keys(accessRequests).map(uid => {
-                const r = accessRequests[uid] || {};
-                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                  <div style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis">${r.email || uid}</div>
-                  <button class="btn btn-accent" style="flex:0;white-space:nowrap" onclick="approveAccessRequest('${uid}')">Godkänn</button>
-                  <button class="btn btn-dim" style="flex:0;white-space:nowrap" onclick="denyAccessRequest('${uid}')">Avvisa</button>
-                </div>`;
-              }).join("")}
-        </div>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--card-border)">
           <div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">📅 Servicebokning</div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--bg);border:1px solid var(--card-border);border-radius:10px">
