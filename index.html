@@ -1,4 +1,4 @@
-<!-- v3.89 -->
+<!-- v3.90 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.89</title>
+  <title>Lager v3.90</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1263,6 +1263,26 @@ function toggleBookingEnabled() {
   showToast(bookingEnabledForAll ? "Datumbokning dold för användare" : "Datumbokning synlig för alla!");
 }
 
+async function doResetAllAlarmLevels() {
+  if (!confirm("Nollställ larmnivån (min) för ALLA artiklar i alla avdelningar?\n\nSaldot (antal i lager) påverkas INTE, bara larmgränsen.")) return;
+  const snap = await db.ref("departments").once("value");
+  const data = snap.val() || {};
+  const updates = {};
+  Object.keys(data).forEach(deptId => {
+    const deptItems = (data[deptId] && data[deptId].items) || {};
+    Object.keys(deptItems).forEach(key => {
+      if ((deptItems[key].min || 0) !== 0) {
+        updates[`departments/${deptId}/items/${key}/min`] = 0;
+      }
+    });
+  });
+  const count = Object.keys(updates).length;
+  if (count === 0) { showToast("Alla larmnivåer är redan 0"); return; }
+  await db.ref().update(updates);
+  writeLog({ action: "reset_alarm_levels", count });
+  showToast(`Larmnivå nollställd för ${count} artiklar`);
+}
+
 async function doSaveBookingDate(unitKey) {
   const inp = document.getElementById("bk_date_" + unitKey);
   const date = inp ? inp.value : bookingDate;
@@ -1776,7 +1796,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.89</h1>
+          <h1>📦 Lager v3.90</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2425,6 +2445,16 @@ function render() {
               <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${bookingEnabledForAll ? 'Alla kan boka servicetid' : 'Bara du (admin) ser Boka-fliken'}</div>
             </div>
             <button class="btn ${bookingEnabledForAll ? 'btn-green' : 'btn-dim'}" style="font-size:12px;padding:6px 14px;white-space:nowrap" onclick="toggleBookingEnabled()">${bookingEnabledForAll ? '✓ Aktiv' : 'Inaktiv'}</button>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--card-border)">
+          <div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">🔕 Larmnivåer</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--bg);border:1px solid var(--card-border);border-radius:10px">
+            <div>
+              <div style="font-size:13px;font-weight:600">Nollställ alla larmnivåer</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:2px">Sätter min till 0 för alla artiklar — saldot ändras inte</div>
+            </div>
+            <button class="btn btn-dim" style="font-size:12px;padding:6px 14px;white-space:nowrap" onclick="doResetAllAlarmLevels()">Nollställ</button>
           </div>
         </div>
         <button class="modal-close" onclick="showAdmin=false;render()">Stäng</button>
