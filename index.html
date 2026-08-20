@@ -398,6 +398,8 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
+const APP_VERSION = "v3.90";
+
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
 
@@ -2655,6 +2657,8 @@ function render() {
   if (isAdmin) {
     html += `<button id="ai-fab" class="ai-fab" onclick="openAiModal()">🤖</button>`;
   }
+
+  html += `<div class="app-footer" style="text-align:center;color:#888;font-size:12px;margin-top:32px;padding-bottom:16px">LagerApp ${APP_VERSION} — utvecklad av Jesper Franzen</div>`;
 
   app.innerHTML = html;
   if (isAdmin) aiUpdateUI();
