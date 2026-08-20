@@ -31,11 +31,19 @@ navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()
 - Surdegsagenten väljs INNE i röst-modalen (Service / Surdeg / General-knapparna), inte som en separat knapp i huvud-UI:t
 
 ## Versionshantering
-Versionsnummer finns på **tre ställen** som alla måste uppdateras:
+Versionsnummer finns på **fem ställen** som alla måste uppdateras:
 1. `index.html` rad 1: `<!-- vX.XX -->`
 2. `index.html` `<title>`: `Lager vX.XX`
 3. `index.html` header `<h1>`: `📦 Lager vX.XX`
-4. `sw.js`: `CACHE_NAME = 'lager-vX.XX'`
+4. `index.html` `const APP_VERSION = "vX.XX";` (nära toppen av scriptet, direkt under `firebaseConfig`) — används av footern, se nedan
+5. `sw.js`: `CACHE_NAME = 'lager-vX.XX'`
+
+`node deploy.mjs` bumpar alla fem automatiskt i ett steg (gör `replaceAll('vGAMMAL','vNY')` över hela `index.html`). Det funkar för `APP_VERSION` bara för att den är skriven med v:et inkluderat (`"v3.90"`, inte `"3.90"`) — skriv aldrig om den till att sakna v:et, då tappar den synken.
+
+## Footer
+- Syns längst ned (icke-sticky, i normalt sidflöde) på alla huvudvyer (Lager/Felkoder/Service/Bilar) för alla inloggade användare oavsett roll — INTE på inloggningsvyn
+- Text: `LagerApp ${APP_VERSION} — utvecklad av Jesper Franzen`, grå (#888), 12px, centrerad
+- Läggs till sist i `render()`, i `html`-strängen precis innan `app.innerHTML = html;` — det är den gemensamma punkten där alla vyer möts, så en ändring där gäller alla vyer på en gång
 
 ## Beställningsfunktion
 - Admin (jesper.franzen@bravida.se) kan beställa artiklar som har artnr
