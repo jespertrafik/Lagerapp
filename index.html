@@ -403,6 +403,11 @@
     .up-sec { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 4px; }
     .up-text { font-size: 16px; line-height: 1.6; color: var(--text); }
     .up-empty { padding: 50px 20px; text-align: center; color: var(--text-dim); font-size: 16px; }
+    .up-artnr { display: block; font-size: 15px; font-weight: 700; color: var(--accent); margin-top: 3px; word-break: break-all; }
+    .up-artnr.none { color: var(--text-dim); font-weight: 500; }
+    .up-stock { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; padding: 4px 0; color: var(--text); }
+    .up-stock.zero { color: var(--text-dim); }
+    .up-copy { margin-top: 8px; padding: 8px 14px; font-size: 14px; font-weight: 700; font-family: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--card-border); border-radius: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -605,6 +610,11 @@ let upModel = null;   // specifik modell (machine-sträng) | null = alla
 let upSearch = "";
 let upOpenKey = null; // nyckel för utfälld felkodsrad
 let upList = [];      // aktuell filtrerad lista (index används av upToggle)
+let upArtBrand = null;   // märkesfilter i artikelnummer-fliken | null = alla
+let upArtOpenKey = null;
+let upArtList = [];
+let upArtDepts = null;   // departments/* från Firebase, null = laddas
+let upArtListening = false;
 
 // ====== ERROR CODE DATABASE ======
 const ERROR_CODES = [
@@ -2241,8 +2251,8 @@ function render() {
   if (activeView === "uppslag") {
     html += `<div class="up-wrap">`;
     html += `<div class="up-tabs">
-      <button class="up-tab ${upTab==='felkoder'?'active':''}" onclick="upTab='felkoder';render()">Felkoder</button>
-      <button class="up-tab ${upTab==='artnr'?'active':''}" onclick="upTab='artnr';render()">Artikelnummer</button>
+      <button class="up-tab ${upTab==='felkoder'?'active':''}" onclick="if(upTab!=='felkoder'){upTab='felkoder';upSearch='';render()}">Felkoder</button>
+      <button class="up-tab ${upTab==='artnr'?'active':''}" onclick="if(upTab!=='artnr'){upTab='artnr';upSearch='';render()}">Artikelnummer</button>
     </div>`;
 
     if (upTab === "felkoder") {
@@ -2279,7 +2289,21 @@ function render() {
       </div>`;
       html += `<div id="up-list-wrap">${upListHtml()}</div>`;
     } else {
-      html += `<div class="up-empty">Artikelnummer — kommer snart</div>`;
+      upArtListen();
+      const brands = upArtBrands();
+      if (brands.length) {
+        html += `<div class="up-label">Märke</div><div class="up-chips">`;
+        html += `<button class="up-chip small ${!upArtBrand?'active':''}" onclick="upArtPickBrand(null)">Alla</button>`;
+        brands.forEach((b, i) => {
+          html += `<button class="up-chip small ${upArtBrand===b?'active':''}" onclick="upArtPickBrand(${i})">${upEsc(b)}</button>`;
+        });
+        html += `</div>`;
+      }
+      html += `<div class="up-search">
+        <input class="search-input" type="text" inputmode="search" id="up-search" placeholder="Sök artikel eller artnr..." value="${upEsc(upSearch)}" oninput="upSearch=this.value;upRenderList()" autocomplete="off">
+        <button class="up-clear" type="button" onclick="upSearch='';document.getElementById('up-search').value='';upRenderList()" aria-label="Rensa">✕</button>
+      </div>`;
+      html += `<div id="up-list-wrap">${upArtListHtml()}</div>`;
     }
     html += `</div>`;
   } // end uppslag view
@@ -2951,7 +2975,7 @@ function upListHtml() {
 
   if (!upList.length) return `<div class="up-empty">Inga felkoder hittades</div>`;
   const showModel = new Set(upList.map(e => e.machine)).size > 1;
-  let html = `<div class="up-count">${upList.length} felkoder</div><div class="up-list">`;
+  let html = `<div class="up-count">${upList.length} ${upList.length === 1 ? "felkod" : "felkoder"}</div><div class="up-list">`;
   upList.forEach((e, i) => {
     const open = upOpenKey === upKey(e);
     const part = (e.parts && e.parts.length)
@@ -2979,7 +3003,7 @@ function upListHtml() {
 function upRenderList() {
   const wrap = document.getElementById("up-list-wrap");
   if (!wrap) { render(); return; }
-  wrap.innerHTML = upListHtml();
+  wrap.innerHTML = upTab === "artnr" ? upArtListHtml() : upListHtml();
 }
 
 function upToggle(i) {
@@ -2993,6 +3017,122 @@ function upToggle(i) {
     const row = document.getElementById("up-row-" + i);
     if (row) row.classList.add("open");
   }
+}
+
+// ====== UPPSLAG: artikelnummerflik (skrivskyddat uppslag i lager + bilar) ======
+function upArtListen() {
+  if (upArtListening) return;
+  upArtListening = true;
+  db.ref("departments").on("value", snap => {
+    const first = upArtDepts === null;
+    upArtDepts = snap.val() || {};
+    if (activeView !== "uppslag" || upTab !== "artnr") return;
+    // Första laddningen ritar märkesknapparna; senare saldoändringar uppdaterar bara listan så sökfältet behåller fokus
+    if (first) render(); else upRenderList();
+  });
+}
+
+function upArtNorm(x) { return String(x || "").toLowerCase().replace(/[\s.\-\/]/g, ""); }
+
+// Slår ihop samma artnr från alla avdelningar och (om behörighet) bilar
+function upArtAll() {
+  const groups = {};
+  const add = (key, name, artnr, brand, price, place, qty, unit) => {
+    const g = groups[key] || (groups[key] = { key, name, artnr, brand: "", price: 0, stock: [] });
+    if (!g.brand && brand && brand !== "Övrigt") g.brand = brand;
+    if (!g.brandAny && brand) g.brandAny = brand;
+    if (!g.price && price) g.price = price;
+    g.stock.push({ place, qty: qty || 0, unit: unit || "st" });
+  };
+  Object.entries(upArtDepts || {}).forEach(([deptId, d]) => {
+    const dept = DEPARTMENTS.find(x => x.id === deptId);
+    Object.values((d && d.items) || {}).forEach(it => {
+      if (!it || !it.name) return;
+      const an = upArtNorm(it.artnr);
+      add(an ? "a:" + an : "n:" + deptId + ":" + it.name.toLowerCase(), it.name, (it.artnr || "").trim(), it.brand, it.price, dept ? dept.name : deptId, it.qty, it.unit);
+    });
+  });
+  if (canViewBilar) {
+    Object.entries(bilarData || {}).forEach(([regnr, bil]) => {
+      Object.values((bil && bil.artiklar) || {}).forEach(a => {
+        if (!a || !a.namn) return;
+        const an = upArtNorm(a.artnr);
+        add(an ? "a:" + an : "b:" + regnr + ":" + a.namn.toLowerCase(), a.namn, (a.artnr || "").trim(), "", 0, "🚗 " + regnr + (bil.tekniker ? " (" + bil.tekniker + ")" : ""), a.antal, "st");
+      });
+    });
+  }
+  return Object.values(groups).map(g => { g.brand = g.brand || g.brandAny || ""; return g; })
+    .sort((a, b) => a.name.localeCompare(b.name, "sv"));
+}
+
+function upArtBrands() {
+  if (!upArtDepts) return [];
+  const set = new Set(upArtAll().map(g => g.brand).filter(Boolean));
+  return Array.from(set).sort((a, b) => a === "Övrigt" ? 1 : b === "Övrigt" ? -1 : a.localeCompare(b, "sv"));
+}
+
+function upArtPickBrand(i) {
+  upArtBrand = i === null ? null : upArtBrands()[i];
+  upArtOpenKey = null;
+  render();
+}
+
+function upArtMatches(g, q) {
+  const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return true;
+  const name = g.name.toLowerCase(), an = upArtNorm(g.artnr);
+  return words.every(w => name.includes(w) || (an && upArtNorm(w) && an.includes(upArtNorm(w))));
+}
+
+function upArtListHtml() {
+  if (!upArtDepts) { upArtList = []; return `<div class="up-empty">Laddar lager…</div>`; }
+  const q = upSearch;
+  upArtList = upArtAll().filter(g => (!upArtBrand || g.brand === upArtBrand) && upArtMatches(g, q));
+  // Exakt artnr-träff först
+  const qn = upArtNorm(q);
+  if (qn) upArtList.sort((a, b) => (upArtNorm(b.artnr) === qn) - (upArtNorm(a.artnr) === qn));
+  if (!upArtList.length) return `<div class="up-empty">Inga artiklar hittades</div>`;
+
+  let html = `<div class="up-count">${upArtList.length} ${upArtList.length === 1 ? "artikel" : "artiklar"}</div><div class="up-list">`;
+  upArtList.forEach((g, i) => {
+    const open = upArtOpenKey === g.key;
+    const total = g.stock.reduce((s, x) => s + (Number(x.qty) || 0), 0);
+    const stock = g.stock.map(x => `<div class="up-stock ${Number(x.qty) ? '' : 'zero'}"><span>${upEsc(x.place)}</span><span>${upEsc(x.qty)} ${upEsc(x.unit)}</span></div>`).join("");
+    html += `<div class="up-row ${open ? 'open' : ''}" id="ua-row-${i}">
+      <button class="up-head" type="button" onclick="upArtToggle(${i})">
+        <span class="up-name">${upEsc(g.name)}${g.artnr ? `<span class="up-artnr">${upEsc(g.artnr)}</span>` : `<span class="up-artnr none">Artnr saknas</span>`}</span>
+        <span class="up-chev">›</span>
+      </button>
+      <div class="up-body">
+        ${g.artnr ? `<div class="up-sec">Artikelnummer</div><div class="up-text">${upEsc(g.artnr)}</div><button class="up-copy" type="button" onclick="upArtCopy(${i})">📋 Kopiera</button>` : ""}
+        ${g.brand ? `<div class="up-sec">Märke</div><div class="up-text">${upEsc(g.brand)}</div>` : ""}
+        ${g.price ? `<div class="up-sec">Pris</div><div class="up-text">${Number(g.price).toLocaleString("sv-SE", { maximumFractionDigits: 2 })} kr/st</div>` : ""}
+        <div class="up-sec">Saldo — totalt ${total}</div>
+        ${stock}
+      </div>
+    </div>`;
+  });
+  return html + `</div>`;
+}
+
+function upArtToggle(i) {
+  const g = upArtList[i];
+  if (!g) return;
+  const wasOpen = upArtOpenKey === g.key;
+  document.querySelectorAll(".up-row.open").forEach(el => el.classList.remove("open"));
+  upArtOpenKey = wasOpen ? null : g.key;
+  if (!wasOpen) {
+    const row = document.getElementById("ua-row-" + i);
+    if (row) row.classList.add("open");
+  }
+}
+
+function upArtCopy(i) {
+  const g = upArtList[i];
+  if (!g || !g.artnr) return;
+  const done = () => showToast("Kopierat: " + g.artnr);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(g.artnr).then(done, () => prompt("Artikelnummer:", g.artnr));
+  else prompt("Artikelnummer:", g.artnr);
 }
 
 function ecNoteKey(e) {
