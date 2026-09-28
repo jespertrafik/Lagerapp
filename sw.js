@@ -1,4 +1,4 @@
-// lager-v3.90
+// lager-v3.91
 // Versionssträngen ovan bumpas av deploy.mjs så sw.js byter bytes vid varje deploy.
 // Det får browsern att se SW:n som ändrad → install-eventet körs → caches rensas.
 self.addEventListener('install', () => self.skipWaiting());
