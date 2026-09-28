@@ -371,6 +371,38 @@
     .ai-modal-close { width:100%; max-width:520px; padding:10px 16px; display:flex; justify-content:flex-end; flex-shrink:0; }
     .ai-modal-close button { background:#222; border:none; color:#fff; font-size:22px; width:40px; height:40px; border-radius:50%; cursor:pointer; }
     .ai-modal-frame { width:100%; max-width:520px; border:none; flex:1; min-height:0; }
+
+    /* ===== UPPSLAG-VY ===== */
+    .up-wrap { padding: 12px 16px 0; }
+    .up-tabs { display: flex; margin-bottom: 14px; }
+    .up-tab { flex: 1; padding: 11px 4px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .up-tab:first-child { border-radius: 10px 0 0 10px; }
+    .up-tab:last-child { border-radius: 0 10px 10px 0; }
+    .up-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .up-label { font-size: 12px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 6px 2px; }
+    .up-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .up-chip { padding: 10px 16px; font-size: 16px; font-weight: 700; font-family: inherit; color: var(--text); background: var(--card); border: 2px solid var(--card-border); border-radius: 12px; cursor: pointer; }
+    .up-chip.active { color: #000; background: var(--accent); border-color: var(--accent); }
+    .up-chip:disabled { opacity: 0.35; cursor: default; }
+    .up-chip.small { padding: 7px 12px; font-size: 14px; }
+    .up-search { position: relative; margin-bottom: 4px; }
+    .up-search .search-input { width: 100%; padding-right: 44px; }
+    .up-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); font-size: 20px; padding: 6px 10px; cursor: pointer; }
+    .up-count { font-size: 14px; color: var(--text-dim); padding: 8px 2px 6px; }
+    .up-list { padding-bottom: 40px; }
+    .up-row { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+    .up-row.open { border-color: var(--accent); }
+    .up-head { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; background: none; border: none; color: var(--text); font-family: inherit; text-align: left; cursor: pointer; }
+    .up-code { font-size: 22px; font-weight: 800; color: var(--accent); min-width: 72px; }
+    .up-name { flex: 1; font-size: 16px; font-weight: 600; line-height: 1.3; }
+    .up-model { display: block; font-size: 12px; font-weight: 500; color: var(--text-dim); margin-top: 2px; }
+    .up-chev { font-size: 20px; color: var(--text-dim); transition: transform 0.2s; }
+    .up-row.open .up-chev { transform: rotate(90deg); }
+    .up-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--card-border); }
+    .up-row.open .up-body { display: block; }
+    .up-sec { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 4px; }
+    .up-text { font-size: 16px; line-height: 1.6; color: var(--text); }
+    .up-empty { padding: 50px 20px; text-align: center; color: var(--text-dim); font-size: 16px; }
   </style>
 </head>
 <body>
@@ -536,7 +568,7 @@ let orderItem = null;
 let orderQty = 0;
 let orderCart = [];
 let showOrderCart = false;
-let activeView = "lager"; // "lager" | "felkoder" | "service" | "bilar"
+let activeView = "lager"; // "lager" | "felkoder" | "uppslag" | "service" | "bilar"
 let bilarData = {};
 let activeBil = null;
 let bilarSearch = "";
@@ -566,6 +598,13 @@ let ecSearch = "";
 let ecTab = null;    // "tvätt" | "tork" | "torkskap" | null
 let ecSubTab = null; // sub-tab key | null
 let ecRefPanel = null; // "ntc" | "lucklås" | null
+let upTab = "felkoder"; // "felkoder" | "artnr"
+let upBrand = null;   // "Miele" | "Electrolux" | null
+let upType = null;    // "tvatt" | "tork" | "torkskap" | null
+let upModel = null;   // specifik modell (machine-sträng) | null = alla
+let upSearch = "";
+let upOpenKey = null; // nyckel för utfälld felkodsrad
+let upList = [];      // aktuell filtrerad lista (index används av upToggle)
 
 // ====== ERROR CODE DATABASE ======
 const ERROR_CODES = [
@@ -1809,6 +1848,7 @@ function render() {
       <div class="dept-tabs view-tabs" style="flex-wrap:wrap">
         <button class="dept-tab ${activeView === "lager" ? "active" : ""}" onclick="activeView='lager';render()" style="border-bottom-color:${activeView === 'lager' ? 'var(--accent)' : 'transparent'}">📦 Lager</button>
         <button class="dept-tab ${activeView === "felkoder" ? "active" : ""}" onclick="activeView='felkoder';render()" style="border-bottom-color:${activeView === 'felkoder' ? 'var(--red)' : 'transparent'}; ${activeView === 'felkoder' ? 'color:var(--red)' : ''}">🔧 Felkoder</button>
+        <button class="dept-tab ${activeView === "uppslag" ? "active" : ""}" onclick="activeView='uppslag';render()" style="border-bottom-color:${activeView === 'uppslag' ? 'var(--accent)' : 'transparent'}">🔎 Uppslag</button>
         ${canSeeService ? `<button class="dept-tab ${activeView === "service" ? "active" : ""}" onclick="activeView='service';render()" style="border-bottom-color:${activeView === 'service' ? 'var(--green)' : 'transparent'}; ${activeView === 'service' ? 'color:var(--green)' : ''}">🔧 Service</button>` : ''}
         ${canViewBilar ? `<button class="dept-tab ${activeView === "bilar" ? "active" : ""}" onclick="activeView='bilar';activeBil=null;render()" style="border-bottom-color:${activeView === 'bilar' ? '#60a5fa' : 'transparent'}; ${activeView === 'bilar' ? 'color:#60a5fa' : ''}">🚗 Bilar</button>` : ''}
       </div>
@@ -2196,6 +2236,53 @@ function render() {
 
     html += `<div class="ec-overlay" id="ec-overlay" onclick="if(event.target===this)closeEC()"><div class="ec-popup" id="ec-popup"></div></div>`;
   } // end felkoder view
+
+  // ====== UPPSLAG VIEW ======
+  if (activeView === "uppslag") {
+    html += `<div class="up-wrap">`;
+    html += `<div class="up-tabs">
+      <button class="up-tab ${upTab==='felkoder'?'active':''}" onclick="upTab='felkoder';render()">Felkoder</button>
+      <button class="up-tab ${upTab==='artnr'?'active':''}" onclick="upTab='artnr';render()">Artikelnummer</button>
+    </div>`;
+
+    if (upTab === "felkoder") {
+      html += `<div class="up-label">Märke</div><div class="up-chips">`;
+      UP_BRANDS.forEach(b => {
+        html += `<button class="up-chip ${upBrand===b?'active':''}" onclick="upPickBrand('${b}')">${b}</button>`;
+      });
+      html += `</div>`;
+
+      if (upBrand) {
+        html += `<div class="up-label">Maskintyp</div><div class="up-chips">`;
+        UP_TYPES.forEach(t => {
+          const n = ERROR_CODES.filter(e => e.brand === upBrand && upMachineType(e.machine) === t.key).length;
+          html += `<button class="up-chip ${upType===t.key?'active':''}" ${n ? '' : 'disabled'} onclick="upPickType('${t.key}')">${t.label}</button>`;
+        });
+        html += `</div>`;
+      }
+
+      if (upBrand && upType) {
+        const models = upModels();
+        if (models.length > 1) {
+          html += `<div class="up-label">Modell</div><div class="up-chips">`;
+          html += `<button class="up-chip small ${!upModel?'active':''}" onclick="upPickModel(null)">Alla</button>`;
+          models.forEach((m, i) => {
+            html += `<button class="up-chip small ${upModel===m?'active':''}" onclick="upPickModel(${i})">${upEsc(m)}</button>`;
+          });
+          html += `</div>`;
+        }
+      }
+
+      html += `<div class="up-search">
+        <input class="search-input" type="text" inputmode="search" id="up-search" placeholder="Sök felkod, t.ex. F11..." value="${upEsc(upSearch)}" oninput="upSearch=this.value;upRenderList()" autocomplete="off">
+        <button class="up-clear" type="button" onclick="upSearch='';document.getElementById('up-search').value='';upRenderList()" aria-label="Rensa">✕</button>
+      </div>`;
+      html += `<div id="up-list-wrap">${upListHtml()}</div>`;
+    } else {
+      html += `<div class="up-empty">Artikelnummer — kommer snart</div>`;
+    }
+    html += `</div>`;
+  } // end uppslag view
 
   // ====== SERVICE VIEW ======
   if (activeView === "service") {
@@ -2765,6 +2852,148 @@ function ecSearchRender() {
 }
 // Legacy alias
 function filterEC() { ecSearchRender(); }
+
+// ====== UPPSLAG: felkodsflik ======
+const UP_BRANDS = ["Miele", "Electrolux"];
+const UP_TYPES = [
+  { key: "tvatt",    label: "Tvättmaskin" },
+  { key: "tork",     label: "Torktumlare" },
+  { key: "torkskap", label: "Torkskåp" },
+];
+const UP_MACHINE_TYPE = {
+  "PW 6065": "tvatt", "PW 5105": "tvatt", "W555H, W575H": "tvatt", "W455H, W465H, W475H": "tvatt", "W365H (Exacta)": "tvatt",
+  "PT 7136 OS": "tork", "PT 7186": "tork", "TD6-6, T5130, T5190": "tork", "T4130, T4190": "tork", "Selecta I (T3190)": "tork",
+  "Torkskåp TS5121LE/QLE": "torkskap",
+};
+// Nya maskiner i ERROR_CODES som saknas i tabellen ovan hamnar ändå rätt via namnet
+function upMachineType(m) {
+  if (UP_MACHINE_TYPE[m]) return UP_MACHINE_TYPE[m];
+  if (/torkskåp|^TS/i.test(m)) return "torkskap";
+  if (/^(PT|T|TD|Selecta)/i.test(m)) return "tork";
+  return "tvatt";
+}
+
+function upEsc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function upModels() {
+  const seen = [];
+  ERROR_CODES.forEach(e => {
+    if (e.brand === upBrand && upMachineType(e.machine) === upType && !seen.includes(e.machine)) seen.push(e.machine);
+  });
+  return seen;
+}
+
+function upPickBrand(b) {
+  upBrand = upBrand === b ? null : b;
+  upType = null; upModel = null; upOpenKey = null;
+  render();
+}
+function upPickType(t) {
+  upType = upType === t ? null : t;
+  upModel = null; upOpenKey = null;
+  render();
+}
+function upPickModel(i) {
+  upModel = i === null ? null : upModels()[i];
+  upOpenKey = null;
+  render();
+}
+
+function upKey(e) { return e.brand + "|" + e.machine + "|" + e.code; }
+
+// Kodliknande sökning ("F11", "11", "err 03") matchar bara felkoden; fritext matchar även namn/beskrivning
+// Mellanslag och inledande nollor ignoreras: "err3" hittar "ERR 03"
+function upNormCode(x) {
+  return x.toUpperCase().replace(/\s+/g, "").replace(/^([A-Z]*)0+(?=\d)/, "$1");
+}
+function upMatches(e, q) {
+  const qn = upNormCode(q.trim());
+  if (!qn) return true;
+  const code = upNormCode(e.code);
+  if (code.startsWith(qn)) return true;
+  if (/^\d/.test(qn) && code.replace(/^[A-Z]+/, "").startsWith(qn)) return true;
+  if (/^[A-Z]{0,3}\d/.test(qn)) return false;
+  const ql = q.trim().toLowerCase();
+  return ql.length >= 2 && (e.name.toLowerCase().includes(ql) || e.desc.toLowerCase().includes(ql));
+}
+
+function upSort(list, q) {
+  const qn = (q || "").trim().toUpperCase().replace(/\s+/g, "");
+  return list.sort((a, b) => {
+    const ca = a.code.toUpperCase(), cb = b.code.toUpperCase();
+    if (qn) {
+      const ax = ca.replace(/\s+/g, "") === qn, bx = cb.replace(/\s+/g, "") === qn;
+      if (ax !== bx) return ax ? -1 : 1;
+    }
+    const ma = ca.match(/^([A-Z\s]*)(\d+)/), mb = cb.match(/^([A-Z\s]*)(\d+)/);
+    let d = 0;
+    if (ma && mb) {
+      if (ma[1] !== mb[1]) d = ma[1] < mb[1] ? -1 : 1;
+      else d = (parseInt(ma[2]) - parseInt(mb[2])) || (ca.slice(ma[0].length) < cb.slice(mb[0].length) ? -1 : ca.slice(ma[0].length) > cb.slice(mb[0].length) ? 1 : 0);
+    } else d = ca < cb ? -1 : ca > cb ? 1 : 0;
+    return d || (a.machine < b.machine ? -1 : a.machine > b.machine ? 1 : 0);
+  });
+}
+
+function upListHtml() {
+  const hasMachine = upBrand && upType;
+  if (!hasMachine && !upSearch.trim()) {
+    upList = [];
+    return `<div class="up-empty">Välj märke och maskintyp — eller sök direkt på en felkod</div>`;
+  }
+  let base = ERROR_CODES;
+  if (upBrand) base = base.filter(e => e.brand === upBrand);
+  if (upType) base = base.filter(e => upMachineType(e.machine) === upType);
+  if (upModel) base = base.filter(e => e.machine === upModel);
+  upList = upSort(base.filter(e => upMatches(e, upSearch)), upSearch);
+
+  if (!upList.length) return `<div class="up-empty">Inga felkoder hittades</div>`;
+  const showModel = new Set(upList.map(e => e.machine)).size > 1;
+  let html = `<div class="up-count">${upList.length} felkoder</div><div class="up-list">`;
+  upList.forEach((e, i) => {
+    const open = upOpenKey === upKey(e);
+    const part = (e.parts && e.parts.length)
+      ? `<div class="up-sec">Berörd del</div><div class="up-text">${e.parts.map(p => "• " + upEsc(p)).join("<br>")}</div>`
+      : "";
+    html += `<div class="up-row ${open ? 'open' : ''}" id="up-row-${i}">
+      <button class="up-head" type="button" onclick="upToggle(${i})">
+        <span class="up-code">${upEsc(e.code)}</span>
+        <span class="up-name">${upEsc(e.name)}${showModel ? `<span class="up-model">${upEsc(e.brand)} ${upEsc(e.machine)}</span>` : ""}</span>
+        <span class="up-chev">›</span>
+      </button>
+      <div class="up-body">
+        <div class="up-sec">Betydelse</div>
+        <div class="up-text">${upEsc(e.desc).replace(/\n/g, "<br>")}</div>
+        ${part}
+        <div class="up-sec">Maskin</div>
+        <div class="up-text">${upEsc(e.brand)} — ${upEsc(e.machine)}</div>
+      </div>
+    </div>`;
+  });
+  return html + `</div>`;
+}
+
+// Rendera bara listan — sökfältet behåller fokus och tangentbordet stängs inte
+function upRenderList() {
+  const wrap = document.getElementById("up-list-wrap");
+  if (!wrap) { render(); return; }
+  wrap.innerHTML = upListHtml();
+}
+
+function upToggle(i) {
+  const e = upList[i];
+  if (!e) return;
+  const key = upKey(e);
+  const wasOpen = upOpenKey === key;
+  document.querySelectorAll(".up-row.open").forEach(el => el.classList.remove("open"));
+  upOpenKey = wasOpen ? null : key;
+  if (!wasOpen) {
+    const row = document.getElementById("up-row-" + i);
+    if (row) row.classList.add("open");
+  }
+}
 
 function ecNoteKey(e) {
   return (e.brand + "_" + e.machine + "_" + e.code).replace(/[.#$[\]/]/g, "_");
