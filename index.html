@@ -1,4 +1,4 @@
-<!-- v3.92 -->
+<!-- v3.93 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.92</title>
+  <title>Lager v3.93</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -375,7 +375,7 @@
     /* ===== UPPSLAG-VY ===== */
     .up-wrap { padding: 12px 16px 0; }
     .up-tabs { display: flex; margin-bottom: 14px; }
-    .up-tab { flex: 1; padding: 11px 4px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .up-tab { flex: 1; min-width: 0; padding: 11px 2px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); font-size: clamp(12px, 3.6vw, 16px); font-weight: 700; font-family: inherit; cursor: pointer; }
     .up-tab:first-child { border-radius: 10px 0 0 10px; }
     .up-tab:last-child { border-radius: 0 10px 10px 0; }
     .up-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.92";
+const APP_VERSION = "v3.93";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -603,7 +603,7 @@ let ecSearch = "";
 let ecTab = null;    // "tvätt" | "tork" | "torkskap" | null
 let ecSubTab = null; // sub-tab key | null
 let ecRefPanel = null; // "ntc" | "lucklås" | null
-let upTab = "felkoder"; // "felkoder" | "artnr"
+let upTab = "felkoder"; // "felkoder" | "artnr" | "podab"
 let upBrand = null;   // "Miele" | "Electrolux" | null
 let upType = null;    // "tvatt" | "tork" | "torkskap" | null
 let upModel = null;   // specifik modell (machine-sträng) | null = alla
@@ -1858,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.92</h1>
+          <h1>📦 Lager v3.93</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2267,6 +2267,7 @@ function render() {
     html += `<div class="up-tabs">
       <button class="up-tab ${upTab==='felkoder'?'active':''}" onclick="if(upTab!=='felkoder'){upTab='felkoder';upSearch='';render()}">Felkoder</button>
       <button class="up-tab ${upTab==='artnr'?'active':''}" onclick="if(upTab!=='artnr'){upTab='artnr';upSearch='';render()}">Artikelnummer</button>
+      <button class="up-tab ${upTab==='podab'?'active':''}" onclick="if(upTab!=='podab'){upTab='podab';upSearch='';render()}">PODAB</button>
     </div>`;
 
     if (upTab === "felkoder") {
@@ -2305,7 +2306,7 @@ function render() {
     } else {
       upArtListen();
       const brands = upArtBrands();
-      if (brands.length) {
+      if (brands.length && upTab === "artnr") {
         html += `<div class="up-label">Märke</div><div class="up-chips">`;
         html += `<button class="up-chip small ${!upArtBrand?'active':''}" onclick="upArtPickBrand(null)">Alla</button>`;
         brands.forEach((b, i) => {
@@ -3017,7 +3018,7 @@ function upListHtml() {
 function upRenderList() {
   const wrap = document.getElementById("up-list-wrap");
   if (!wrap) { render(); return; }
-  wrap.innerHTML = upTab === "artnr" ? upArtListHtml() : upListHtml();
+  wrap.innerHTML = upTab === "felkoder" ? upListHtml() : upArtListHtml();
 }
 
 function upToggle(i) {
@@ -3040,7 +3041,7 @@ function upArtListen() {
   db.ref("departments").on("value", snap => {
     const first = upArtDepts === null;
     upArtDepts = snap.val() || {};
-    if (activeView !== "uppslag" || upTab !== "artnr") return;
+    if (activeView !== "uppslag" || upTab === "felkoder") return;
     // Första laddningen ritar märkesknapparna; senare saldoändringar uppdaterar bara listan så sökfältet behåller fokus
     if (first) render(); else upRenderList();
   });
@@ -3101,7 +3102,11 @@ function upArtMatches(g, q) {
 function upArtListHtml() {
   if (!upArtDepts) { upArtList = []; return `<div class="up-empty">Laddar lager…</div>`; }
   const q = upSearch;
-  upArtList = upArtAll().filter(g => (!upArtBrand || g.brand === upArtBrand) && upArtMatches(g, q));
+  // PODAB-fliken = artikellistan låst till märket PODAB
+  const brandOk = upTab === "podab"
+    ? g => g.brand.toLowerCase() === "podab"
+    : g => !upArtBrand || g.brand === upArtBrand;
+  upArtList = upArtAll().filter(g => brandOk(g) && upArtMatches(g, q));
   // Exakt artnr-träff först
   const qn = upArtNorm(q);
   if (qn) upArtList.sort((a, b) => (upArtNorm(b.artnr) === qn) - (upArtNorm(a.artnr) === qn));
