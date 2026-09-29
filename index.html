@@ -1,4 +1,4 @@
-<!-- v3.99 -->
+<!-- v4.00 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.99</title>
+  <title>Lager v4.00</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.99";
+const APP_VERSION = "v4.00";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -1858,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.99</h1>
+          <h1>📦 Lager v4.00</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3050,12 +3050,12 @@ function upArtNorm(x) { return String(x || "").toLowerCase().replace(/[\s.\-\/]/
 
 // Slår ihop samma artnr från alla avdelningar och (om behörighet) bilar
 // Reservdelar utan lagersaldo — visas i Artikelnummer/PODAB som referens.
-// brand styr vilken flik/märkesknapp de hamnar under; machine visas och är sökbar.
+// brand (+ ev. also) styr vilken flik/märkesknapp de hamnar under; machine visas och är sökbar.
 const UP_REF_PARTS = [
   { name: "Plastkugg",  artnr: "11076500", brand: "PODAB", machine: "Mangel Pexymek" },
   { name: "Sprint",     artnr: "11075500", brand: "PODAB", machine: "Mangel Pexymek" },
-  { name: "Kretskort",  artnr: "11076730", brand: "PODAB", machine: "Torkskåp Antifukt / Miele 2120FL" },
-  { name: "Sensor",     artnr: "11076560", brand: "PODAB", machine: "Torkskåp Antifukt / Miele 2120FL" },
+  { name: "Kretskort",  artnr: "11076730", brand: "PODAB", also: ["Miele"], machine: "Torkskåp Antifukt / Miele 2120FL" },
+  { name: "Sensor",     artnr: "11076560", brand: "PODAB", also: ["Miele"], machine: "Torkskåp Antifukt / Miele 2120FL" },
 ];
 
 function upArtAll() {
@@ -3088,6 +3088,7 @@ function upArtAll() {
     const key = "a:" + upArtNorm(r.artnr);
     const g = groups[key] || (groups[key] = { key, name: r.name + " — " + r.machine.replace(/\s*\(.*\)$/, ""), artnr: r.artnr, brand: "", price: 0, stock: [] });
     if (!g.brand) g.brand = r.brand;
+    g.also = r.also || [];
     g.machine = r.machine;
   });
   return Object.values(groups).map(g => { g.brand = g.brand || g.brandAny || ""; return g; })
@@ -3124,9 +3125,11 @@ function upArtListHtml() {
   if (!upArtDepts) { upArtList = []; return `<div class="up-empty">Laddar lager…</div>`; }
   const q = upSearch;
   // PODAB-fliken = artikellistan låst till märket PODAB
+  // En del kan höra till flera märken (t.ex. PODAB-del till Miele-torkskåp)
+  const cats = g => [g.brand, ...(g.also || [])].map(upArtBrandGroup).filter(Boolean);
   const brandOk = upTab === "podab"
-    ? g => upArtBrandGroup(g.brand) === "PODAB"
-    : g => { const c = upArtBrandGroup(g.brand); return !!c && (!upArtBrand || c === upArtBrand); };
+    ? g => cats(g).includes("PODAB")
+    : g => { const c = cats(g); return c.length > 0 && (!upArtBrand || c.includes(upArtBrand)); };
   upArtList = upArtAll().filter(g => brandOk(g) && upArtMatches(g, q));
   // Exakt artnr-träff först
   const qn = upArtNorm(q);
@@ -3145,7 +3148,7 @@ function upArtListHtml() {
       </button>
       <div class="up-body">
         ${g.artnr ? `<div class="up-sec">Artikelnummer</div><div class="up-text">${upEsc(g.artnr)}</div><button class="up-copy" type="button" onclick="upArtCopy(${i})">📋 Kopiera</button>` : ""}
-        ${g.brand ? `<div class="up-sec">Märke</div><div class="up-text">${upEsc(g.brand)}</div>` : ""}
+        ${g.brand ? `<div class="up-sec">Märke</div><div class="up-text">${upEsc([g.brand, ...(g.also || [])].join(" / "))}</div>` : ""}
         ${g.price ? `<div class="up-sec">Pris</div><div class="up-text">${Number(g.price).toLocaleString("sv-SE", { maximumFractionDigits: 2 })} kr/st</div>` : ""}
         ${g.machine ? `<div class="up-sec">Maskin</div><div class="up-text">${upEsc(g.machine)}</div>` : ""}
         ${g.stock.length ? `<div class="up-sec">Saldo — totalt ${total}</div>${stock}` : `<div class="up-sec">Saldo</div><div class="up-text" style="color:var(--text-dim)">Finns inte i lagret</div>`}
