@@ -1,4 +1,4 @@
-<!-- v3.94 -->
+<!-- v3.95 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.94</title>
+  <title>Lager v3.95</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.94";
+const APP_VERSION = "v3.95";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -1858,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.94</h1>
+          <h1>📦 Lager v3.95</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -2290,7 +2290,6 @@ function render() {
         const models = upModels();
         if (models.length > 1) {
           html += `<div class="up-label">Modell</div><div class="up-chips">`;
-          html += `<button class="up-chip small ${!upModel?'active':''}" onclick="upPickModel(null)">Alla</button>`;
           models.forEach((m, i) => {
             html += `<button class="up-chip small ${upModel===m?'active':''}" onclick="upPickModel(${i})">${upEsc(m)}</button>`;
           });
@@ -2308,7 +2307,6 @@ function render() {
       const brands = upArtBrands();
       if (brands.length && upTab === "artnr") {
         html += `<div class="up-label">Märke</div><div class="up-chips">`;
-        html += `<button class="up-chip small ${!upArtBrand?'active':''}" onclick="upArtPickBrand(null)">Alla</button>`;
         brands.forEach((b, i) => {
           html += `<button class="up-chip small ${upArtBrand===b?'active':''}" onclick="upArtPickBrand(${i})">${upEsc(b)}</button>`;
         });
@@ -2935,7 +2933,8 @@ function upPickType(t) {
   render();
 }
 function upPickModel(i) {
-  upModel = i === null ? null : upModels()[i];
+  const m = upModels()[i];
+  upModel = upModel === m ? null : m;
   upOpenKey = null;
   render();
 }
@@ -3093,7 +3092,8 @@ function upArtBrands() {
 }
 
 function upArtPickBrand(i) {
-  upArtBrand = i === null ? null : upArtBrands()[i];
+  const b = upArtBrands()[i];
+  upArtBrand = upArtBrand === b ? null : b;
   upArtOpenKey = null;
   render();
 }
