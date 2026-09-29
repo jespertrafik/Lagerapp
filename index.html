@@ -1,4 +1,4 @@
-<!-- v3.93 -->
+<!-- v3.94 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.93</title>
+  <title>Lager v3.94</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.93";
+const APP_VERSION = "v3.94";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -1858,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.93</h1>
+          <h1>📦 Lager v3.94</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3080,10 +3080,16 @@ function upArtAll() {
     .sort((a, b) => a.name.localeCompare(b.name, "sv"));
 }
 
+// Artikelnummer-fliken visar bara dessa märken. Undermärken som "Electrolux Mangel" räknas till Electrolux.
+const UP_ART_BRANDS = ["Electrolux", "Miele", "PODAB"];
+function upArtBrandGroup(brand) {
+  const b = String(brand || "").toLowerCase();
+  return UP_ART_BRANDS.find(x => b.startsWith(x.toLowerCase())) || null;
+}
+
 function upArtBrands() {
   if (!upArtDepts) return [];
-  const set = new Set(upArtAll().map(g => g.brand).filter(Boolean));
-  return Array.from(set).sort((a, b) => a === "Övrigt" ? 1 : b === "Övrigt" ? -1 : a.localeCompare(b, "sv"));
+  return UP_ART_BRANDS;
 }
 
 function upArtPickBrand(i) {
@@ -3104,8 +3110,8 @@ function upArtListHtml() {
   const q = upSearch;
   // PODAB-fliken = artikellistan låst till märket PODAB
   const brandOk = upTab === "podab"
-    ? g => g.brand.toLowerCase() === "podab"
-    : g => !upArtBrand || g.brand === upArtBrand;
+    ? g => upArtBrandGroup(g.brand) === "PODAB"
+    : g => { const c = upArtBrandGroup(g.brand); return !!c && (!upArtBrand || c === upArtBrand); };
   upArtList = upArtAll().filter(g => brandOk(g) && upArtMatches(g, q));
   // Exakt artnr-träff först
   const qn = upArtNorm(q);
