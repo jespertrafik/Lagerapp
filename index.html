@@ -1,4 +1,4 @@
-<!-- v3.91 -->
+<!-- v3.92 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.91</title>
+  <title>Lager v3.92</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.91";
+const APP_VERSION = "v3.92";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -1062,6 +1062,12 @@ const SERVICE_EMAILS = ["patrik.edqvist@bravida.se"];
 const COMPUTER_LOAN_EMAILS = ["jespertrafik@gmail.com", "jesper.franzen@bravida.se", "svenskfinsk@hotmail.com"];
 const BILAR_VIEW_EMAILS = ["anders.rindahl@bravida.se", "fredrik.kindstedt@bravida.se", "svenskfinsk@hotmail.com"];
 const BILAR_NO_EDIT_EMAILS = ["anders.rindahl@bravida.se", "fredrik.kindstedt@bravida.se"];
+// Profiler som bara ser Uppslag-vyn (Felkoder | Artikelnummer) — ingen meny, inga andra vyer.
+// OBS: endast UI — databasreglerna är oförändrade.
+const UPPSLAG_ONLY_EMAILS = ["svenskfinsk@hotmail.com"];
+function isUppslagOnly() {
+  return !!currentUser && UPPSLAG_ONLY_EMAILS.includes((currentUser.email || "").toLowerCase());
+}
 
 // ====== AUTH ======
 auth.onAuthStateChanged((user) => {
@@ -1811,6 +1817,11 @@ function addItem(name, unit, qty, min, brand, price) {
 function render() {
   if (!currentUser) { renderLogin(); return; }
   const app = document.getElementById("app");
+  const uppslagOnly = isUppslagOnly();
+  if (uppslagOnly) {
+    activeView = "uppslag";
+    showSettings = false; showAdmin = false; showLog = false; showComputerLoan = false; showOrderCart = false;
+  }
 
   const canSeeService = !!currentUser;
   const canBook = !!currentUser;
@@ -1847,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.91</h1>
+          <h1>📦 Lager v3.92</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -1866,6 +1877,9 @@ function render() {
         ${DEPARTMENTS.map(d => `<button class="dept-tab ${activeDept === d.id ? "active" : ""}" onclick="switchDept('${d.id}')">${d.name}</button>`).join("")}
       </div>` : ""}
     </div>`;
+  if (uppslagOnly) {
+    html = `<div style="display:flex;justify-content:flex-end;padding:10px 16px 0"><button class="small-btn" onclick="doLogout()">Logga ut</button></div>`;
+  }
 
   if (activeView === "lager") {
 
