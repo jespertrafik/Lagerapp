@@ -1,4 +1,4 @@
-<!-- v3.97 -->
+<!-- v3.98 -->
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Lager v3.97</title>
+  <title>Lager v3.98</title>
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGFnZXIiLCJzaG9ydF9uYW1lIjoiTGFnZXIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwYSIsInRoZW1lX2NvbG9yIjoiIzBhMGEwYSJ9">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -435,7 +435,7 @@ const firebaseConfig = {
   appId: "1:477506805829:web:a4e56c05c7972be952432c"
 };
 
-const APP_VERSION = "v3.97";
+const APP_VERSION = "v3.98";
 
 const TELEGRAM_BOT_TOKEN = "8229249127:AAHBJzQBbQJ2afpn-GCod5qrl-XsWejalDE";
 const TELEGRAM_CHAT_ID = "8731725746";
@@ -1858,7 +1858,7 @@ function render() {
     <div class="header">
       <div class="header-top">
         <div>
-          <h1>📦 Lager v3.97</h1>
+          <h1>📦 Lager v3.98</h1>
           <div class="subtitle">${totalItems} artiklar${lowItems.length > 0 && viewMode === "dashboard" ? ` • ${lowItems.length} behöver beställas` : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3049,6 +3049,15 @@ function upArtListen() {
 function upArtNorm(x) { return String(x || "").toLowerCase().replace(/[\s.\-\/]/g, ""); }
 
 // Slår ihop samma artnr från alla avdelningar och (om behörighet) bilar
+// Reservdelar utan lagersaldo — visas i Artikelnummer/PODAB som referens.
+// brand styr vilken flik/märkesknapp de hamnar under; machine visas och är sökbar.
+const UP_REF_PARTS = [
+  { name: "Plastkugg",  artnr: "11076500", brand: "PODAB", machine: "Mangel Pexymek" },
+  { name: "Sprint",     artnr: "11075500", brand: "PODAB", machine: "Mangel Pexymek" },
+  { name: "Kretskort",  artnr: "11076730", brand: "PODAB", machine: "Torkskåp Antifukt / Miele 2120E (benämning ej bekräftad)" },
+  { name: "Sensor",     artnr: "11076560", brand: "PODAB", machine: "Torkskåp Antifukt / Miele 2120E (benämning ej bekräftad)" },
+];
+
 function upArtAll() {
   const groups = {};
   const add = (key, name, artnr, brand, price, place, qty, unit) => {
@@ -3075,6 +3084,12 @@ function upArtAll() {
       });
     });
   }
+  UP_REF_PARTS.forEach(r => {
+    const key = "a:" + upArtNorm(r.artnr);
+    const g = groups[key] || (groups[key] = { key, name: r.name + " — " + r.machine.replace(/\s*\(.*\)$/, ""), artnr: r.artnr, brand: "", price: 0, stock: [] });
+    if (!g.brand) g.brand = r.brand;
+    g.machine = r.machine;
+  });
   return Object.values(groups).map(g => { g.brand = g.brand || g.brandAny || ""; return g; })
     .sort((a, b) => a.name.localeCompare(b.name, "sv"));
 }
@@ -3101,7 +3116,7 @@ function upArtPickBrand(i) {
 function upArtMatches(g, q) {
   const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (!words.length) return true;
-  const name = g.name.toLowerCase(), an = upArtNorm(g.artnr);
+  const name = (g.name + " " + (g.machine || "")).toLowerCase(), an = upArtNorm(g.artnr);
   return words.every(w => name.includes(w) || (an && upArtNorm(w) && an.includes(upArtNorm(w))));
 }
 
@@ -3132,8 +3147,8 @@ function upArtListHtml() {
         ${g.artnr ? `<div class="up-sec">Artikelnummer</div><div class="up-text">${upEsc(g.artnr)}</div><button class="up-copy" type="button" onclick="upArtCopy(${i})">📋 Kopiera</button>` : ""}
         ${g.brand ? `<div class="up-sec">Märke</div><div class="up-text">${upEsc(g.brand)}</div>` : ""}
         ${g.price ? `<div class="up-sec">Pris</div><div class="up-text">${Number(g.price).toLocaleString("sv-SE", { maximumFractionDigits: 2 })} kr/st</div>` : ""}
-        <div class="up-sec">Saldo — totalt ${total}</div>
-        ${stock}
+        ${g.machine ? `<div class="up-sec">Maskin</div><div class="up-text">${upEsc(g.machine)}</div>` : ""}
+        ${g.stock.length ? `<div class="up-sec">Saldo — totalt ${total}</div>${stock}` : `<div class="up-sec">Saldo</div><div class="up-text" style="color:var(--text-dim)">Finns inte i lagret</div>`}
       </div>
     </div>`;
   });
